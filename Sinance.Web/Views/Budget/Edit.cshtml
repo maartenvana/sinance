@@ -1,0 +1,31 @@
+﻿@model Sinance.Web.Model.Budget.EditBudgetModel
+
+@{
+    ViewData["Title"] = "Edit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <h2>Budget aanpassen</h2>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Amount" class="control-label"></label>
+                <input asp-for="Amount" class="form-control" />
+                <span asp-validation-for="Amount" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <input asp-for="BudgetId" type="hidden" class="form-control" />
+            </div>
+            <div class="form-group">
+                <a asp-action="Index" class="btn btn-default">Annuleren</a>
+                <input type="submit" value="Opslaan" class="btn btn-primary pull-right" />
+            </div>
+        </form>
+    </div>
+</div>

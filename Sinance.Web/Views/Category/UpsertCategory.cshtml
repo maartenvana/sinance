@@ -1,0 +1,230 @@
+﻿@using System.Collections.Concurrent
+@using System.Linq
+@using Sinance.Domain.Entities
+
+@model Sinance.Web.Model.CategoryModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section scripts {
+    <script type="text/javascript">
+        var colorCodeInput = $(".categoryColorCode");
+        var selectedMapping = null;
+        var selectedAction = null;
+
+        $(function () {
+            var defaultColor = "FFFFFF";
+            var colorCodeValue = colorCodeInput.val();
+
+            if (colorCodeValue === null || colorCodeValue === "")
+                colorCodeInput.val("#" + defaultColor);
+            else
+                defaultColor = colorCodeValue.substr(1, 6);
+
+            $("#ColorCodePicker").colpick({
+                flat: true,
+                layout: "hex",
+                onChange: UpdateColor,
+                submit: 0,
+                color: defaultColor
+            });
+
+            $("#mappingModal").on("show.bs.modal", function () {
+                var actionUrl;
+
+                if (selectedMapping === null)
+                    actionUrl = "@Url.Action("AddCategoryMapping", "CategoryMapping")" + "?categoryId=@Model.Id";
+                else if (selectedAction === "Edit")
+                    actionUrl = "@Url.Action("EditCategoryMapping", "CategoryMapping")" + "?categoryMappingId=" + selectedMapping;
+                else
+                    document.location.href = "@Url.Action("RemoveCategoryMapping", "CategoryMapping")" + "?categoryMappingId=" + selectedMapping;
+
+                if (selectedAction !== "Delete") {
+                    $.ajax({
+                        type: "GET",
+                        url: actionUrl,
+                        success: function (response) {;
+                            $("#mappingModalContent").html(response);
+                        }
+                    });
+                }
+
+            });
+
+            $("#mappingModal").on("hidden.bs.modal", function () {
+                $("#mappingModalContent").html("");
+            });
+        });
+
+        function UpdateColor(hsbColor, hexColor) {
+            colorCodeInput.val("#" + hexColor);
+        }
+
+        function RemoveCategoryMapping(categoryMappingId, matchValue) {
+            bootbox.confirm("Weet u zeker dat u de automatische mapping \"" + matchValue + "\" wilt verwijderen?" +
+                "<br /><br />" +
+                "Alle bijbehorende transacties blijven aan de huidige category verbonden", function (result) {
+                    if (result === true) {
+                        window.location.href = "@Url.Action("RemoveCategoryMapping", "CategoryMapping")?categoryMappingId=" + categoryMappingId;
+                    }
+                }
+            );
+        }
+    </script>
+}
+
+@using (Html.BeginForm("UpsertCategory", "Category", FormMethod.Post))
+{
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                @if (Model.Id > 0)
+                    {
+                <span>Categorie aanpassen</span>
+                    }
+                    else
+                    {
+                <span>Categorie toevoegen</span>
+                    }
+            </div>
+            <div class="panel-body">
+                @Html.ValidationSummary(true)
+
+                @Html.HiddenFor(item => item.Id)
+
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <th>@Html.LabelFor(item => item.Name)</th>
+                            <td>
+                                @Html.TextBoxFor(item => item.Name, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(item => item.Name)
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>@Html.LabelFor(item => item.ColorCode)</th>
+                            <td>
+                                @Html.HiddenFor(item => item.ColorCode, new { @class = "categoryColorCode" })
+                                <div id="ColorCodePicker"></div>
+                                @Html.ValidationMessageFor(item => item.ColorCode)
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>@Html.LabelFor(item => item.ParentId)</th>
+                            <td>
+                                @if (Model.HasChildren)
+                                    {
+                                <span>Categorie is al zelf een hoofdcategorie</span>
+                                    }
+                                    else
+                                    {
+                                @Html.DropDownListFor(item => item.ParentId, Model.AvailableCategories)
+                                @Html.ValidationMessageFor(item => item.ParentId)
+                                    }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>@Html.LabelFor(item => item.IsRegular)</th>
+                            <td>
+                                @if (Model.ParentCategoryIsRegular)
+                                    {
+                                @Html.CheckBoxFor(item => item.ParentCategoryIsRegular, new { @class = "form-control", @disabled = "disabled" })
+                                    }
+                                    else
+                                    {
+                                @Html.CheckBoxFor(item => item.IsRegular, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(item => item.IsRegular)
+                                    }
+                            </td>
+                        </tr>
+                        @if (Model.Id > 0)
+                            {
+                        <tr>
+                            <th>
+                                Mappings
+                            </th>
+                            <td>
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th>
+                                                Kolom
+                                            </th>
+                                            <th>
+                                                Vergelijking
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (CategoryMapping mapping in Model.CategoryMappings)
+                                                {
+                                        <tr>
+                                            <td>
+                                                @Html.DisplayFor(model => mapping.ColumnTypeId)
+                                            </td>
+                                            <td>
+                                                @(mapping.MatchValue.Length < 50 ? mapping.MatchValue : mapping.MatchValue.Substring(0, 47) + "...")
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-default" data-toggle="modal" data-target="#mappingModal" onclick="selectedAction = 'Edit';selectedMapping = @mapping.Id;">Aanpassen</button>
+                                                <button type="button" class="btn btn-danger" onclick="RemoveCategoryMapping(@mapping.Id, '@mapping.MatchValue')">Verwijderen</button>
+                                            </td>
+                                        </tr>
+                                                }
+                                    </tbody>
+                                </table>
+                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#mappingModal" onclick="selectedMapping = null">Toevoegen</button>
+                            </td>
+                        </tr>
+                            }
+                    </tbody>
+                </table>
+            </div>
+            <div class="panel-footer">
+                <button type="submit" class="btn btn-success" value="Save">Opslaan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+    if (Model.Id > 0)
+    {
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-default">
+            @if (Model.AutomaticMappings != null && Model.AutomaticMappings.Any())
+                    {
+            <div class="panel-heading">
+                Automatische toekenning
+            </div>
+            <div class="panel-body">
+                @await Html.PartialAsync("MappingTablePartial", Model.AutomaticMappings)
+            </div>
+            <div class="panel-footer">
+                @Html.ActionLink("Categorie toekennen aan transacties", "UpdateCategoryToMappedTransactions", new { @categoryId = Model.Id }, new { @class = "btn btn-primary" })
+            </div>
+                    }
+                    else
+                    {
+            <div class="panel-heading">
+                Automatische toekenning
+            </div>
+            <div class="panel-body">
+                @Html.ActionLink("Transacties ophalen", "EditCategory", new { @categoryId = Model.Id, @includeTransactions = true }, new { @class = "btn btn-primary" })
+            </div>
+                    }
+        </div>
+    </div>
+</div>
+    }
+}
+<!-- Modal -->
+<div class="modal fade" id="mappingModal" tabindex="-1" role="dialog" aria-labelledby="mappingModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div id="mappingModalContent" class="modal-content">
+        </div>
+    </div>
+</div>

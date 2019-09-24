@@ -1,0 +1,69 @@
+﻿@using Sinance.Web.Helper
+
+@model Sinance.Web.Model.ExpensePerCategoryModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section scripts
+    {
+    <script type="text/javascript">
+        function UpdateReport(data) {
+            $("#categoryReport").html(data.responseText);
+        }
+    </script>
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <h2>Uitgaves per categorie</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="panel panel-default">
+            <div id="categoryReport" class="panel-body">
+                <!-- This is where the report is displayed -->
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <form asp-controller="Report" asp-action="ExpensePerCategoryPartial" class="form-horizontal" data-ajax="true" data-ajax-complete="UpdateReport" data-ajax-method="POST">
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.LabelFor(item => item.SelectedCategoryId, new { @class = "control-label" })
+                        </div>
+                        <div class="col-md-9">
+                            @Html.DropDownListFor(item => item.SelectedCategoryId, new SelectList(Model.AvailableCategories, "Id", "Name"), new { @class = "form-control" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.LabelFor(item => item.SelectedMonth, new { @class = "control-label" })
+                        </div>
+                        <div class="col-md-9">
+                            @Html.DropDownListFor(item => item.SelectedMonth, SelectListHelper.CreateMonthSelectList(), new { @class = "form-control" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-3">
+                            @Html.LabelFor(item => item.SelectedYear, new { @class = "control-label" })
+                        </div>
+                        <div class="col-md-9">
+                            @Html.DropDownListFor(item => item.SelectedYear, SelectListHelper.CreateYearSelectList(), new { @class = "form-control" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-md-push-3 col-md-9">
+                            <button type="Submit" class="btn btn-block btn-primary" value="Ververs">Ververs</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

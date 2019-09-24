@@ -1,0 +1,13 @@
+﻿@using Sinance.Domain.Entities
+@model List<Transaction>
+@if (Model != null && Model.Any())
+{
+    foreach (Transaction transaction in Model)
+    {
+@await Html.PartialAsync("TransactionEditRow", transaction)
+    }
+}
+else
+{
+ <!-- NOMORETRANSACTIONS -->
+}

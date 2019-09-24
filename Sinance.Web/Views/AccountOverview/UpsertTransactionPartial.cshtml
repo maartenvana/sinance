@@ -1,0 +1,100 @@
+﻿@model Sinance.Web.Model.TransactionModel
+<div id="UpsertTransactionContentWrapper">
+    <script type="text/javascript">
+        $(function() {
+            $("#Date").datepicker({
+                dateFormat: "dd-mm-yy",
+                defaultDate: 0
+            });
+
+            BindDecimalPointConvert();
+        });
+
+        function DeleteTransaction() {
+            var deleteConfirm = confirm("Weet u zeker dat u deze transactie wilt verwijderen?");
+
+            if (deleteConfirm)
+                document.location.href = "@Url.Action("DeleteTransaction", "AccountOverview", new {@transactionId = Model.Id})";
+        }
+
+        function SaveCompleted(response) {
+            if (response.responseJSON && response.responseJSON.success === true) {
+                document.location.href = "@Url.Action("Index", "AccountOverview", new {@bankAccountId = Model.BankAccountId})";
+            } else {
+                $("#UpsertTransactionContentWrapper").html(response.responseText);
+            }
+        }
+    </script>
+
+    <form asp-controller="AccountOverview" asp-action="UpsertTransaction" data-ajax="true" data-ajax-complete="SaveCompleted" data-ajax-method="POST">
+
+        @Html.HiddenFor(item => item.Id)
+        @Html.HiddenFor(item => item.BankAccountId)
+
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <h4 class="modal-title" id="myModalLabel">Transactie</h4>
+        </div>
+        <div class="modal-body">
+
+            @Html.ValidationSummary(true)
+
+            <table class="table">
+                <tbody>
+                    <tr>
+                        <th>
+                            @Html.LabelFor(item => item.Name)
+                        </th>
+                        <td>
+                            @Html.TextBoxFor(item => item.Name, new { @class = "form-control", autocomplete = "off" })
+                            @Html.ValidationMessageFor(item => item.Name)
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            @Html.LabelFor(item => item.Amount)
+                        </th>
+                        <td>
+                            @Html.TextBoxFor(item => item.Amount, new { @class = "form-control decimalPointConvert", autocomplete = "off" })
+                            @Html.ValidationMessageFor(item => item.Amount)
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            @Html.LabelFor(item => item.Date)
+                        </th>
+                        <td>
+                            @Html.TextBoxFor(item => item.Date, new { @class = "form-control", Value = Model.Date.ToString("dd-MM-yyyy") })
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            @Html.LabelFor(item => item.DestinationAccount)
+                        </th>
+                        <td>
+                            @Html.TextBoxFor(item => item.DestinationAccount, new { @class = "form-control", autocomplete = "off" })
+                            @Html.ValidationMessageFor(item => item.DestinationAccount)
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            @Html.LabelFor(item => Model.Description)
+                        </th>
+                        <td>
+                            @Html.TextBoxFor(item => item.Description, new { @class = "form-control", autocomplete = "off" })
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="modal-footer clearfix">
+            <div class="pull-left">
+                <button type="button" class="btn btn-danger" onclick=" DeleteTransaction(); ">Verwijderen</button>
+            </div>
+            <div class="pull-right">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Annuleren</button>
+                <button type="submit" class="btn btn-primary">Opslaan</button>
+            </div>
+        </div>
+    </form>
+</div>

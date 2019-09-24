@@ -1,0 +1,183 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <StartupObject></StartupObject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Autofac" Version="4.8.1" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.2.2" />
+    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.6" />
+    <PackageReference Include="Serilog.AspNetCore" Version="2.1.1" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="2.0.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.1.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
+    <PackageReference Include="Serilog" Version="2.7.1" />
+    <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Sinance.Business\Sinance.Business.csproj" />
+    <ProjectReference Include="..\Sinance.Domain\Sinance.Domain.csproj" />
+    <ProjectReference Include="..\Sinance.Storage\Sinance.Storage.csproj" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <!-- extends watching group to include *.js files -->
+    <Watch Include="**\*.cs" Exclude="wwwroot\**\*;Views\**\*;obj\**\*;bin\**\*" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Remove="out\**" />
+    <Content Remove="out\**" />
+    <EmbeddedResource Remove="out\**" />
+    <None Remove="out\**" />
+    <Watch Remove="out\**" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Watch Remove="Components\SideNavigation.cs" />
+    <Watch Remove="Components\SimpleMonthSelector.cs" />
+    <Watch Remove="Controllers\BudgetController.cs" />
+    <Watch Remove="Model\Budget\BudgetIndexModel.cs" />
+    <Watch Remove="Model\Budget\BudgetModel.cs" />
+    <Watch Remove="Model\Budget\BudgetStatusModel.cs" />
+    <Watch Remove="Model\Budget\CreateBudgetModel.cs" />
+    <Watch Remove="Model\Budget\EditBudgetModel.cs" />
+    <Watch Remove="Model\CategoriesOverviewModel.cs" />
+    <Watch Remove="Model\MonthYearSelectionModel.cs" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Update="Resources.Designer.cs">
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Update="Resources.resx">
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <Generator>PublicResXFileCodeGenerator</Generator>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="wwwroot\Content\bootstrap-theme.css" />
+    <None Include="wwwroot\Content\bootstrap-theme.css.map" />
+    <None Include="wwwroot\Content\bootstrap-theme.min.css" />
+    <None Include="wwwroot\Content\bootstrap.css" />
+    <None Include="wwwroot\Content\bootstrap.css.map" />
+    <None Include="wwwroot\Content\bootstrap.min.css" />
+    <None Include="wwwroot\Content\colpick.css" />
+    <None Include="wwwroot\Content\DefaultLayout.css" />
+    <None Include="wwwroot\Content\DefaultLayout.css.map" />
+    <None Include="wwwroot\Content\DefaultLayout.less" />
+    <None Include="wwwroot\Content\DefaultLayout.min.css" />
+    <None Include="wwwroot\Content\font-awesome.css" />
+    <None Include="wwwroot\Content\font-awesome.min.css" />
+    <None Include="wwwroot\Content\jquery-ui.css" />
+    <None Include="wwwroot\Content\jquery-ui.min.css" />
+    <None Include="wwwroot\Content\metisMenu.css" />
+    <None Include="wwwroot\Content\metisMenu.min.css" />
+    <None Include="wwwroot\Content\sb-admin-2.css" />
+    <None Include="wwwroot\Content\Site.css" />
+    <None Include="wwwroot\Content\themes\base\accordion.css" />
+    <None Include="wwwroot\Content\themes\base\all.css" />
+    <None Include="wwwroot\Content\themes\base\autocomplete.css" />
+    <None Include="wwwroot\Content\themes\base\base.css" />
+    <None Include="wwwroot\Content\themes\base\button.css" />
+    <None Include="wwwroot\Content\themes\base\core.css" />
+    <None Include="wwwroot\Content\themes\base\datepicker.css" />
+    <None Include="wwwroot\Content\themes\base\dialog.css" />
+    <None Include="wwwroot\Content\themes\base\draggable.css" />
+    <None Include="wwwroot\Content\themes\base\images\ui-bg_flat_0_aaaaaa_40x100.png" />
+    <None Include="wwwroot\Content\themes\base\images\ui-bg_flat_75_ffffff_40x100.png" />
+    <None Include="wwwroot\Content\themes\base\images\ui-bg_glass_55_fbf9ee_1x400.png" />
+    <None Include="wwwroot\Content\themes\base\images\ui-bg_glass_65_ffffff_1x400.png" />
+    <None Include="wwwroot\Content\themes\base\images\ui-bg_glass_75_dadada_1x400.png" />
+    <None Include="wwwroot\Content\themes\base\images\ui-bg_glass_75_e6e6e6_1x400.png" />
+    <None Include="wwwroot\Content\themes\base\images\ui-bg_glass_95_fef1ec_1x400.png" />
+    <None Include="wwwroot\Content\themes\base\images\ui-bg_highlight-soft_75_cccccc_1x100.png" />
+    <None Include="wwwroot\Content\themes\base\images\ui-icons_222222_256x240.png" />
+    <None Include="wwwroot\Content\themes\base\images\ui-icons_2e83ff_256x240.png" />
+    <None Include="wwwroot\Content\themes\base\images\ui-icons_454545_256x240.png" />
+    <None Include="wwwroot\Content\themes\base\images\ui-icons_888888_256x240.png" />
+    <None Include="wwwroot\Content\themes\base\images\ui-icons_cd0a0a_256x240.png" />
+    <None Include="wwwroot\Content\themes\base\menu.css" />
+    <None Include="wwwroot\Content\themes\base\progressbar.css" />
+    <None Include="wwwroot\Content\themes\base\resizable.css" />
+    <None Include="wwwroot\Content\themes\base\selectable.css" />
+    <None Include="wwwroot\Content\themes\base\selectmenu.css" />
+    <None Include="wwwroot\Content\themes\base\slider.css" />
+    <None Include="wwwroot\Content\themes\base\sortable.css" />
+    <None Include="wwwroot\Content\themes\base\spinner.css" />
+    <None Include="wwwroot\Content\themes\base\tabs.css" />
+    <None Include="wwwroot\Content\themes\base\theme.css" />
+    <None Include="wwwroot\Content\themes\base\tooltip.css" />
+    <None Include="wwwroot\Content\timeline.css" />
+    <None Include="wwwroot\fonts\fontawesome-webfont.eot" />
+    <None Include="wwwroot\fonts\fontawesome-webfont.svg" />
+    <None Include="wwwroot\fonts\fontawesome-webfont.ttf" />
+    <None Include="wwwroot\fonts\fontawesome-webfont.woff" />
+    <None Include="wwwroot\fonts\FontAwesome.otf" />
+    <None Include="wwwroot\fonts\glyphicons-halflings-regular.eot" />
+    <None Include="wwwroot\fonts\glyphicons-halflings-regular.svg" />
+    <None Include="wwwroot\fonts\glyphicons-halflings-regular.ttf" />
+    <None Include="wwwroot\fonts\glyphicons-halflings-regular.woff" />
+    <None Include="wwwroot\fonts\glyphicons-halflings-regular.woff2" />
+    <None Include="wwwroot\Scripts\bootbox.js" />
+    <None Include="wwwroot\Scripts\bootbox.min.js" />
+    <None Include="wwwroot\Scripts\bootstrap.js" />
+    <None Include="wwwroot\Scripts\bootstrap.min.js" />
+    <None Include="wwwroot\Scripts\colpick.js" />
+    <None Include="wwwroot\Scripts\generalHelper.js" />
+    <None Include="wwwroot\Scripts\highcharts-3d.js" />
+    <None Include="wwwroot\Scripts\highcharts.config.js" />
+    <None Include="wwwroot\Scripts\highcharts.js" />
+    <None Include="wwwroot\Scripts\jquery-2.1.4.intellisense.js" />
+    <None Include="wwwroot\Scripts\jquery-2.1.4.js" />
+    <None Include="wwwroot\Scripts\jquery-2.1.4.min.js" />
+    <None Include="wwwroot\Scripts\jquery-2.1.4.min.map" />
+    <None Include="wwwroot\Scripts\jquery-ui-1.11.4.js" />
+    <None Include="wwwroot\Scripts\jquery-ui-1.11.4.min.js" />
+    <None Include="wwwroot\Scripts\jquery.dataTables.js" />
+    <None Include="wwwroot\Scripts\jquery.unobtrusive-ajax.js" />
+    <None Include="wwwroot\Scripts\jquery.unobtrusive-ajax.min.js" />
+    <None Include="wwwroot\Scripts\jquery.validate-vsdoc.js" />
+    <None Include="wwwroot\Scripts\jquery.validate.js" />
+    <None Include="wwwroot\Scripts\jquery.validate.min.js" />
+    <None Include="wwwroot\Scripts\jquery.validate.unobtrusive.js" />
+    <None Include="wwwroot\Scripts\jquery.validate.unobtrusive.min.js" />
+    <None Include="wwwroot\Scripts\metisMenu.js" />
+    <None Include="wwwroot\Scripts\metisMenu.js.map" />
+    <None Include="wwwroot\Scripts\metisMenu.min.js" />
+    <None Include="wwwroot\Scripts\metisMenu.min.js.map" />
+    <None Include="wwwroot\Scripts\npm.js" />
+    <None Include="wwwroot\Scripts\respond.js" />
+    <None Include="wwwroot\Scripts\respond.matchmedia.addListener.js" />
+    <None Include="wwwroot\Scripts\respond.matchmedia.addListener.min.js" />
+    <None Include="wwwroot\Scripts\respond.min.js" />
+    <None Include="wwwroot\Scripts\sb-admin-2.js" />
+    <None Include="wwwroot\Scripts\_references.js" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="Views\Shared\Components\SimpleMonthSelector\Default.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+    <Content Update="Views\_ViewImports.cshtml">
+      <Pack>$(IncludeRazorContentInPack)</Pack>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Classes\" />
+  </ItemGroup>
+</Project>

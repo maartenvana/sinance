@@ -1,0 +1,223 @@
+﻿@using System.Linq
+@using Sinance.Domain.Entities;
+@using Sinance.Web.Model;
+
+@model AccountOverviewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section scripts {
+    <script type="text/javascript">
+        var selectedTransaction = -1;
+        var action = "";
+
+        $(function() {
+            $.ajax(
+            {
+                type: "POST",
+                url: "@Url.Action("BalanceHistory", "Graph")",
+                cache: true,
+                data: { bankAccountIds: [@Model.Account.Id], years: 1 },
+                success: function(response) {
+                    $("#accountGraph").highcharts({
+                        chart: {
+                            zoomType: "x"
+                        },
+                        title: {
+                            text: ""
+                        },
+                        xAxis: {
+                            type: "datetime"
+                        },
+                        yAxis: {
+                            title: {
+                                text: ""
+                            }
+                        },
+                        credits: {
+                            enabled: false
+                        },
+                        legend: {
+                            enabled: false
+                        },
+                        plotOptions: {
+                            area: {
+                                fillColor: {
+                                    linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                                    stops: [
+                                        [0, Highcharts.getOptions().colors[0]],
+                                        [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get("rgba")]
+                                    ]
+                                },
+                                marker: {
+                                    radius: 2
+                                },
+                                lineWidth: 1,
+                                states: {
+                                    hover: {
+                                        lineWidth: 1
+                                    }
+                                },
+                                threshold: null
+                            }
+                        },
+                        tooltip: {
+                            formatter: ChartCurrencyFormatter
+                        },
+                        series: [{
+                                type: "area",
+                                name: "euro",
+                                data: response.objectData
+                        }]
+                    });
+                }
+            });
+
+            $("body").popover({
+                content: function() {
+                    return $("#CategoryList").html();
+                },
+                html: true,
+                trigger: "focus",
+                placement: "right",
+                title: "Kies een categorie",
+                selector: ".transactionCategoryBox",
+                viewport: { selector: "#TransactionOverviewTable", padding: 0 }
+            });
+
+            $("#overviewModal").on("show.bs.modal", function() {
+                var contentUrl = "";
+                if (action === "details") {
+                    contentUrl = "@Url.Action("EditTransaction", "AccountOverview")" + "?transactionId=" + selectedTransaction;
+                } else if (action === "add") {
+                    contentUrl = "@Url.Action("AddTransaction", "AccountOverview")" + "?bankAccountId=" + @Model.Account.Id;
+                }
+
+                $.ajax({
+                    type: "GET",
+                    url: contentUrl,
+                    success: function(response) {
+                        $("#overviewModalContent").html(response);
+                    }
+                });
+            });
+
+            $("#overviewModal").on("hidden.bs.modal", function() {
+                $("#overviewModalContent").html("");
+            });
+        });
+
+        function SetSelectedTransaction(transactionId, categories) {
+            selectedTransaction = transactionId;
+
+            $(".popoverSelectedCategory").removeClass("popoverSelectedCategory");
+
+            if (categories !== undefined && categories !== null) {
+                $.each(categories, function(index, value) {
+                    $(".category" + value).addClass("popoverSelectedCategory");
+                });
+
+                var firstCategory = categories[0];
+                if (firstCategory !== undefined) {
+                    var firstCategoryOffset = $(".category" + firstCategory).offset().top;
+                    $(".CategoryPopoverList").scrollTop(firstCategoryOffset - $(".CategoryPopoverList").offset().top);
+                }
+            }
+        }
+
+        function SetTransactionCategory(categoryId) {
+            var transactionId = selectedTransaction;
+
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("QuickChangeTransactionCategory")",
+                data: { transactionId: transactionId, categoryId: categoryId },
+                success: function(response) {
+                    if (response != undefined && response.Success === false) {
+                        bootbox.alert(response.ErrorMessage);
+                    } else {
+                        $("#TransactionRow" + transactionId).replaceWith(response);
+                    }
+
+                }
+            });
+        }
+
+        function RemoveTransactionCategory() {
+            var transactionId = selectedTransaction;
+
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("QuickRemoveTransactionCategory")",
+                data: { transactionId: transactionId },
+                success: function(response) {
+                    if (response != undefined && response.Success === false) {
+                        bootbox.alert(response.ErrorMessage);
+                    } else {
+                        $("#TransactionRow" + transactionId).replaceWith(response);
+                    }
+
+                }
+            });
+
+        }
+    </script>
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <h1 class="page-header">@Model.Account.Name <span class="pull-right label label-info">€ @Html.DisplayFor(item => item.AccountBalance)</span></h1>
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        Historie
+    </div>
+    <div class="panel-body">
+        <div id="accountGraph" style="height:200px;"></div>
+    </div>
+</div>
+
+<div class="panel panel-default">
+    <div class="panel-heading clearfix">
+        <h5 class="pull-left">Transacties</h5>
+        <button data-toggle="modal" data-target="#overviewModal" onclick="action='add';" type="button" class="btn btn-primary pull-right"><span class="glyphicon glyphicon-plus"></span></button>
+    </div>
+    <div class="panel-body">
+        <div>
+            @await Html.PartialAsync("TransactionsEditTable", Model.Transactions)
+        </div>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="overviewModal" tabindex="-1" role="dialog" aria-labelledby="overviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div id="overviewModalContent" class="modal-content">
+        </div>
+    </div>
+</div>
+
+<div id="CategoryList" class="hidden">
+    <div class="CategoryPopoverList clearfix">
+        <div class="categoryPopoverListItem category0" onclick="RemoveTransactionCategory();">
+            <div class="transactionCategoryBox-sm" style="background-color: #FFFFFF"></div><span> Geen categorie</span>
+        </div>
+        @foreach (Category category in Model.AvailableCategories.Where(item => item.ParentCategory == null).OrderBy(item => item.Name))
+        {
+            <div class="categoryPopoverListItem category@(category.Id)" onclick="SetTransactionCategory(@category.Id);">
+                <div class="transactionCategoryBox-sm" style="background-color: @(category.ColorCode)"></div><span> @category.Name</span>
+            </div>
+            foreach (Category subCategory in Model.AvailableCategories.Where(item => item.ParentId == category.Id).OrderBy(item => item.Name))
+            {
+                <div class="categoryPopoverListItem category@(subCategory.Id)" onclick="SetTransactionCategory(@subCategory.Id);">
+                    <span>-</span>
+                    <div class="transactionCategoryBox-sm" style="background-color: @(subCategory.ColorCode)"></div><span> @subCategory.Name</span>
+                </div>
+            }
+
+        }
+    </div>
+</div>

@@ -1,0 +1,107 @@
+﻿@using System
+@using System.Linq
+@using Sinance.Domain.Entities
+
+@model Sinance.Web.Model.ImportModel
+
+@{
+    ViewBag.Title = "ImportResult";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Importeer resultaat</h2>
+
+@using (Html.BeginForm("SaveImport", "Import", FormMethod.Post, new { enctype = "multipart/form-data" }))
+{
+<div class="panel panel-default">
+    <div class="panel-heading">Importeer preview</div>
+    <div class="panel-body">
+        @Html.HiddenFor(item => item.BankAccountId)
+        <table class="table TransactionTable">
+            <thead>
+                <tr>
+                    <th>Importeren?</th>
+                    <th>Datum</th>
+                    <th>Titel</th>
+                    <th></th>
+                    <th class="amountColumn">Bedrag</th>
+                    <th>Omschrijving</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (int rowIndex = 0; rowIndex < Model.ImportRows.Count; rowIndex++)
+                    {
+                        int index = rowIndex;
+                        bool rowExists = Model.ImportRows[index].ExistsInDatabase;
+
+                        string cssClass = rowExists ? "existingRow" : "newRow";
+
+                <tr class="@cssClass">
+                    @Html.HiddenFor(item => item.ImportRows[index].ImportRowId)
+                    <td>
+                        @if (!rowExists)
+                                {
+                        @Html.CheckBoxFor(item => item.ImportRows[index].Import)
+                                }
+                    </td>
+                    <td>
+                        @Model.ImportRows[index].Transaction.Date.ToString("dd-MM-yyyy")
+                    </td>
+                    <td>
+                        @if (Model.ImportRows[index].Transaction.Name.Length > 40)
+                                {
+                        @(Model.ImportRows[index].Transaction.Name.Substring(0, 40) + "...")
+                                }
+                                else
+                                {
+                        @Model.ImportRows[index].Transaction.Name
+                                }
+                    </td>
+                    <td>
+                        <a class="transactionCategoryBox">
+                            @foreach (TransactionCategory transactionCategory in Model.ImportRows[index].Transaction.TransactionCategories)
+                                    {
+                                        int width = 50;
+
+                                        if (Model.ImportRows[index].Transaction.TransactionCategories.Count() > 1)
+                                        {
+                                            width = (int)Math.Round(((transactionCategory.Amount ?? 1) / Model.ImportRows[index].Transaction.Amount * 50));
+                                            if (width < 0)
+                                            {
+                                                // Invert if this was a negative width
+                                                width *= -1;
+                                            }
+                                        }
+
+                                        string style = string.Format("width:{0}px;background-color:{1};", width, transactionCategory.Category.ColorCode);
+                            <div class="transactionCategoryFillBox" style="@style"></div>
+                                    }
+                        </a>
+                    </td>
+                    <td class="amountColumn">
+                        <span class="label @(Model.ImportRows[index].Transaction.Amount > 0 ? "label-success" : "label label-danger")">
+                            @Html.DisplayFor(item => item.ImportRows[index].Transaction.Amount)
+                        </span>
+                    </td>
+                    <td>
+
+                        @if (!string.IsNullOrEmpty(Model.ImportRows[index].Transaction.Description) && Model.ImportRows[index].Transaction.Description.Length > 40)
+                                {
+                        @(Model.ImportRows[index].Transaction.Description.Substring(0, 40) + "...")
+                                }
+                                else
+                                {
+                        @Model.ImportRows[index].Transaction.Description
+                                }
+                    </td>
+                </tr>
+                    }
+            </tbody>
+        </table>
+        <div class="clearfix">
+            <button type="submit" class="btn btn-primary pull-right" value="Importeren">Importeren</button>
+        </div>
+    </div>
+</div>
+}

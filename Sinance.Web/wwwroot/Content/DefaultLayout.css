@@ -1,0 +1,25 @@
+﻿.TransactionTable td {
+  vertical-align: middle;
+}
+.TransactionTable tbody tr:hover {
+  background-color: azure;
+}
+.TransactionTable .dateColumn {
+  width: 100px;
+}
+.TransactionTable .amountColumn {
+  text-align: right;
+}
+.TransactionTable .descriptionColumn {
+  width: 500px;
+  font-size: 10px;
+}
+.ExpensesTable td {
+  vertical-align: middle;
+}
+.ExpensesTable tbody tr:hover {
+  background-color: azure !important;
+}
+.ExpensesTable tbody tr:hover td {
+  background-color: azure !important;
+}

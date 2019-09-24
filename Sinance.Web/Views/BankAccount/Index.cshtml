@@ -1,0 +1,86 @@
+﻿@using Sinance.Domain.Entities
+
+@model System.Collections.Generic.IEnumerable<BankAccount>
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section scripts {
+    <script type="text/javascript">
+        function RemoveBankAccount(accountId, accountName) {
+            bootbox.confirm("Weet u zeker dat u de rekening \"" + accountName + "\" wilt verwijderen?" +
+                "<br /><br />" +
+                "Alle bijbehorende transacties worden ook verwijderd!", function (result) {
+                    if (result === true) {
+                        window.location.href = "@Url.Action("RemoveAccount")?accountId=" + accountId;
+                    }
+                });
+        }
+    </script>
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <h2>Bankrekeningen</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-default">
+            <div class="panel-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>
+                                Naam
+                            </th>
+                            <th>
+                                Start saldo
+                            </th>
+                            <th>Type</th>
+                            <th>Inactief</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Any())
+                        {
+                            for (int i = 0; i < Model.Count(); i++)
+                            {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(item => item.ElementAt(i).Name)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(item => item.ElementAt(i).StartBalance)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(item => item.ElementAt(i).AccountType)
+                            </td>
+                            <td>
+                                @Html.CheckBoxFor(item => item.ElementAt(i).Disabled, new { @class = "disabled" })
+                            </td>
+                            <td>
+                                @Html.ActionLink("Aanpassen", "EditAccount", new { accountId = Model.ElementAt(i).Id }, new { @class = "btn btn-default" })
+                                <a class="btn btn-danger" href="#" onclick="RemoveBankAccount(@Model.ElementAt(i).Id, '@Model.ElementAt(i).Name');">Verwijderen</a>
+                            </td>
+                        </tr>
+                            }
+                        }
+                        else
+                        {
+                        <tr>
+                            <td>Geen Bankrekeningen gevonden</td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <div class="panel-footer">
+                @Html.ActionLink("Bankrekening toevoegen", "AddAccount", new { }, new { @class = "btn btn-primary" })
+            </div>
+        </div>
+    </div>
+</div>

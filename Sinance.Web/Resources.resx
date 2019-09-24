@@ -1,0 +1,258 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ChooseBankAccount" xml:space="preserve">
+    <value>Kies een bankrekening</value>
+  </data>
+  <data name="NoCategory" xml:space="preserve">
+    <value>Geen categorie</value>
+  </data>
+  <data name="NoMainCategory" xml:space="preserve">
+    <value>Geen hoofdcategorie</value>
+  </data>
+  <data name="InvalidUsernamePassword" xml:space="preserve">
+    <value>Invalid username or password.</value>
+  </data>
+  <data name="AvailableColumnTypes" xml:space="preserve">
+    <value>Beschikbare kolommen</value>
+  </data>
+  <data name="BankAccountAlreadyExists" xml:space="preserve">
+    <value>Er bestaat al een bankrekening met deze naam</value>
+  </data>
+  <data name="BankAccountCreated" xml:space="preserve">
+    <value>Bankrekening aangemaakt</value>
+  </data>
+  <data name="BankAccountNotFound" xml:space="preserve">
+    <value>Bankrekening niet gevonden</value>
+  </data>
+  <data name="BankAccountRemoved" xml:space="preserve">
+    <value>Bankrekening verwijderd</value>
+  </data>
+  <data name="BankAccountUpdated" xml:space="preserve">
+    <value>Bankrekening aangepast</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Er is een fout opgetreden</value>
+  </data>
+  <data name="CategoryNotFound" xml:space="preserve">
+    <value>Categorie niet gevonden</value>
+  </data>
+  <data name="CategoryCreated" xml:space="preserve">
+    <value>Categorie aangemaakt</value>
+  </data>
+  <data name="CategoryRemoved" xml:space="preserve">
+    <value>Categorie verwijderd</value>
+  </data>
+  <data name="CategoryUpdated" xml:space="preserve">
+    <value>Categorie aangepast</value>
+  </data>
+  <data name="CategoryMappingsAppliedToTransactions" xml:space="preserve">
+    <value>Categorieën toegekend aan transacties</value>
+  </data>
+  <data name="CategoryMappingNotFound" xml:space="preserve">
+    <value>Categorie mapping niet gevonden</value>
+  </data>
+  <data name="CategoryMappingDeleted" xml:space="preserve">
+    <value>Categorie mapping is verwijderd</value>
+  </data>
+  <data name="UnsupportedColumnTypeMapping" xml:space="preserve">
+    <value>Op dit moment worden alleen mappings op "Omschrijving", "Naam" en "Tegenrekening" ondersteund</value>
+  </data>
+  <data name="CategoryMappingAdded" xml:space="preserve">
+    <value>Categorie mapping aangemaakt</value>
+  </data>
+  <data name="CategoryMappingEdited" xml:space="preserve">
+    <value>Categorie mapping aangepast</value>
+  </data>
+  <data name="TransactionAdded" xml:space="preserve">
+    <value>Transactie toegevoegd</value>
+  </data>
+  <data name="TransactionDeleted" xml:space="preserve">
+    <value>Transactie verwijderd</value>
+  </data>
+  <data name="TransactionNotFound" xml:space="preserve">
+    <value>Transactie niet gevonden</value>
+  </data>
+  <data name="TransactionUpdated" xml:space="preserve">
+    <value>Transactie aangepast</value>
+  </data>
+  <data name="TransactionCategoryNotFound" xml:space="preserve">
+    <value>Categorie voor transactie niet gevonden</value>
+  </data>
+  <data name="TotalAmountTooHigh" xml:space="preserve">
+    <value>Totaal bedrag van categorieën is hoger dan de transactie</value>
+  </data>
+  <data name="CouldNotUpdateTransactionCategory" xml:space="preserve">
+    <value>Transactie categorie kon niet gewijzigd worden</value>
+  </data>
+  <data name="TransactionsAddedAndSkippedFormat" xml:space="preserve">
+    <value> {0} Transacties zijn toegevoegd, {1} transacties zijn overgeslagen</value>
+  </data>
+  <data name="ErrorWhileProcessingImport" xml:space="preserve">
+    <value>Er is een fout opgetreden tijdens het verwerken van het bestand</value>
+  </data>
+  <data name="ImportTimeOut" xml:space="preserve">
+    <value>U heeft te lang gewacht met het opslaan van de import, de import moet opnieuw uitgevoerd worden</value>
+  </data>
+  <data name="ImportToBankAccount" xml:space="preserve">
+    <value>Bankrekening</value>
+  </data>
+  <data name="IsRequired" xml:space="preserve">
+    <value> {0} is vereist</value>
+  </data>
+  <data name="January" xml:space="preserve">
+    <value>januari</value>
+  </data>
+  <data name="February" xml:space="preserve">
+    <value>februari</value>
+  </data>
+  <data name="March" xml:space="preserve">
+    <value>maart</value>
+  </data>
+  <data name="April" xml:space="preserve">
+    <value>april</value>
+  </data>
+  <data name="May" xml:space="preserve">
+    <value>mei</value>
+  </data>
+  <data name="June" xml:space="preserve">
+    <value>juni</value>
+  </data>
+  <data name="July" xml:space="preserve">
+    <value>juli</value>
+  </data>
+  <data name="August" xml:space="preserve">
+    <value>augustus</value>
+  </data>
+  <data name="September" xml:space="preserve">
+    <value>september</value>
+  </data>
+  <data name="October" xml:space="preserve">
+    <value>oktober</value>
+  </data>
+  <data name="November" xml:space="preserve">
+    <value>november</value>
+  </data>
+  <data name="December" xml:space="preserve">
+    <value>december</value>
+  </data>
+  <data name="NoReportFound" xml:space="preserve">
+    <value>Geen rapport gevonden</value>
+  </data>
+</root>

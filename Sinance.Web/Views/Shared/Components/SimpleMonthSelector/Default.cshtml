@@ -1,0 +1,7 @@
+﻿@model Sinance.Web.Model.MonthYearSelectionModel
+
+@Html.ActionLink("< ", Model.Action, Model.Controller, new { date = Model.CurrentDate.AddMonths(-1) })
+
+@Model.CurrentDate.Month - @Model.CurrentDate.Year
+
+@Html.ActionLink(" >", Model.Action, Model.Controller, new { date = Model.CurrentDate.AddMonths(1) })

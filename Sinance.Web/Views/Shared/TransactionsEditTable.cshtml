@@ -1,0 +1,73 @@
+﻿@using Sinance.Domain.Entities
+
+@model System.Collections.Generic.IList<Transaction>
+
+@if (Model != null && Model.Any())
+{
+<script>
+        var defaultTransactionIncrement = 100;
+        var currentTransactionCount = @Model.Count();
+        var loadingMoreTransactions = false;
+
+        function LoadMoreTransactions(increment) {
+            if (loadingMoreTransactions === false) {
+                loadingMoreTransactions = true;
+
+                $("#LoadMoreTransactionsRow").val("Laden...");
+
+                $.ajax({
+                    type: "POST",
+                    url: "@Url.Action("LoadMoreEditTransactionsPartial", "Transaction")",
+                    data: {
+                        bankAccountId: @Model.First().BankAccountId,
+                        skipTransactions: currentTransactionCount,
+                        takeTransactions: increment
+                    },
+                    success: function (response) {
+
+                        if(response.indexOf("NOMORETRANSACTIONS") === -1)
+                        {
+                            $("#LoadMoreTransactionsPlaceholder").before(response);
+
+                            currentTransactionCount += increment;
+                            $("#LoadMoreTransactionsRow").val("Laad meer transacties");
+                            loadingMoreTransactions = false;
+                        } else {
+                            $("#LoadMoreTransactionsRow").hide();
+                        }
+                    },
+                    error: function() {
+                        $("#LoadMoreTransactionsRow").val("Laad meer transacties");
+                        loadingMoreTransactions = false;
+                    }
+                });
+            }
+        }
+</script>
+
+<table id="TransactionOverviewTable" class="table TransactionTable">
+    <thead>
+        <tr>
+            <th>Datum</th>
+            <th>Titel</th>
+            <th></th>
+            <th class="amountColumn">Bedrag</th>
+            <th>Omschrijving</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (Transaction transaction in Model)
+            {
+        @await Html.PartialAsync("TransactionEditRow", transaction)
+            }
+        <tr id="LoadMoreTransactionsPlaceholder"></tr>
+        <tr id="LoadMoreTransactionsRow">
+            <td colspan="6">
+                <input type="button" class="btn btn-block btn-primary" onclick="LoadMoreTransactions(defaultTransactionIncrement)" value="Laad meer transacties" />
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+}

@@ -1,0 +1,91 @@
+﻿@using Sinance.Web.Components;
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finances</title>
+
+    <link href="~/Content/bootstrap.min.css" rel="stylesheet" />
+    <link href="~/Content/bootstrap-theme.min.css" rel="stylesheet" />
+    <link href="~/Content/colpick.css" rel="stylesheet" />
+
+    <link href="~/Content/DefaultLayout.css" rel="stylesheet" />
+    <link href="~/Content/font-awesome.css" rel="stylesheet" />
+    <link href="~/Content/jquery-ui.css" rel="stylesheet" />
+    <link href="~/Content/metisMenu.css" rel="stylesheet" />
+    <link href="~/Content/sb-admin-2.css" rel="stylesheet" />
+    <link href="~/Content/Site.css" rel="stylesheet" />
+    <link href="~/Content/timeline.css" rel="stylesheet" />
+
+    <meta name="description" content="The description of my page" />
+</head>
+<body>
+    <div id="wrapper">
+        <nav class="navbar navbar-default navbar-static-top" role="navigation" style="margin-bottom: 0">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">Finances</a>
+            </div>
+            @if (User.Identity.IsAuthenticated)
+            {
+                using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
+                {
+            @Html.AntiForgeryToken()
+
+            <ul class="nav navbar-top-links navbar-right">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                        <i class="fa fa-user fa-fw"></i> OH HAI <i class="fa fa-caret-down"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-user">
+                        <li>
+                            <a href="@Url.Action("Manage", "Account")"><i class="fa fa-user fa-fw"></i> Profiel</a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <a href="javascript:document.getElementById('logoutForm').submit()"><i class="fa fa-sign-out fa-fw"></i> Uitloggen</a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+                }
+            }
+
+            @await Component.InvokeAsync(nameof(SideNavigation))
+        </nav>
+
+        <div id="page-wrapper">
+            @await Html.PartialAsync("TemporaryMessage")
+            @RenderBody()
+        </div>
+    </div>
+
+    <script src="~/Scripts/jquery-2.1.4.js"></script>
+    <script src="~/Scripts/jquery-ui-1.11.4.js"></script>
+    <script src="~/Scripts/jquery.unobtrusive-ajax.js"></script>
+    <script src="~/Scripts/jquery.dataTables.js"></script>
+    <script src="~/Scripts/generalHelper.js"></script>
+
+    <script src="~/Scripts/colpick.js"></script>
+    <script src="~/Scripts/bootstrap.js"></script>
+    <script src="~/Scripts/metisMenu.js"></script>
+    <script src="~/Scripts/respond.js"></script>
+    <script src="~/Scripts/bootbox.js"></script>
+    <script src="~/Scripts/sb-admin-2.js"></script>
+
+    <script src="~/Scripts/jquery.validate.js"></script>
+    <script src="~/Scripts/jquery.validate.unobtrusive.js"></script>
+
+    <script src="~/Scripts/highcharts.js"></script>
+    <script src="~/Scripts/highcharts.config.js"></script>
+
+    @RenderSection("scripts", required: false)
+</body>
+</html>

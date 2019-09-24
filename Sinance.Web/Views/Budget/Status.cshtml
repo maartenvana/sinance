@@ -1,0 +1,44 @@
+﻿@using Sinance.Web.Components;
+
+@model Sinance.Web.Model.Budget.BudgetStatusModel
+
+@{
+    ViewData["Title"] = "Status";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Budget</h2>
+
+@await Component.InvokeAsync(nameof(SimpleMonthSelector), new { currentDate = Model.StatusDate, action = "Status", controller = "Budget" })
+
+<table class="table table-condensed">
+    <thead>
+        <tr>
+            <th>
+                Categorie
+            </th>
+            <th>
+                Effectief
+            </th>
+            <th>
+                Budget
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model.BudgetStatus)
+        {
+        <tr class="@(item.Value > item.Key.Amount ? "danger" : "")">
+            <td>
+                @item.Key.CategoryName
+            </td>
+            <td>
+                @item.Value.ToString("C")
+            </td>
+            <td>
+                @item.Key.Amount.ToString("C")
+            </td>
+        </tr>
+        }
+    </tbody>
+</table>

@@ -1,0 +1,152 @@
+﻿@using System.Linq
+
+@model CategoriesOverviewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section scripts {
+    <script type="text/javascript">
+        function RemoveCategory(categoryId, categoryName) {
+            bootbox.confirm("Weet u zeker dat u de categorie \"" + categoryName + "\" wilt verwijderen?" +
+                "<br /><br />" +
+                "Alle bijbehorende transacties zullen de categorie verliezen", function (result) {
+                    if (result === true) {
+                        window.location.href = "@Url.Action("RemoveCategory")?categoryId=" + categoryId;
+                    }
+                }
+            );
+        }
+    </script>
+}
+
+<div class="row">
+    <div class="col-lg-12">
+        <h2>Categorieën @Html.ActionLink("Categorie toevoegen", "AddCategory", new { }, new { @class = "btn btn-primary pull-right" })</h2>
+    </div>
+</div>
+<div class="row">
+    <div class="col-lg-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                Vaste lasten/inkomen
+            </div>
+            <div class="panel-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Naam</th>
+                            <th>Kleur</th>
+                            <th>Vaste last/inkomen?</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var category in Model.RegularCategories.Where(item => item.ParentId == null).OrderBy(item => item.Name))
+                        {
+                        <tr>
+                            <td>@category.Name</td>
+                            <td>
+                                <div style="width: 50px; height: 20px; background-color: @category.ColorCode;"></div>
+                            </td>
+                            <td>
+                                @Html.CheckBoxFor(item => category.IsRegular, new { @disabled = "disabled" })
+                            </td>
+                            <td>
+                                @Html.ActionLink("Aanpassen", "EditCategory", new { categoryId = @category.Id }, new { @class = "btn btn-default" })
+                                <a class="btn btn-danger" href="#" onclick="RemoveCategory(@category.Id, '@category.Name');">Verwijderen</a>
+                            </td>
+                        </tr>
+                            foreach (var subCategory in Model.RegularCategories.Where(item => item.ParentId == category.Id).OrderBy(item => item.Name))
+                            {
+                        <tr>
+                            <td style="padding-left: 20px;">@subCategory.Name</td>
+                            <td>
+                                <div style="width: 50px; height: 20px; background-color: @subCategory.ColorCode;"></div>
+                            </td>
+                            <td>
+                                @if (category.IsRegular == true)
+                                        {
+                                @Html.CheckBoxFor(item => category.IsRegular, new { @disabled = "disabled" })
+                                        }
+                                        else
+                                        {
+                                @Html.CheckBoxFor(item => subCategory.IsRegular, new { @disabled = "disabled" })
+                                        }
+                            </td>
+
+                            <td>
+                                @Html.ActionLink("Aanpassen", "EditCategory", new { categoryId = @subCategory.Id }, new { @class = "btn btn-default" })
+                                <a class="btn btn-danger" href="#" onclick="RemoveCategory(@subCategory.Id, '@subCategory.Name');">Verwijderen</a>
+                            </td>
+                        </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-12">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                Variabele lasten/inkomen
+            </div>
+            <div class="panel-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Naam</th>
+                            <th>Kleur</th>
+                            <th>Vaste last/inkomen?</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var category in Model.IrregularCategories.Where(item => item.ParentId == null).OrderBy(item => item.Name))
+                        {
+                        <tr>
+                            <td>@category.Name</td>
+                            <td>
+                                <div style="width: 50px; height: 20px; background-color: @category.ColorCode;"></div>
+                            </td>
+                            <td>
+                                @Html.CheckBoxFor(item => category.IsRegular, new { @disabled = "disabled" })
+                            </td>
+                            <td>
+                                @Html.ActionLink("Aanpassen", "EditCategory", new { categoryId = @category.Id }, new { @class = "btn btn-default" })
+                                <a class="btn btn-danger" href="#" onclick="RemoveCategory(@category.Id, '@category.Name');">Verwijderen</a>
+                            </td>
+                        </tr>
+                            foreach (var subCategory in Model.IrregularCategories.Where(item => item.ParentId == category.Id).OrderBy(item => item.Name))
+                            {
+                        <tr>
+                            <td style="padding-left: 20px;">@subCategory.Name</td>
+                            <td>
+                                <div style="width: 50px; height: 20px; background-color: @subCategory.ColorCode;"></div>
+                            </td>
+                            <td>
+                                @if (category.IsRegular == true)
+                                        {
+                                @Html.CheckBoxFor(item => category.IsRegular, new { @disabled = "disabled" })
+                                        }
+                                        else
+                                        {
+                                @Html.CheckBoxFor(item => subCategory.IsRegular, new { @disabled = "disabled" })
+                                        }
+                            </td>
+
+                            <td>
+                                @Html.ActionLink("Aanpassen", "EditCategory", new { categoryId = @subCategory.Id }, new { @class = "btn btn-default" })
+                                <a class="btn btn-danger" href="#" onclick="RemoveCategory(@subCategory.Id, '@subCategory.Name');">Verwijderen</a>
+                            </td>
+                        </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

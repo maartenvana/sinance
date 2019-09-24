@@ -1,0 +1,46 @@
+﻿
+
+.CategoryPopoverList {
+    overflow: visible;
+    overflow-y: scroll;
+    max-height: 400px;
+    white-space: nowrap;
+}
+
+    .CategoryPopoverList div {
+        display: block;
+    }
+
+        .CategoryPopoverList div:hover {
+            background-color: #d4d4d4;
+        }
+
+        .categoryPopoverListItem {
+            position: relative;
+        }
+
+.transactionCategoryBox {
+    display: block;
+    width: 52px;
+    height: 22px;
+    border: solid 1px gray;
+    overflow: hidden;
+}
+
+.transactionCategoryFillBox {
+    float: left;
+    height: 20px;
+}
+
+div.transactionCategoryBox-sm {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+}
+.popoverSelectedCategory {
+    background-color: #c4c4c4;
+}
+
+.navbar-right {
+    margin-right: 0 !important;
+}

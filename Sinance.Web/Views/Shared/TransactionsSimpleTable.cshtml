@@ -1,0 +1,23 @@
+﻿@using Sinance.Domain.Entities
+@model System.Collections.Generic.IEnumerable<Transaction>
+
+<table class="table TransactionTable">
+    <thead>
+        <tr>
+            <th>Datum</th>
+            <th>Titel</th>
+            <th></th>
+            <th class="amountColumn">Bedrag</th>
+            <th>Omschrijving</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null)
+    {
+        foreach (Transaction transaction in Model)
+        {
+        @await Html.PartialAsync("TransactionSimpleRow", transaction)
+        }
+    }
+    </tbody>
+</table>

@@ -1,0 +1,56 @@
+﻿@model Sinance.Web.Model.RegisterViewModel
+@{
+    ViewBag.Title = "Registreren";
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <title>Finances - Registreren</title>
+</head>
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 col-md-offset-4">
+                <div class="login-panel panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            Registeren
+                        </h3>
+                    </div>
+                    <div class="panel-body">
+                        @using (Html.BeginForm("Register", "Account", FormMethod.Post, new { role = "form" }))
+                        {
+                        @Html.AntiForgeryToken()
+                        @Html.ValidationSummary(false)
+                        <fieldset>
+                            <div class="form-group">
+                                @Html.TextBoxFor(m => m.UserName, new { @class = "form-control", @autofocus = "", placeholder = "Gebruikersnaam" })
+                                @Html.ValidationMessageFor(m => m.UserName)
+                            </div>
+                            <div class="form-group">
+                                @Html.PasswordFor(m => m.Password, new { @class = "form-control", placeholder = "Wachtwoord" })
+                                @Html.ValidationMessageFor(m => m.UserName)
+                            </div>
+                            <div class="form-group">
+                                @Html.PasswordFor(m => m.ConfirmPassword, new { @class = "form-control", placeholder = "Wachtwoord herhalen" })
+                                @Html.ValidationMessageFor(m => m.UserName)
+                            </div>
+                            <input type="submit" value="Registreren" class="btn btn-lg btn-success btn-block" />
+                        </fieldset>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @*@Scripts.Render("~/bundles/jquery")
+        @Scripts.Render("~/bundles/bootstrap")
+        @Scripts.Render("~/bundles/jqueryval")*@
+</body>
+</html>

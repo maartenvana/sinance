@@ -1,0 +1,41 @@
+﻿@using System
+@using Sinance.Web.Helper
+@using Sinance.Web.Model
+@{
+    MessageState state = TempDataHelper.RetrieveTemporaryMessageState(TempData);
+    string message = TempDataHelper.RetrieveTemporaryMessage(TempData);
+    string cssClass = string.Empty;
+
+    if (state != MessageState.None)
+    {
+        switch (state)
+        {
+            case MessageState.Success:
+                cssClass = "alert-success";
+                break;
+            case MessageState.Info:
+                cssClass = "alert-info";
+                break;
+            case MessageState.Warning:
+                cssClass = "alert-warning";
+                break;
+            case MessageState.Error:
+                cssClass = "alert-danger";
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
+}
+
+@if (state != MessageState.None)
+{
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="alert @cssClass alert-dismissible" role="alert">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                @message
+            </div>
+        </div>
+    </div>
+}

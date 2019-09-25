@@ -1,11 +1,11 @@
-﻿using Sinance.Domain.Entities;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using System.Threading.Tasks;
-using System.Linq;
-using Sinance.Storage;
 using Sinance.Business.Exceptions.Authentication;
+using Sinance.Domain.Entities;
+using Sinance.Storage;
 using System;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Sinance.Business.Services.Authentication
 {
@@ -40,8 +40,7 @@ namespace Sinance.Business.Services.Authentication
                 {
                     var newUser = new SinanceUser
                     {
-                        Username = userName,
-                        UserId = Guid.NewGuid().ToString()
+                        Username = userName
                     };
                     newUser.Password = _passwordHasher.HashPassword(user, password);
 

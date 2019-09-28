@@ -28,6 +28,11 @@ namespace Sinance.Domain.Entities
         public bool Disabled { get; set; }
 
         /// <summary>
+        /// If the account should be included in profit/loss graphs
+        /// </summary>
+        public bool IncludeInProfitLossGraph { get; set; }
+
+        /// <summary>
         /// Name
         /// </summary>
         [Required]
@@ -73,9 +78,10 @@ namespace Sinance.Domain.Entities
         /// <param name="startBalance">Start balance of the bank account</param>
         /// <param name="accountType">Type of the bank account</param>
         /// <param name="disabled">If the account is disabled</param>
-        public void Update(string name, decimal startBalance, bool disabled, BankAccountType accountType)
+        public void Update(string name, decimal startBalance, bool disabled, BankAccountType accountType, bool includeInProfitLossGraph)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
+            IncludeInProfitLossGraph = includeInProfitLossGraph;
             StartBalance = startBalance;
             AccountType = accountType;
             Disabled = disabled;

@@ -401,7 +401,7 @@ namespace Sinance.Controllers
             {
                 // No need to sort this list, we loop through it by month numbers
                 List<IGrouping<int, Transaction>> transactionsPerMonth = unitOfWork.TransactionRepository
-                .FindAll(item => item.Date.Year == year && item.UserId == currentUserId)
+                .FindAll(item => item.Date.Year == year && item.UserId == currentUserId && item.BankAccount.IncludeInProfitLossGraph == true)
                 .GroupBy(item => item.Date.Month)
                 .ToList();
 

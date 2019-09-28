@@ -146,7 +146,7 @@ namespace Sinance.Controllers
                         BankAccount bankAccount = bankAccounts.SingleOrDefault(item => item.Id == model.Id);
                         if (bankAccount != null)
                         {
-                            bankAccount.Update(model.Name, model.StartBalance, model.Disabled, model.AccountType);
+                            bankAccount.Update(model.Name, model.StartBalance, model.Disabled, model.AccountType, model.IncludeInProfitLossGraph);
 
                             unitOfWork.BankAccountRepository.Update(bankAccount);
                             await unitOfWork.SaveAsync();
@@ -161,7 +161,7 @@ namespace Sinance.Controllers
                         if (!unitOfWork.BankAccountRepository.FindAll(item => item.Name == model.Name).Any())
                         {
                             BankAccount insertBankAccount = new BankAccount();
-                            insertBankAccount.Update(model.Name, model.StartBalance, model.Disabled, model.AccountType);
+                            insertBankAccount.Update(model.Name, model.StartBalance, model.Disabled, model.AccountType, model.IncludeInProfitLossGraph);
                             insertBankAccount.CurrentBalance = model.StartBalance;
                             insertBankAccount.UserId = currentUserId;
 

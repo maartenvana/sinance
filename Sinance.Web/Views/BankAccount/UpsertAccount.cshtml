@@ -21,38 +21,42 @@
 <div class="row">
     <div class="col-lg-3">
         @using (Html.BeginForm("UpsertAccount", "BankAccount", FormMethod.Post))
-            {
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                Bankrekening informatie
-            </div>
-            <div class="panel-body">
-                @Html.HiddenFor(item => item.Id)
+        {
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    Bankrekening informatie
+                </div>
+                <div class="panel-body">
+                    @Html.HiddenFor(item => item.Id)
 
-                @Html.ValidationSummary(true)
+                    @Html.ValidationSummary(true)
 
-                @Html.LabelFor(item => item.Name):
-                @Html.TextBoxFor(item => item.Name, new { @class = "form-control", autocomplete = "off" })
-                @Html.ValidationMessageFor(item => item.Name)
-                <br />
-                @Html.LabelFor(item => item.StartBalance):
-                @Html.TextBoxFor(item => item.StartBalance, new { @class = "form-control decimalPointConvert", autocomplete = "off" })
-                @Html.ValidationMessageFor(item => item.StartBalance)
-                <br />
-                @Html.LabelFor(item => item.AccountType):
-                <select asp-for="AccountType" asp-items="@Html.GetEnumSelectList<Sinance.Domain.Entities.BankAccountType>()" class="form-control">
-                    <option>Selecteer een type</option>
-                </select>
-                @Html.ValidationMessageFor(item => item.AccountType)
-                <br />
-                @Html.LabelFor(item => item.Disabled):
-                @Html.CheckBoxFor(item => item.Disabled, new { @class = "form-control" })
-                @Html.ValidationMessageFor(item => item.Disabled)
+                    @Html.LabelFor(item => item.Name):
+                    @Html.TextBoxFor(item => item.Name, new { @class = "form-control", autocomplete = "off" })
+                    @Html.ValidationMessageFor(item => item.Name)
+                    <br />
+                    @Html.LabelFor(item => item.StartBalance):
+                    @Html.TextBoxFor(item => item.StartBalance, new { @class = "form-control decimalPointConvert", autocomplete = "off" })
+                    @Html.ValidationMessageFor(item => item.StartBalance)
+                    <br />
+                    @Html.LabelFor(item => item.AccountType):
+                    <select asp-for="AccountType" asp-items="@Html.GetEnumSelectList<Sinance.Domain.Entities.BankAccountType>()" class="form-control">
+                        <option>Selecteer een type</option>
+                    </select>
+                    @Html.ValidationMessageFor(item => item.AccountType)
+                    <br />
+                    @Html.LabelFor(item => item.Disabled):
+                    @Html.CheckBoxFor(item => item.Disabled, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(item => item.Disabled)
+                    <br />
+                    @Html.LabelFor(item => item.IncludeInProfitLossGraph):
+                    @Html.CheckBoxFor(item => item.IncludeInProfitLossGraph, new { @class = "form-control" })
+                    @Html.ValidationMessageFor(item => item.IncludeInProfitLossGraph)
+                </div>
+                <div class="panel-footer">
+                    <button type="submit" class="btn btn-success" value="Save">Opslaan</button>
+                </div>
             </div>
-            <div class="panel-footer">
-                <button type="submit" class="btn btn-success" value="Save">Opslaan</button>
-            </div>
-        </div>
         }
     </div>
 </div>

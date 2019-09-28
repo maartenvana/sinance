@@ -16,12 +16,6 @@ namespace Sinance.Web.Model
         public BankAccountType AccountType { get; set; }
 
         /// <summary>
-        /// Current balance
-        /// </summary>
-        [Display(Name = "Huidige balans")]
-        public decimal? CurrentBalance { get; set; }
-
-        /// <summary>
         /// Type of the bank account
         /// </summary>
         [Display(Name = "Inactief")]
@@ -31,6 +25,12 @@ namespace Sinance.Web.Model
         /// Id for the current bank account
         /// </summary>
         public int Id { get; set; }
+
+        /// <summary>
+        /// Type of the bank account
+        /// </summary>
+        [Display(Name = "Telt mee voor winst/verlies berekeningen")]
+        public bool IncludeInProfitLossGraph { get; set; }
 
         /// <summary>
         /// Name
@@ -59,8 +59,8 @@ namespace Sinance.Web.Model
             {
                 Id = bankAccount.Id,
                 Name = bankAccount.Name,
+                IncludeInProfitLossGraph = bankAccount.IncludeInProfitLossGraph,
                 StartBalance = bankAccount.StartBalance,
-                CurrentBalance = bankAccount.CurrentBalance,
                 AccountType = bankAccount.AccountType,
                 Disabled = bankAccount.Disabled
             };

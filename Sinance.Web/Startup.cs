@@ -14,6 +14,9 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using Sinance.Web.Helper;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Sinance.Web.Services;
+using Sinance.Business.Services.Authentication;
+using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Sinance.Web
@@ -21,9 +24,9 @@ namespace Sinance.Web
     public class Startup
     {
         private readonly IConfigurationRoot _configuration;
-        private readonly IHostingEnvironment _environment;
+        private readonly IWebHostEnvironment _environment;
 
-        public Startup(IHostingEnvironment env)
+        public Startup(IWebHostEnvironment env)
         {
             var builder = new ConfigurationBuilder()
                 .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
@@ -38,26 +41,46 @@ namespace Sinance.Web
 
         public void Configure(IApplicationBuilder app)
         {
-            if (_environment.IsDevelopment())
+            if (_environment.EnvironmentName == Environments.Development)
             {
                 app.UseDeveloperExceptionPage();
             }
 
             app.UseStaticFiles();
-            //app.UseCookiePolicy();
+
+            app.UseRouting();
+            app.UseCors();
 
             app.UseAuthentication();
+            app.UseAuthorization();
 
-            app.UseMvc(routes =>
+            app.UseEndpoints(endpoints =>
             {
-                // Areas support
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapRazorPages();
+                endpoints.MapControllerRoute(
+                    "default", "{controller=Home}/{action=Index}/{id?}");
             });
+
+            var unitOfWorkFunc = app.ApplicationServices.GetRequiredService<Func<IUnitOfWork>>();
+            using var unitOfWork = unitOfWorkFunc();
+            unitOfWork.Context.Migrate();
         }
 
-        public System.IServiceProvider ConfigureServices(IServiceCollection services)
+        public void ConfigureContainer(ContainerBuilder builder)
+        {
+            var appSettings = _configuration.Get<AppSettings>();
+
+            builder.RegisterInstance(appSettings.ConnectionStrings);
+
+            builder.RegisterType<HttpContextAccessor>().As<IHttpContextAccessor>();
+            builder.RegisterType<AuthenticationService>().As<IAuthenticationService>();
+
+            builder.RegisterModule<BusinessModule>();
+
+            builder.RegisterType<SelectListHelper>().AsSelf();
+        }
+
+        public void ConfigureServices(IServiceCollection services)
         {
             services
                 .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -69,40 +92,25 @@ namespace Sinance.Web
                     options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
                 });
 
-            var mvcBuilder = services.AddMvcCore(options =>
+            services.AddControllersWithViews();
+            services.AddRazorPages();
+
+            services.AddAuthorization(options =>
+            {
+                options.DefaultPolicy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+            });
+
+            /*var mvcBuilder = services.AddMvcCore(options =>
             {
                 //options.Filters.Add(typeof(AuthorizeAttribute));
             })
             .AddRazorPages()
             .AddRazorViewEngine()
             .AddAuthorization()
-            .AddFormatterMappings()
-            .AddJsonFormatters()
-            .SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-
-            var appSettings = _configuration.Get<AppSettings>();
-
-            var builder = new ContainerBuilder();
-
-            builder.Populate(services);
-
-            builder.RegisterInstance(appSettings.ConnectionStrings);
-
-            builder.RegisterType<HttpContextAccessor>().As<IHttpContextAccessor>();
-
-            builder.RegisterModule<BusinessModule>();
-
-            builder.RegisterType<SelectListHelper>().AsSelf();
-
-            var container = builder.Build();
-
-            var unitOfWorkFunc = container.Resolve<Func<IUnitOfWork>>();
-            using (var unitOfWork = unitOfWorkFunc())
-            {
-                unitOfWork.Context.Migrate();
-            }
-
-            return new AutofacServiceProvider(container);
+            .AddFormatterMappings();
+            */
         }
     }
 }

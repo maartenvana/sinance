@@ -1,20 +1,19 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
     <StartupObject></StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="4.8.1" />
-    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="4.2.2" />
-    <PackageReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.6" />
-    <PackageReference Include="Serilog.AspNetCore" Version="2.1.1" />
-    <PackageReference Include="Serilog.Extensions.Logging" Version="2.0.2" />
-    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.1.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
-    <PackageReference Include="Serilog" Version="2.7.1" />
+    <PackageReference Include="Autofac" Version="4.9.4" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="5.0.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.0.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="3.0.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="3.0.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+    <PackageReference Include="Serilog" Version="2.8.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="3.1.1" />
   </ItemGroup>
 
@@ -23,12 +22,12 @@
     <ProjectReference Include="..\Sinance.Domain\Sinance.Domain.csproj" />
     <ProjectReference Include="..\Sinance.Storage\Sinance.Storage.csproj" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <!-- extends watching group to include *.js files -->
     <Watch Include="**\*.cs" Exclude="wwwroot\**\*;Views\**\*;obj\**\*;bin\**\*" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Compile Remove="out\**" />
     <Content Remove="out\**" />
@@ -36,7 +35,7 @@
     <None Remove="out\**" />
     <Watch Remove="out\**" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Watch Remove="Components\SideNavigation.cs" />
     <Watch Remove="Components\SimpleMonthSelector.cs" />
@@ -48,8 +47,9 @@
     <Watch Remove="Model\Budget\EditBudgetModel.cs" />
     <Watch Remove="Model\CategoriesOverviewModel.cs" />
     <Watch Remove="Model\MonthYearSelectionModel.cs" />
+    <Watch Remove="Services\AuthenticationService.cs" />
   </ItemGroup>
-  
+
   <ItemGroup>
     <Compile Update="Resources.Designer.cs">
       <DependentUpon>Resources.resx</DependentUpon>

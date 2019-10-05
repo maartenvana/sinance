@@ -1,13 +1,14 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Sinance.Business.Exceptions.Authentication;
+using Sinance.Business.Services.Authentication;
 using Sinance.Domain.Entities;
 using Sinance.Storage;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Sinance.Business.Services.Authentication
+namespace Sinance.Web.Services
 {
     public class AuthenticationService : IAuthenticationService
     {
@@ -32,27 +33,25 @@ namespace Sinance.Business.Services.Authentication
 
         public async Task<SinanceUser> CreateUser(string userName, string password)
         {
-            using (var unitOfWork = _unitOfWork())
+            using var unitOfWork = _unitOfWork();
+            var user = unitOfWork.UserRepository.FindSingle(x => x.Username == userName);
+
+            if (user == null)
             {
-                var user = unitOfWork.UserRepository.FindSingle(x => x.Username == userName);
-
-                if (user == null)
+                var newUser = new SinanceUser
                 {
-                    var newUser = new SinanceUser
-                    {
-                        Username = userName
-                    };
-                    newUser.Password = _passwordHasher.HashPassword(user, password);
+                    Username = userName
+                };
+                newUser.Password = _passwordHasher.HashPassword(user, password);
 
-                    unitOfWork.UserRepository.Insert(newUser);
-                    await unitOfWork.SaveAsync();
+                unitOfWork.UserRepository.Insert(newUser);
+                await unitOfWork.SaveAsync();
 
-                    return newUser;
-                }
-                else
-                {
-                    throw new UserAlreadyExistsException("User already exists");
-                }
+                return newUser;
+            }
+            else
+            {
+                throw new UserAlreadyExistsException("User already exists");
             }
         }
 
@@ -68,26 +67,24 @@ namespace Sinance.Business.Services.Authentication
 
         public SinanceUser SignIn(string userName, string password)
         {
-            using (var unitOfWork = _unitOfWork())
-            {
-                var user = unitOfWork.UserRepository.FindSingle(x => x.Username == userName);
+            using var unitOfWork = _unitOfWork();
+            var user = unitOfWork.UserRepository.FindSingle(x => x.Username == userName);
 
-                if (user != null)
+            if (user != null)
+            {
+                var passwordVerificationResult = _passwordHasher.VerifyHashedPassword(user, user.Password, password);
+                if (passwordVerificationResult == PasswordVerificationResult.Success)
                 {
-                    var passwordVerificationResult = _passwordHasher.VerifyHashedPassword(user, user.Password, password);
-                    if (passwordVerificationResult == PasswordVerificationResult.Success)
-                    {
-                        return user;
-                    }
-                    else
-                    {
-                        throw new IncorrectPasswordException($"Incorrect password for user {userName}");
-                    }
+                    return user;
                 }
                 else
                 {
-                    throw new UserNotFoundException($"No user found for username {userName}");
+                    throw new IncorrectPasswordException($"Incorrect password for user {userName}");
                 }
+            }
+            else
+            {
+                throw new UserNotFoundException($"No user found for username {userName}");
             }
         }
     }

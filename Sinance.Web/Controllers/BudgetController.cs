@@ -157,7 +157,7 @@ namespace Sinance.Web.Controllers
                     item.UserId == currentUserId &&
                     item.TransactionCategories.Any(x => budgets.Any(y => y.CategoryId == x.CategoryId) ||
                                                         budgets.Any(y => y.Category.ChildCategories.Any(z => z.Id == x.CategoryId))),
-                    includeProperties: new string[] { nameof(Transaction.TransactionCategories), "TransactionCategories.Category.ChildCategories" }).ToList();
+                    includeProperties: new string[] { nameof(Transaction.TransactionCategories), "TransactionCategories.Category", "TransactionCategories.Category.ChildCategories" }).ToList();
 
                 var model = new BudgetStatusModel
                 {

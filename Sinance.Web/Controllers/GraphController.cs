@@ -57,7 +57,7 @@ namespace Sinance.Controllers
             var userBankAccounts = await this._bankAccountService.GetActiveBankAccountsForCurrentUser();
             var currentUserId = await this._sessionService.GetCurrentUserId();
 
-            IList<BankAccount> bankAccounts = bankAccountIds?.Any() == true ? userBankAccounts.Where(item => bankAccountIds.Contains(item.Id)).ToList() : userBankAccounts;
+            IList<BankAccount> bankAccounts = bankAccountIds?.Any() == true ? userBankAccounts.Where(item => bankAccountIds.Any(y => y == item.Id)).ToList() : userBankAccounts;
             IList<int> bankAccountsIdFilter = bankAccounts.Select(x => x.Id).ToList();
 
             JsonResult result;
@@ -77,7 +77,7 @@ namespace Sinance.Controllers
                 decimal accountBalance = 0;
                 using (var unitOfWork = _unitOfWork())
                 {
-                    IList<Transaction> transactions = unitOfWork.TransactionRepository.FindAll(item => bankAccountsIdFilter.Contains(item.BankAccountId) &&
+                    IList<Transaction> transactions = unitOfWork.TransactionRepository.FindAll(item => bankAccountsIdFilter.Any(y => y == item.BankAccountId) &&
                                                                                                  item.UserId == currentUserId &&
                                                                                                  item.Date >= startDate &&
                                                                                                  item.Date <= endDate).OrderBy(item => item.Date).ToList();
@@ -86,7 +86,7 @@ namespace Sinance.Controllers
 
                     // Cast it to decimal? incase no transactions were found and sum returns null
                     accountBalance += unitOfWork.TransactionRepository.FindAll(item =>
-                        bankAccountsIdFilter.Contains(item.BankAccountId) && item.Date <= startDate).Sum(item => (decimal?)item.Amount).GetValueOrDefault();
+                        bankAccountsIdFilter.Any(y => y == item.BankAccountId) && item.Date <= startDate).Sum(item => (decimal?)item.Amount).GetValueOrDefault();
 
                     List<IGrouping<DateTime, Transaction>> transactionsPerDate = transactions.GroupBy(item => item.Date).ToList();
 
@@ -142,7 +142,7 @@ namespace Sinance.Controllers
             var currentUserId = await this._sessionService.GetCurrentUserId();
 
             IList<BankAccount> bankAccounts = bankAccountIds != null && bankAccountIds.Any() ?
-                userBankAccounts.Where(item => bankAccountIds.Contains(item.Id)).ToList() : userBankAccounts;
+                userBankAccounts.Where(item => bankAccountIds.Any(y => y == item.Id)).ToList() : userBankAccounts;
             IList<int> validBankAccountIds = bankAccounts.Select(item => item.Id).ToList();
 
             JsonResult result;
@@ -155,7 +155,7 @@ namespace Sinance.Controllers
 
                 using (var unitOfWork = _unitOfWork())
                 {
-                    IList<Transaction> transactions = unitOfWork.TransactionRepository.FindAll(item => validBankAccountIds.Contains(item.BankAccountId) &&
+                    IList<Transaction> transactions = unitOfWork.TransactionRepository.FindAll(item => validBankAccountIds.Any(y => y == item.BankAccountId) &&
                                                                                                  item.UserId == currentUserId &&
                                                                                                  item.Date >= thisYearStart &&
                                                                                                  item.Date < nextYearStart)
@@ -165,7 +165,7 @@ namespace Sinance.Controllers
 
                     // Cast it to decimal? incase no transactions were found and sum returns null
                     accountBalance += unitOfWork.TransactionRepository.FindAll(item =>
-                        validBankAccountIds.Contains(item.BankAccountId) && item.Date < thisYearStart).Sum(item => (decimal?)item.Amount).GetValueOrDefault();
+                        validBankAccountIds.Any(y => y == item.BankAccountId) && item.Date < thisYearStart).Sum(item => (decimal?)item.Amount).GetValueOrDefault();
 
                     List<IGrouping<DateTime, Transaction>> transactionsPerDate = transactions.GroupBy(item => item.Date).ToList();
 

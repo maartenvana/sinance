@@ -15,7 +15,6 @@ namespace Sinance.Business
 
             builder.RegisterType<BankAccountService>().As<IBankAccountService>();
             builder.RegisterType<CustomReportService>().As<ICustomReportService>();
-            builder.RegisterType<AuthenticationService>().As<IAuthenticationService>();
 
             builder.RegisterModule<StorageModule>();
         }

@@ -45,7 +45,7 @@ namespace Sinance.Controllers
 
             using (var unitOfWork = _unitOfWork())
             {
-                Category category = unitOfWork.CategoryRepository.FindSingle(item => item.Id == categoryId && item.UserId == currentUserId);
+                Category category = unitOfWork.CategoryRepository.FindSingleTracked(item => item.Id == categoryId && item.UserId == currentUserId);
                 if (category != null)
                 {
                     model = new CategoryMappingModel
@@ -77,7 +77,7 @@ namespace Sinance.Controllers
 
             using (var unitOfWork = _unitOfWork())
             {
-                CategoryMapping existingMapping = unitOfWork.CategoryMappingRepository.FindSingle(item => item.Id == categoryMappingId &&
+                CategoryMapping existingMapping = unitOfWork.CategoryMappingRepository.FindSingleTracked(item => item.Id == categoryMappingId &&
                                                                                             item.Category.UserId == currentUserId,
                                                                                             includeProperties: "Category");
                 CategoryMappingModel model = null;
@@ -105,7 +105,7 @@ namespace Sinance.Controllers
 
             using (var unitOfWork = _unitOfWork())
             {
-                CategoryMapping mapping = unitOfWork.CategoryMappingRepository.FindSingle(item => item.Id == categoryMappingId &&
+                CategoryMapping mapping = unitOfWork.CategoryMappingRepository.FindSingleTracked(item => item.Id == categoryMappingId &&
                                                                                     item.Category.UserId == currentUserId);
 
                 if (mapping != null)
@@ -149,7 +149,7 @@ namespace Sinance.Controllers
                         ModelState.AddModelError("", Resources.UnsupportedColumnTypeMapping);
                         result = PartialView("UpsertCategoryMapping", model);
                     }
-                    else if (unitOfWork.CategoryRepository.FindSingle(item => item.UserId == currentUserId &&
+                    else if (unitOfWork.CategoryRepository.FindSingleTracked(item => item.UserId == currentUserId &&
                                                                             item.Id == model.CategoryId) == null)
                     {
                         ModelState.AddModelError("", Resources.CategoryNotFound);
@@ -159,7 +159,7 @@ namespace Sinance.Controllers
                     {
                         if (model.Id > 0)
                         {
-                            CategoryMapping existingCategoryMapping = unitOfWork.CategoryMappingRepository.FindSingle(item => item.Id == model.Id &&
+                            CategoryMapping existingCategoryMapping = unitOfWork.CategoryMappingRepository.FindSingleTracked(item => item.Id == model.Id &&
                                                                                                                     item.Category.UserId == currentUserId);
                             if (existingCategoryMapping != null)
                             {

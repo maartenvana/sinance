@@ -4,245 +4,248 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace Sinance.Storage
 {
-    /// <summary>
-    /// Generic repository
-    /// </summary>
     public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEntity : EntityBase
     {
-        private readonly SinanceContext context;
+        private readonly SinanceContext _context;
 
-        private readonly DbSet<TEntity> dbSet;
+        private readonly DbSet<TEntity> _dbSet;
 
-        /// <summary>
-        /// Default constructor
-        /// </summary>
-        /// <param name="dbContext"></param>
         public GenericRepository(SinanceContext dbContext)
         {
-            context = dbContext;
+            _context = dbContext;
 
-            dbSet = context.Set<TEntity>();
+            _dbSet = _context.Set<TEntity>();
         }
 
-        /// <summary>
-        /// Delete entity
-        /// </summary>
-        /// <typeparam name="TEntity">Entity type</typeparam>
-        /// <param name="id">Id</param>
         public void Delete(int id)
         {
-            TEntity entity = FindSingle(item => item.Id == id);
+            var entity = FindSingleTracked(item => item.Id == id);
 
             if (entity != null)
+            {
                 Delete(entity);
+            }
         }
 
-        /// <summary>
-        /// Delete entity
-        /// </summary>
-        /// <typeparam name="TEntity">Entity type</typeparam>
-        /// <param name="entity">Entity</param>
         public void Delete(TEntity entity)
         {
-            dbSet.Remove(entity);
+            _dbSet.Remove(entity);
         }
 
-        /// <summary>
-        /// Delete collection of entities
-        /// </summary>
-        /// <typeparam name="TEntity">Entity type</typeparam>
-        /// <param name="entities">Collection of entities</param>
         public void DeleteRange(IEnumerable<TEntity> entities)
         {
-            dbSet.RemoveRange(entities);
+            _dbSet.RemoveRange(entities);
         }
 
-        /// <summary>
-        /// Dispose
-        /// </summary>
         public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);
         }
 
-        /// <summary>
-        /// Find entities by predicate
-        /// </summary>
-        /// <typeparam name="TEntity">Entity type</typeparam>
-        /// <param name="predicate">Predicate</param>
-        /// <returns>Found entities</returns>
-        public IList<TEntity> FindAll(Expression<Func<TEntity, bool>> predicate)
+        public List<TEntity> FindAll(Expression<Func<TEntity, bool>> predicate)
         {
-            IList<TEntity> query = dbSet.Where(predicate).ToList();
+            var query = _dbSet.Where(predicate).AsNoTracking().ToList();
             return query;
         }
 
-        /// <summary>
-        /// Find entities by predicate
-        /// </summary>
-        /// <typeparam name="TEntity">Entity type</typeparam>
-        /// <param name="predicate">Predicate</param>
-        /// <param name="includeProperties">Properties to eagerly load</param>
-        /// <returns>Found entities</returns>
-        public IList<TEntity> FindAll(Expression<Func<TEntity, bool>> predicate, params string[] includeProperties)
+        public List<TEntity> FindAll(Expression<Func<TEntity, bool>> predicate, params string[] includeProperties)
         {
             if (includeProperties == null)
+            {
                 throw new ArgumentNullException(nameof(includeProperties));
+            }
 
-            IQueryable<TEntity> query = dbSet.Where(predicate);
+            var query = _dbSet.Where(predicate);
             query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
 
-            return query.ToList();
+            return query.AsNoTracking().ToList();
         }
 
-        /// <summary>
-        /// Find entities by predicate
-        /// </summary>
-        /// <typeparam name="TEntity">Entity type</typeparam>
-        /// <param name="predicate">Predicate</param>
-        /// <returns>Found entities</returns>
-        public TEntity FindSingle(Expression<Func<TEntity, bool>> predicate)
+        public List<TEntity> FindAllTracked(Expression<Func<TEntity, bool>> predicate)
         {
-            TEntity query = dbSet.SingleOrDefault(predicate);
+            var query = _dbSet.Where(predicate).AsTracking().ToList();
             return query;
         }
 
-        /// <summary>
-        /// Find entities by predicate
-        /// </summary>
-        /// <typeparam name="TEntity">Entity type</typeparam>
-        /// <param name="predicate">Predicate</param>
-        /// <param name="includeProperties">Properties to eagerly load</param>
-        /// <returns>Found entities</returns>
+        public List<TEntity> FindAllTracked(Expression<Func<TEntity, bool>> predicate, params string[] includeProperties)
+        {
+            if (includeProperties == null)
+            {
+                throw new ArgumentNullException(nameof(includeProperties));
+            }
+
+            var query = _dbSet.Where(predicate);
+            query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
+
+            return query.AsTracking().ToList();
+        }
+
+        public TEntity FindSingle(Expression<Func<TEntity, bool>> predicate)
+        {
+            var query = _dbSet.AsNoTracking().SingleOrDefault(predicate);
+            return query;
+        }
+
         public TEntity FindSingle(Expression<Func<TEntity, bool>> predicate, params string[] includeProperties)
         {
             if (includeProperties == null)
+            {
                 throw new ArgumentNullException(nameof(includeProperties));
+            }
 
-            IQueryable<TEntity> query = dbSet;
+            IQueryable<TEntity> query = _dbSet;
             query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
-            TEntity entity = query.SingleOrDefault(predicate);
+            var entity = query.AsNoTracking().SingleOrDefault(predicate);
 
             return entity;
         }
 
-        public IList<TEntity> FindTopAscending(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderBy, int count)
+        public TEntity FindSingleTracked(Expression<Func<TEntity, bool>> predicate)
         {
-            var query = dbSet.Where(predicate).OrderBy(orderBy).Take(count).ToList();
-
+            var query = _dbSet.AsTracking().SingleOrDefault(predicate);
             return query;
         }
 
-        public IList<TEntity> FindTopDescending(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderByDescending, int count)
-        {
-            var query = dbSet.Where(predicate).OrderByDescending(orderByDescending).Take(count).ToList();
-
-            return query;
-        }
-
-        /// <summary>
-        /// Insert entity
-        /// </summary>
-        /// <typeparam name="TEntity">Entity type</typeparam>
-        /// <param name="entity">Entity</param>
-        public void Insert(TEntity entity)
-        {
-            dbSet.Add(entity);
-        }
-
-        /// <summary>
-        /// Insert collection of entities
-        /// </summary>
-        /// <typeparam name="TEntity">Entity type</typeparam>
-        /// <param name="entities">Collection of entities</param>
-        public void InsertRange(IEnumerable<TEntity> entities)
-        {
-            dbSet.AddRange(entities);
-        }
-
-        /// <summary>
-        /// List all entities
-        /// </summary>
-        /// <typeparam name="TEntity">Entity type</typeparam>
-        /// <returns>Collection of all entities</returns>
-        public IList<TEntity> ListAll()
-        {
-            IList<TEntity> result = dbSet.ToList();
-            return result;
-        }
-
-        /// <summary>
-        /// List all entities
-        /// </summary>
-        /// <typeparam name="TEntity">Entity type</typeparam>
-        /// <returns>Collection of all entities</returns>
-        public IList<TEntity> ListAll(params string[] includeProperties)
+        public TEntity FindSingleTracked(Expression<Func<TEntity, bool>> predicate, params string[] includeProperties)
         {
             if (includeProperties == null)
+            {
                 throw new ArgumentNullException(nameof(includeProperties));
+            }
 
-            IQueryable<TEntity> query = dbSet;
+            IQueryable<TEntity> query = _dbSet;
+            query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
+            var entity = query.AsTracking().SingleOrDefault(predicate);
+
+            return entity;
+        }
+
+        public List<TEntity> FindTopAscending(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderByAscending, int count)
+        {
+            var query = _dbSet.Where(predicate).OrderBy(orderByAscending).Take(count).AsNoTracking().ToList();
+
+            return query;
+        }
+
+        public List<TEntity> FindTopAscendingTracked(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderBy, int count)
+        {
+            var query = _dbSet.Where(predicate).OrderBy(orderBy).Take(count).AsTracking().ToList();
+
+            return query;
+        }
+
+        public List<TEntity> FindTopDescending(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderByDescending, int count)
+        {
+            var query = _dbSet.Where(predicate).OrderByDescending(orderByDescending).Take(count).AsNoTracking().ToList();
+
+            return query;
+        }
+
+        public List<TEntity> FindTopDescendingTracked(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderByDescending, int count)
+        {
+            var query = _dbSet.Where(predicate).OrderByDescending(orderByDescending).Take(count).AsTracking().ToList();
+
+            return query;
+        }
+
+        public void Insert(TEntity entity)
+        {
+            _dbSet.Add(entity);
+        }
+
+        public void InsertRange(IEnumerable<TEntity> entities)
+        {
+            _dbSet.AddRange(entities);
+        }
+
+        public List<TEntity> ListAll(params string[] includeProperties)
+        {
+            if (includeProperties == null)
+            {
+                throw new ArgumentNullException(nameof(includeProperties));
+            }
+
+            IQueryable<TEntity> query = _dbSet;
             query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
 
-            IList<TEntity> result = query.ToList();
+            var result = query.AsNoTracking().ToList();
 
             return result;
         }
 
-        /// <summary>
-        /// Save changes
-        /// </summary>
+        public List<TEntity> ListAll()
+        {
+            var result = _dbSet.AsNoTracking().ToList();
+            return result;
+        }
+
+        public List<TEntity> ListAllTracked(params string[] includeProperties)
+        {
+            if (includeProperties == null)
+            {
+                throw new ArgumentNullException(nameof(includeProperties));
+            }
+
+            IQueryable<TEntity> query = _dbSet;
+            query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
+
+            var result = query.AsTracking().ToList();
+
+            return result;
+        }
+
+        public List<TEntity> ListAllTracked()
+        {
+            var result = _dbSet.AsTracking().ToList();
+            return result;
+        }
+
         public void Save()
         {
-            context.SaveChanges();
+            _context.SaveChanges();
         }
 
-        public decimal Sum(Expression<Func<TEntity, bool>> filterPredicate, Expression<Func<TEntity, decimal>> sumPredicate)
+        public async Task SaveAsync()
         {
-            return dbSet.Where(filterPredicate).Sum(sumPredicate);
+            await _context.SaveChangesAsync();
         }
 
-        /// <summary>
-        /// Update entity
-        /// </summary>
-        /// <typeparam name="TEntity">Entity type</typeparam>
-        /// <param name="entity">Entity</param>
+        public decimal Sum(Expression<Func<TEntity, bool>> filterQuery, Expression<Func<TEntity, decimal>> sumQuery)
+        {
+            return _dbSet.Where(filterQuery).Sum(sumQuery);
+        }
+
         public void Update(TEntity entity)
         {
-            context.Entry(entity).State = EntityState.Modified;
+            _context.Attach(entity);
+            _context.Entry(entity).State = EntityState.Modified;
         }
 
-        /// <summary>
-        /// Update collection of entities
-        /// </summary>
-        /// <typeparam name="TEntity">Entity type</typeparam>
-        /// <param name="entities">Collection of entities</param>
         public void UpdateRange(IEnumerable<TEntity> entities)
         {
             if (entities == null)
+            {
                 throw new ArgumentNullException(nameof(entities));
+            }
 
-            foreach (TEntity entity in entities)
+            foreach (var entity in entities)
             {
                 Update(entity);
             }
         }
 
-        /// <summary>
-        /// Protected dispose
-        /// </summary>
-        /// <param name="disposing">Disposing boolean</param>
         protected virtual void Dispose(bool disposing)
         {
             if (disposing)
             {
-                if (context != null)
+                if (_context != null)
                 {
-                    context.Dispose();
+                    _context.Dispose();
                 }
             }
         }

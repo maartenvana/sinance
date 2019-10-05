@@ -28,7 +28,7 @@ namespace Sinance.Business.Services
             using (var unitOfWork = _unitOfWork())
             {
                 IList<BankAccount> bankAccounts = unitOfWork.BankAccountRepository
-                    .FindAll(item => item.UserId == userId && !item.Disabled)
+                    .FindAllTracked(item => item.UserId == userId && !item.Disabled)
                     .OrderBy(item => item.Name)
                     .ToList();
 
@@ -46,7 +46,7 @@ namespace Sinance.Business.Services
             using (var unitOfWork = _unitOfWork())
             {
                 IList<BankAccount> bankAccounts = unitOfWork.BankAccountRepository
-                .FindAll(item => item.UserId == userId)
+                .FindAllTracked(item => item.UserId == userId)
                 .OrderBy(item => item.Name)
                 .ToList();
 

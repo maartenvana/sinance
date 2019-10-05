@@ -64,13 +64,13 @@ namespace Sinance.Controllers
 
             using (var unitOfWork = _unitOfWork())
             {
-                ImportBank importBank = unitOfWork.ImportBankRepository.FindSingle(item => item.Id == model.ImportBankId);
+                ImportBank importBank = unitOfWork.ImportBankRepository.FindSingleTracked(item => item.Id == model.ImportBankId);
 
                 if (importBank != null)
                 {
                     var bankAccounts = await this._bankAccountService.GetActiveBankAccountsForCurrentUser();
 
-                    IList<ImportMapping> importMappings = unitOfWork.ImportMappingRepository.FindAll(item => item.ImportBankId == importBank.Id);
+                    IList<ImportMapping> importMappings = unitOfWork.ImportMappingRepository.FindAllTracked(item => item.ImportBankId == importBank.Id);
                     BankAccount bankAccount = bankAccounts.SingleOrDefault(item => item.Id == model.BankAccountId);
 
                     if (bankAccount != null)
@@ -125,7 +125,7 @@ namespace Sinance.Controllers
             using (var unitOfWork = _unitOfWork())
             {
                 // Retrieve all import banks
-                IList<ImportBank> importBanks = unitOfWork.ImportBankRepository.FindAll(item => item.Id > 0);
+                IList<ImportBank> importBanks = unitOfWork.ImportBankRepository.FindAllTracked(item => item.Id > 0);
 
                 return View("Index", new ImportModel
                 {

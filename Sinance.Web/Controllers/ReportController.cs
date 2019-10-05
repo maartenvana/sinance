@@ -42,7 +42,7 @@ namespace Sinance.Controllers
 
             using (var unitOfWork = _unitOfWork())
             {
-                List<Category> allCategories = unitOfWork.CategoryRepository.FindAll(item => item.UserId == currentUserId).ToList();
+                List<Category> allCategories = unitOfWork.CategoryRepository.FindAllTracked(item => item.UserId == currentUserId).ToList();
 
                 List<BasicCheckBoxItem> availableCategories = new List<BasicCheckBoxItem>();
 
@@ -71,7 +71,7 @@ namespace Sinance.Controllers
             using (var unitOfWork = _unitOfWork())
             {
                 CustomReport report =
-                unitOfWork.CustomReportRepository.FindSingle(item => item.Id == reportId && item.UserId == currentUserId);
+                unitOfWork.CustomReportRepository.FindSingleTracked(item => item.Id == reportId && item.UserId == currentUserId);
 
                 return View("CustomReport", report);
             }
@@ -90,9 +90,9 @@ namespace Sinance.Controllers
 
             using (var unitOfWork = _unitOfWork())
             {
-                List<Category> allCategories = unitOfWork.CategoryRepository.FindAll(item => item.UserId == currentUserId).ToList();
+                List<Category> allCategories = unitOfWork.CategoryRepository.FindAllTracked(item => item.UserId == currentUserId).ToList();
 
-                CustomReport customReport = unitOfWork.CustomReportRepository.FindSingle(item => item.Id == reportId && item.UserId == currentUserId, "ReportCategories");
+                CustomReport customReport = unitOfWork.CustomReportRepository.FindSingleTracked(item => item.Id == reportId && item.UserId == currentUserId, "ReportCategories");
 
                 List<BasicCheckBoxItem> availableCategories = new List<BasicCheckBoxItem>();
 
@@ -138,10 +138,10 @@ namespace Sinance.Controllers
             using (var unitOfWork = _unitOfWork())
             {
                 IList<Transaction> transactions =
-                unitOfWork.TransactionRepository.FindAll(item => item.Date >= previousMonthStart && item.Date < nextMonthStart &&
+                unitOfWork.TransactionRepository.FindAllTracked(item => item.Date >= previousMonthStart && item.Date < nextMonthStart &&
                     item.UserId == currentUserId && item.Amount < 0,
                     includeProperties: "TransactionCategories").ToList();
-                IEnumerable<Category> allCategories = unitOfWork.CategoryRepository.FindAll(item => item.UserId == currentUserId, "ParentCategory", "ChildCategories");
+                IEnumerable<Category> allCategories = unitOfWork.CategoryRepository.FindAllTracked(item => item.UserId == currentUserId, "ParentCategory", "ChildCategories");
 
                 BimonthlyExpenseReport regularBimonthlyExpenseReport = new BimonthlyExpenseReport
                 {
@@ -200,7 +200,7 @@ namespace Sinance.Controllers
 
             using (var unitOfWork = _unitOfWork())
             {
-                var categories = unitOfWork.CategoryRepository.FindAll(item => item.UserId == currentUserId);
+                var categories = unitOfWork.CategoryRepository.FindAllTracked(item => item.UserId == currentUserId);
                 ExpensePerCategoryModel model = new ExpensePerCategoryModel();
 
                 if (categories != null)
@@ -226,7 +226,7 @@ namespace Sinance.Controllers
         {
             using (var unitOfWork = _unitOfWork())
             {
-                Category category = unitOfWork.CategoryRepository.FindSingle(item => item.Id == model.SelectedCategoryId);
+                Category category = unitOfWork.CategoryRepository.FindSingleTracked(item => item.Id == model.SelectedCategoryId);
 
                 IEnumerable<Transaction> transactions = category.TransactionCategories.Where(
                     item => item.Transaction.Date.Month == int.Parse(model.SelectedMonth, CultureInfo.CurrentCulture) &&
@@ -275,10 +275,10 @@ namespace Sinance.Controllers
             using (var unitOfWork = _unitOfWork())
             {
                 IList<Transaction> transactions =
-                unitOfWork.TransactionRepository.FindAll(item => item.Date >= previousMonthStart && item.Date < nextMonthStart &&
+                unitOfWork.TransactionRepository.FindAllTracked(item => item.Date >= previousMonthStart && item.Date < nextMonthStart &&
                     item.UserId == currentUserId && item.Amount > 0,
                     includeProperties: "TransactionCategories").ToList();
-                IEnumerable<Category> allCategories = unitOfWork.CategoryRepository.FindAll(item => item.UserId == currentUserId, "ParentCategory", "ChildCategories");
+                IEnumerable<Category> allCategories = unitOfWork.CategoryRepository.FindAllTracked(item => item.UserId == currentUserId, "ParentCategory", "ChildCategories");
 
                 BimonthlyIncomeReport bimonthlyIncomeReport = new BimonthlyIncomeReport
                 {
@@ -335,11 +335,11 @@ namespace Sinance.Controllers
                         await unitOfWork.SaveAsync();
                     }
                     else
-                        customReport = unitOfWork.CustomReportRepository.FindSingle(item => item.UserId == currentUserId && item.Id == model.Id);
+                        customReport = unitOfWork.CustomReportRepository.FindSingleTracked(item => item.UserId == currentUserId && item.Id == model.Id);
 
                     if (customReport != null)
                     {
-                        unitOfWork.CustomReportCategoryRepository.DeleteRange(unitOfWork.CustomReportCategoryRepository.FindAll(item => item.CustomReportId == customReport.Id));
+                        unitOfWork.CustomReportCategoryRepository.DeleteRange(unitOfWork.CustomReportCategoryRepository.FindAllTracked(item => item.CustomReportId == customReport.Id));
                         await unitOfWork.SaveAsync();
 
                         List<BasicCheckBoxItem> selectedCategories = model.AvailableCategories.Where(item => item.Checked).ToList();

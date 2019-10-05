@@ -80,7 +80,7 @@ namespace Sinance.Controllers
 
             using (var unitOfWork = _unitOfWork())
             {
-                Transaction transaction = unitOfWork.TransactionRepository.FindSingle(item => item.Id == transactionId &&
+                Transaction transaction = unitOfWork.TransactionRepository.FindSingleTracked(item => item.Id == transactionId &&
                                                                                     item.UserId == currentUserId);
 
                 if (transaction != null)
@@ -117,7 +117,7 @@ namespace Sinance.Controllers
 
             using (var unitOfWork = _unitOfWork())
             {
-                Transaction transaction = unitOfWork.TransactionRepository.FindSingle(item => item.Id == transactionId &&
+                Transaction transaction = unitOfWork.TransactionRepository.FindSingleTracked(item => item.Id == transactionId &&
                                                                                 item.UserId == currentUserId);
                 TransactionModel transactionModel = null;
 
@@ -125,7 +125,7 @@ namespace Sinance.Controllers
                     TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.TransactionNotFound);
                 else
                 {
-                    List<Category> allCategories = unitOfWork.CategoryRepository.FindAll(item => item.UserId == currentUserId).ToList();
+                    List<Category> allCategories = unitOfWork.CategoryRepository.FindAllTracked(item => item.UserId == currentUserId).ToList();
 
                     List<SelectListItem> availableCategories = new List<SelectListItem>{
                     new SelectListItem {
@@ -165,7 +165,7 @@ namespace Sinance.Controllers
                 if (bankAccount != null)
                 {
                     IEnumerable<Transaction> transactions =
-                        unitOfWork.TransactionRepository.FindAll(item => item.BankAccount.Id == bankAccountId,
+                        unitOfWork.TransactionRepository.FindAllTracked(item => item.BankAccount.Id == bankAccountId,
                         nameof(Transaction.TransactionCategories),
                         $"{nameof(Transaction.TransactionCategories)}.{nameof(TransactionCategory.Category)}").OrderByDescending(item => item.Date);
 
@@ -174,7 +174,7 @@ namespace Sinance.Controllers
                         Account = bankAccount,
                         Transactions = transactions.Take(200).ToList(),
                         AccountBalance = transactions.Sum(item => item.Amount) + bankAccount.StartBalance,
-                        AvailableCategories = unitOfWork.CategoryRepository.FindAll(item => item.UserId == currentUserId)
+                        AvailableCategories = unitOfWork.CategoryRepository.FindAllTracked(item => item.UserId == currentUserId)
                     };
 
                     result = View("index", model);
@@ -202,10 +202,10 @@ namespace Sinance.Controllers
 
             using (var unitOfWork = _unitOfWork())
             {
-                Transaction transaction = unitOfWork.TransactionRepository.FindSingle(item => item.Id == transactionId &&
+                Transaction transaction = unitOfWork.TransactionRepository.FindSingleTracked(item => item.Id == transactionId &&
                                                                                 item.UserId == currentUserId,
                                                                                 includeProperties: "TransactionCategories");
-                Category category = unitOfWork.CategoryRepository.FindSingle(item => item.Id == categoryId &&
+                Category category = unitOfWork.CategoryRepository.FindSingleTracked(item => item.Id == categoryId &&
                                                                             item.UserId == currentUserId);
 
                 ActionResult result;
@@ -224,7 +224,7 @@ namespace Sinance.Controllers
                     await unitOfWork.SaveAsync();
 
                     // Reselect the model
-                    transaction = unitOfWork.TransactionRepository.FindSingle(item => item.Id == transactionId &&
+                    transaction = unitOfWork.TransactionRepository.FindSingleTracked(item => item.Id == transactionId &&
                                                                                     item.UserId == currentUserId);
 
                     result = PartialView("TransactionEditRow", transaction);
@@ -252,7 +252,7 @@ namespace Sinance.Controllers
 
             using (var unitOfWork = _unitOfWork())
             {
-                Transaction transaction = unitOfWork.TransactionRepository.FindSingle(item => item.Id == transactionId &&
+                Transaction transaction = unitOfWork.TransactionRepository.FindSingleTracked(item => item.Id == transactionId &&
                                                                                         item.UserId == currentUserId,
                                                                                         includeProperties: "TransactionCategories");
                 ActionResult result;
@@ -263,7 +263,7 @@ namespace Sinance.Controllers
                     await unitOfWork.SaveAsync();
 
                     // Reselect the model
-                    transaction = unitOfWork.TransactionRepository.FindSingle(item => item.Id == transactionId &&
+                    transaction = unitOfWork.TransactionRepository.FindSingleTracked(item => item.Id == transactionId &&
                                                                                     item.UserId == currentUserId,
                                                                                     includeProperties: "TransactionCategories");
 
@@ -306,7 +306,7 @@ namespace Sinance.Controllers
                     {
                         if (model.Id > 0)
                         {
-                            Transaction updateTransaction = unitOfWork.TransactionRepository.FindSingle(item => item.Id == model.Id &&
+                            Transaction updateTransaction = unitOfWork.TransactionRepository.FindSingleTracked(item => item.Id == model.Id &&
                                                                                     item.UserId == currentUserId);
 
                             if (updateTransaction != null)

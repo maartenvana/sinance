@@ -48,34 +48,34 @@ namespace Sinance.Controllers
                 // No need to sort this list, we loop through it by month numbers
                 var totalProfitLossLastMonth = unitOfWork.TransactionRepository
                     .Sum(
-                        filterPredicate: item =>
+                        filterQuery: item =>
                             item.Date.Year == monthYearDate.Year &&
                             item.Date.Month == monthYearDate.Month &&
                             item.UserId == currentUserId,
-                        sumPredicate: x => x.Amount);
+                        sumQuery: x => x.Amount);
 
                 var totalIncomeLastMonth = unitOfWork.TransactionRepository
                     .Sum(
-                        filterPredicate: item =>
+                        filterQuery: item =>
                             item.Date.Year == monthYearDate.Year &&
                             item.Date.Month == monthYearDate.Month &&
                             item.UserId == currentUserId &&
                             (!item.TransactionCategories.Any() || item.TransactionCategories.Any(x => x.CategoryId != 69)) && // Cashflow
                             item.Amount > 0,
-                        sumPredicate: x => x.Amount);
+                        sumQuery: x => x.Amount);
 
                 var totalExpensesLastMonth = unitOfWork.TransactionRepository
                     .Sum(
-                        filterPredicate: item =>
+                        filterQuery: item =>
                             item.Date.Year == monthYearDate.Year &&
                             item.Date.Month == monthYearDate.Month &&
                             item.UserId == currentUserId &&
                             (!item.TransactionCategories.Any() || item.TransactionCategories.Any(x => x.CategoryId != 69)) && // Cashflow
                             item.Amount < 0,
-                        sumPredicate: x => x.Amount * -1);
+                        sumQuery: x => x.Amount * -1);
 
                 // Yes it's ascending cause we are looking for the lowest amount
-                var topExpenses = unitOfWork.TransactionRepository.FindTopAscending(item =>
+                var topExpenses = unitOfWork.TransactionRepository.FindTopAscendingTracked(item =>
                             item.Date.Year == monthYearDate.Year &&
                             item.Date.Month == monthYearDate.Month &&
                             item.UserId == currentUserId &&

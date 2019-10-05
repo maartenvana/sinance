@@ -39,7 +39,7 @@ namespace Sinance.Controllers
 
             using (var unitOfWork = _unitOfWork())
             {
-                IList<Transaction> allTransactions = unitOfWork.TransactionRepository.FindAll(item => item.BankAccountId == bankAccountId);
+                IList<Transaction> allTransactions = unitOfWork.TransactionRepository.FindAllTracked(item => item.BankAccountId == bankAccountId);
 
                 List<Transaction> transactions = allTransactions.OrderByDescending(item => item.Date).Skip(skipTransactions).Take(takeTransactions).ToList();
                 result = PartialView(transactions);

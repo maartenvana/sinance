@@ -34,7 +34,7 @@ namespace Sinance.Web.Services
         public async Task<SinanceUser> CreateUser(string userName, string password)
         {
             using var unitOfWork = _unitOfWork();
-            var user = unitOfWork.UserRepository.FindSingle(x => x.Username == userName);
+            var user = unitOfWork.UserRepository.FindSingleTracked(x => x.Username == userName);
 
             if (user == null)
             {
@@ -68,7 +68,7 @@ namespace Sinance.Web.Services
         public SinanceUser SignIn(string userName, string password)
         {
             using var unitOfWork = _unitOfWork();
-            var user = unitOfWork.UserRepository.FindSingle(x => x.Username == userName);
+            var user = unitOfWork.UserRepository.FindSingleTracked(x => x.Username == userName);
 
             if (user != null)
             {

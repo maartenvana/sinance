@@ -47,7 +47,7 @@ namespace Sinance.Business.Handlers
                 DateTime lastDate = importRows.Max(item => item.Transaction.Date);
 
                 IList<Transaction> existingTransactions =
-                    unitOfWork.TransactionRepository.FindAll(transaction => transaction.UserId == userId
+                    unitOfWork.TransactionRepository.FindAllTracked(transaction => transaction.UserId == userId
                                                                           && transaction.Date >= firstDate && transaction.Date <= lastDate);
 
                 foreach (ImportRow importRow in importRows)
@@ -63,7 +63,7 @@ namespace Sinance.Business.Handlers
                 }
 
                 IList<CategoryMapping> categoryMappings =
-                    unitOfWork.CategoryMappingRepository.FindAll(item => item.Category.UserId == userId, "Category");
+                    unitOfWork.CategoryMappingRepository.FindAllTracked(item => item.Category.UserId == userId, "Category");
 
                 CategoryHandler.SetTransactionCategories(transactions: importRows.Select(item => item.Transaction), categoryMappings: categoryMappings);
             }

@@ -29,7 +29,7 @@ namespace Sinance.Business.Services
             using (var unitOfWork = _unitOfWork())
             {
                 var customReports = unitOfWork.CustomReportRepository
-                .FindAll(item => item.UserId == userId)
+                .FindAllTracked(item => item.UserId == userId)
                 .OrderBy(item => item.Name)
                 .ToList();
 

@@ -66,7 +66,7 @@ namespace Sinance.Controllers
 
             using (var unitOfWork = _unitOfWork())
             {
-                Category category = unitOfWork.CategoryRepository.FindSingle(item => item.Id == categoryId &&
+                Category category = unitOfWork.CategoryRepository.FindSingleTracked(item => item.Id == categoryId &&
                                                                         item.UserId == currentUserId,
                                                                         "ParentCategory", "ChildCategories", "CategoryMappings");
 
@@ -102,7 +102,7 @@ namespace Sinance.Controllers
 
             using (var unitOfWork = _unitOfWork())
             {
-                IList<Category> categories = unitOfWork.CategoryRepository.FindAll(item => item.UserId == currentUserId);
+                IList<Category> categories = unitOfWork.CategoryRepository.FindAllTracked(item => item.UserId == currentUserId);
 
                 var regularCategories = categories.Where(x => x.IsRegular || x.ChildCategories.Any(y => y.IsRegular) || x.ParentCategory?.IsRegular == true).ToList();
                 var irregularCategories = categories.Where(x => (x.ParentCategory?.IsRegular != true && !x.IsRegular) || (!x.IsRegular && x.ChildCategories.Any(y => !y.IsRegular))).ToList();
@@ -129,8 +129,8 @@ namespace Sinance.Controllers
 
             using (var unitOfWork = _unitOfWork())
             {
-                Category category = unitOfWork.CategoryRepository.FindSingle(item => item.Id == categoryId && item.UserId == currentUserId);
-                var transactionCategories = unitOfWork.TransactionCategoryRepository.FindAll(x => x.CategoryId == categoryId);
+                Category category = unitOfWork.CategoryRepository.FindSingleTracked(item => item.Id == categoryId && item.UserId == currentUserId);
+                var transactionCategories = unitOfWork.TransactionCategoryRepository.FindAllTracked(x => x.CategoryId == categoryId);
 
                 if (category != null)
                 {
@@ -165,11 +165,11 @@ namespace Sinance.Controllers
 
             using (var unitOfWork = _unitOfWork())
             {
-                Category category = unitOfWork.CategoryRepository.FindSingle(item => item.Id == categoryId && item.UserId == currentUserId, "CategoryMappings");
+                Category category = unitOfWork.CategoryRepository.FindSingleTracked(item => item.Id == categoryId && item.UserId == currentUserId, "CategoryMappings");
 
                 if (category != null)
                 {
-                    IList<Transaction> transactions = unitOfWork.TransactionRepository.FindAll(item => item.UserId == currentUserId);
+                    IList<Transaction> transactions = unitOfWork.TransactionRepository.FindAllTracked(item => item.UserId == currentUserId);
                     IEnumerable<Transaction> mappedTransactions = CategoryHandler.PreviewMapTransactions(category.CategoryMappings, transactions).ToList();
 
                     await CategoryHandler.MapCategoryToTransactions(unitOfWork, categoryId, mappedTransactions);
@@ -214,7 +214,7 @@ namespace Sinance.Controllers
                     {
                         if (model.Id > 0)
                         {
-                            var existingCategory = unitOfWork.CategoryRepository.FindSingle(item => item.Id == model.Id && item.UserId == currentUserId);
+                            var existingCategory = unitOfWork.CategoryRepository.FindSingleTracked(item => item.Id == model.Id && item.UserId == currentUserId);
                             if (existingCategory != null)
                             {
                                 existingCategory.Update(name: model.Name,
@@ -270,7 +270,7 @@ namespace Sinance.Controllers
             using (var unitOfWork = _unitOfWork())
             {
                 // Only select category that arent linked to a parent, no sub categories for recursive linking
-                List<Category> categories = unitOfWork.CategoryRepository.FindAll(item => item.ParentId == null &&
+                List<Category> categories = unitOfWork.CategoryRepository.FindAllTracked(item => item.ParentId == null &&
                                                                             item.Id != category.Id &&
                                                                             item.UserId == currentUserId).ToList();
 
@@ -304,7 +304,7 @@ namespace Sinance.Controllers
 
             using (var unitOfWork = _unitOfWork())
             {
-                IEnumerable<Transaction> allTransactions = unitOfWork.TransactionRepository.FindAll(item => item.UserId == currentUserId);
+                IEnumerable<Transaction> allTransactions = unitOfWork.TransactionRepository.FindAllTracked(item => item.UserId == currentUserId);
 
                 IList<KeyValuePair<Transaction, bool>> transactions =
                     CategoryHandler.PreviewMapTransactions(category.CategoryMappings, allTransactions).ToList().ConvertAll(item => new KeyValuePair<Transaction, bool>(item, true));

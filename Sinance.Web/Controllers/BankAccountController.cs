@@ -100,7 +100,7 @@ namespace Sinance.Controllers
 
             using (var unitOfWork = _unitOfWork())
             {
-                BankAccount bankAccount = unitOfWork.BankAccountRepository.FindSingle(item => item.Id == accountId && item.UserId == currentUserId,
+                BankAccount bankAccount = unitOfWork.BankAccountRepository.FindSingleTracked(item => item.Id == accountId && item.UserId == currentUserId,
                 includeProperties: "Transactions");
 
                 if (bankAccount != null)
@@ -158,7 +158,7 @@ namespace Sinance.Controllers
                     }
                     else
                     {
-                        if (!unitOfWork.BankAccountRepository.FindAll(item => item.Name == model.Name).Any())
+                        if (!unitOfWork.BankAccountRepository.FindAllTracked(item => item.Name == model.Name).Any())
                         {
                             BankAccount insertBankAccount = new BankAccount();
                             insertBankAccount.Update(model.Name, model.StartBalance, model.Disabled, model.AccountType, model.IncludeInProfitLossGraph);

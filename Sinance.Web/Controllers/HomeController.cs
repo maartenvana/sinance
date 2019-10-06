@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Sinance.Storage;
 using Sinance.Business.Services.Authentication;
+using Sinance.Domain.Entities;
 
 namespace Sinance.Controllers
 {
@@ -47,10 +48,11 @@ namespace Sinance.Controllers
             var transactions = await unitOfWork.TransactionRepository.FindAll(findQuery: x =>
                         x.Date.Year == monthYearDate.Year &&
                         x.Date.Month == monthYearDate.Month &&
-                        x.UserId == currentUserId);
+                        x.UserId == currentUserId,
+                        includeProperties: nameof(Transaction.BankAccount));
 
             // No need to sort this list, we loop through it by month numbers
-            var totalProfitLossLastMonth = transactions.Sum(x => x.Amount);
+            var totalProfitLossLastMonth = transactions.Where(x => x.BankAccount.IncludeInProfitLossGraph == true).Sum(x => x.Amount);
 
             var totalIncomeLastMonth = transactions.Where(x =>
                         (!x.TransactionCategories.Any() || x.TransactionCategories.Any(x => x.CategoryId != 69)) && // Cashflow

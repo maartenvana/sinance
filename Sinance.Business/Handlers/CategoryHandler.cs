@@ -1,6 +1,5 @@
 ﻿using Sinance.Domain.Entities;
 using Sinance.Storage;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,9 +19,9 @@ namespace Sinance.Business.Handlers
         /// <param name="transactions">Transactions to map</param>
         public static async Task MapCategoryToTransactions(IUnitOfWork unitOfWork, int categoryId, IEnumerable<Transaction> transactions)
         {
-            foreach (Transaction transaction in transactions)
+            foreach (var transaction in transactions)
             {
-                foreach (TransactionCategory transactionCategory in transaction.TransactionCategories.Where(transactionCategory => transactionCategory.CategoryId != categoryId))
+                foreach (var transactionCategory in transaction.TransactionCategories.Where(transactionCategory => transactionCategory.CategoryId != categoryId))
                 {
                     unitOfWork.TransactionCategoryRepository.Delete(transactionCategory);
                 }
@@ -49,13 +48,13 @@ namespace Sinance.Business.Handlers
         /// <returns>List of transactions that can map</returns>
         public static IList<Transaction> PreviewMapTransactions(IEnumerable<CategoryMapping> categoryMappings, IEnumerable<Transaction> transactions)
         {
-            List<Transaction> mappedTransactions = new List<Transaction>();
+            var mappedTransactions = new List<Transaction>();
 
-            foreach (Transaction transaction in transactions)
+            foreach (var transaction in transactions)
             {
-                foreach (CategoryMapping mapping in categoryMappings)
+                foreach (var mapping in categoryMappings)
                 {
-                    bool isMatch = false;
+                    var isMatch = false;
 
                     switch (mapping.ColumnTypeId)
                     {
@@ -94,7 +93,7 @@ namespace Sinance.Business.Handlers
         /// <param name="transactions">Transactions to unmap</param>
         public static async Task RemoveTransactionMappingFromCategory(IUnitOfWork unitOfWork, int categoryId, IEnumerable<Transaction> transactions)
         {
-            foreach (Transaction transaction in transactions)
+            foreach (var transaction in transactions)
             {
                 unitOfWork.TransactionCategoryRepository.DeleteRange(transaction.TransactionCategories.Where(item => item.CategoryId == categoryId));
             }
@@ -109,11 +108,11 @@ namespace Sinance.Business.Handlers
         /// <param name="categoryMappings">Mappings to use</param>
         public static void SetTransactionCategories(IEnumerable<Transaction> transactions, IList<CategoryMapping> categoryMappings)
         {
-            foreach (Transaction transaction in transactions)
+            foreach (var transaction in transactions)
             {
-                foreach (CategoryMapping mapping in categoryMappings)
+                foreach (var mapping in categoryMappings)
                 {
-                    bool isMatch = false;
+                    var isMatch = false;
 
                     switch (mapping.ColumnTypeId)
                     {

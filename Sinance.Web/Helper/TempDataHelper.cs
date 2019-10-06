@@ -36,7 +36,7 @@ namespace Sinance.Web.Helper
             if (tempData == null)
                 throw new ArgumentNullException(nameof(tempData));
 
-            MessageState messageState = MessageState.None;
+            var messageState = MessageState.None;
             if (tempData.ContainsKey("MessageState"))
                 messageState = (MessageState)tempData["MessageState"];
 

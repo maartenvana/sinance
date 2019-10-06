@@ -316,7 +316,7 @@
                                 <td style="text-wrap:none;white-space:nowrap;">@transaction.Date.ToString("dd-MM-yyyy")</td>
                                 <td style="text-wrap:none;white-space:nowrap;">@transaction.Name</td>
                                 <td style="text-wrap:none;white-space:nowrap;">@transaction.Amount.ToString("C2")</td>
-                                <td style="word-wrap:break-word;">@(transaction.Description.Length > 40 ? transaction.Description.Substring(0, 40) : transaction.Description)</td>
+                                <td style="word-wrap:break-word;">@(transaction.Description != null && transaction.Description.Length > 40 ? transaction.Description.Substring(0, 40) : transaction.Description)</td>
                             </tr>
                         }
                     </tbody>

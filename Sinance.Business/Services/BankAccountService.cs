@@ -25,15 +25,13 @@ namespace Sinance.Business.Services
         {
             var userId = await _sessionService.GetCurrentUserId();
 
-            using (var unitOfWork = _unitOfWork())
-            {
-                IList<BankAccount> bankAccounts = unitOfWork.BankAccountRepository
-                    .FindAll(item => item.UserId == userId && !item.Disabled)
-                    .OrderBy(item => item.Name)
-                    .ToList();
+            using var unitOfWork = _unitOfWork();
+            var bankAccounts = (await unitOfWork.BankAccountRepository
+                .FindAll(item => item.UserId == userId && !item.Disabled))
+                .OrderBy(item => item.Name)
+                .ToList();
 
-                return bankAccounts;
-            }
+            return bankAccounts;
         }
 
         /// <summary>
@@ -41,17 +39,15 @@ namespace Sinance.Business.Services
         /// </summary>
         public async Task<IList<BankAccount>> GetAllBankAccountsForCurrentUser()
         {
-            var userId = await this._sessionService.GetCurrentUserId();
+            var userId = await _sessionService.GetCurrentUserId();
 
-            using (var unitOfWork = _unitOfWork())
-            {
-                IList<BankAccount> bankAccounts = unitOfWork.BankAccountRepository
-                .FindAll(item => item.UserId == userId)
+            using var unitOfWork = _unitOfWork();
+            IList<BankAccount> bankAccounts = (await unitOfWork.BankAccountRepository
+                .FindAll(item => item.UserId == userId))
                 .OrderBy(item => item.Name)
                 .ToList();
 
-                return bankAccounts;
-            }
+            return bankAccounts;
         }
     }
 }

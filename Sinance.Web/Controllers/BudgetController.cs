@@ -1,10 +1,8 @@
-﻿using Sinance.Business.Services;
-using Sinance.Domain.Entities;
+﻿using Sinance.Domain.Entities;
 using Sinance.Web.Model.Budget;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Sinance.Storage;
@@ -31,79 +29,70 @@ namespace Sinance.Web.Controllers
         {
             var currentUserId = await _sessionService.GetCurrentUserId();
 
-            using (var unitOfWork = _unitOfWork())
+            using var unitOfWork = _unitOfWork();
+            var categories = await unitOfWork.CategoryRepository.FindAll(x => x.UserId == currentUserId);
+
+            var model = new CreateBudgetModel
             {
-                var categories = unitOfWork.CategoryRepository.FindAll(x => x.UserId == currentUserId);
+                AvailableCategories = categories
+            };
 
-                var model = new CreateBudgetModel
-                {
-                    AvailableCategories = categories.ToList()
-                };
-
-                return View(model);
-            }
+            return View(model);
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(CreateBudgetModel model)
         {
-            using (var unitOfWork = _unitOfWork())
+            using var unitOfWork = _unitOfWork();
+            unitOfWork.BudgetRepository.Insert(new Budget
             {
-                unitOfWork.BudgetRepository.Insert(new Budget
-                {
-                    CategoryId = model.SelectedCategoryId,
-                    Amount = model.Amount
-                });
+                CategoryId = model.SelectedCategoryId,
+                Amount = model.Amount
+            });
 
-                await unitOfWork.SaveAsync();
+            await unitOfWork.SaveAsync();
 
-                return RedirectToAction("Index");
-            }
+            return RedirectToAction("Index");
         }
 
         [HttpGet]
         public async Task<IActionResult> Delete(int id)
         {
-            using (var unitOfWork = _unitOfWork())
-            {
-                unitOfWork.BudgetRepository.Delete(id);
-                await unitOfWork.SaveAsync();
+            using var unitOfWork = _unitOfWork();
+            var budget = await unitOfWork.BudgetRepository.FindSingle(x => x.Id == id);
+            unitOfWork.BudgetRepository.Delete(budget);
+            await unitOfWork.SaveAsync();
 
-                return RedirectToAction("Index");
-            }
+            return RedirectToAction("Index");
         }
 
         [HttpGet]
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
-            using (var unitOfWork = _unitOfWork())
+            using var unitOfWork = _unitOfWork();
+            var budget = await unitOfWork.BudgetRepository.FindSingle(x => x.Id == id);
+
+            var model = new EditBudgetModel
             {
-                var budget = unitOfWork.BudgetRepository.FindSingle(x => x.Id == id);
+                BudgetId = budget.Id,
+                Amount = budget.Amount.GetValueOrDefault()
+            };
 
-                var model = new EditBudgetModel
-                {
-                    BudgetId = budget.Id,
-                    Amount = budget.Amount.GetValueOrDefault()
-                };
-
-                return View(model);
-            }
+            return View(model);
         }
 
         [HttpPost]
         public async Task<IActionResult> Edit(EditBudgetModel model)
         {
-            using (var unitOfWork = _unitOfWork())
-            {
-                var budget = unitOfWork.BudgetRepository.FindSingle(x => x.Id == model.BudgetId);
-                budget.Amount = model.Amount;
+            using var unitOfWork = _unitOfWork();
+            var budget = await unitOfWork.BudgetRepository.FindSingleTracked(x => x.Id == model.BudgetId);
+            budget.Amount = model.Amount;
 
-                unitOfWork.BudgetRepository.Update(budget);
+            unitOfWork.BudgetRepository.Update(budget);
 
-                await unitOfWork.SaveAsync();
+            await unitOfWork.SaveAsync();
 
-                return RedirectToAction("Index");
-            }
+            return RedirectToAction("Index");
         }
 
         [HttpGet]
@@ -111,28 +100,26 @@ namespace Sinance.Web.Controllers
         {
             var currentUserId = await _sessionService.GetCurrentUserId();
 
-            using (var unitOfWork = _unitOfWork())
+            using var unitOfWork = _unitOfWork();
+            var budgets = await unitOfWork.BudgetRepository.ListAll(nameof(Budget.Category), $"{nameof(Budget.Category)}.{nameof(Budget.Category.ChildCategories)}");
+
+            var model = new BudgetIndexModel
             {
-                var budgets = unitOfWork.BudgetRepository.ListAll(nameof(Budget.Category), $"{nameof(Budget.Category)}.{nameof(Budget.Category.ChildCategories)}");
+                Budgets = budgets
+                    .OrderBy(x => x.Category.Name)
+                    .ThenBy(x => x.Category.ParentCategory?.Name)
+                    .Select(x => new BudgetModel
+                    {
+                        Amount = x.Amount.GetValueOrDefault(),
+                        CategoryName = x.Category.Name,
+                        ParentCategoryName = x.Category.ParentCategory?.Name,
+                        CategoryId = x.CategoryId,
+                        ParentCategoryId = x.Category.ParentCategory?.Id,
+                        Id = x.Id
+                    }).ToList()
+            };
 
-                var model = new BudgetIndexModel
-                {
-                    Budgets = budgets
-                        .OrderBy(x => x.Category.Name)
-                        .ThenBy(x => x.Category.ParentCategory?.Name)
-                        .Select(x => new BudgetModel
-                        {
-                            Amount = x.Amount.GetValueOrDefault(),
-                            CategoryName = x.Category.Name,
-                            ParentCategoryName = x.Category.ParentCategory?.Name,
-                            CategoryId = x.CategoryId,
-                            ParentCategoryId = x.Category.ParentCategory?.Id,
-                            Id = x.Id
-                        }).ToList()
-                };
-
-                return View(model);
-            }
+            return View(model);
         }
 
         [HttpGet]
@@ -147,41 +134,39 @@ namespace Sinance.Web.Controllers
         {
             var currentUserId = await _sessionService.GetCurrentUserId();
 
-            using (var unitOfWork = _unitOfWork())
+            using var unitOfWork = _unitOfWork();
+            var budgets = await unitOfWork.BudgetRepository.ListAll(nameof(Budget.Category), $"{nameof(Budget.Category)}.{nameof(Budget.Category.ChildCategories)}");
+
+            var transactions = await unitOfWork.TransactionRepository.FindAll(item =>
+               item.Date.Month == month &&
+               item.Date.Year == year &&
+               item.UserId == currentUserId &&
+               item.TransactionCategories.Any(x => budgets.Any(y => y.CategoryId == x.CategoryId) ||
+                                                   budgets.Any(y => y.Category.ChildCategories.Any(z => z.Id == x.CategoryId))),
+                includeProperties: new string[] { nameof(Transaction.TransactionCategories), "TransactionCategories.Category", "TransactionCategories.Category.ChildCategories" });
+
+            var model = new BudgetStatusModel
             {
-                var budgets = unitOfWork.BudgetRepository.ListAll(nameof(Budget.Category), $"{nameof(Budget.Category)}.{nameof(Budget.Category.ChildCategories)}");
+                StatusDate = new DateTime(year: year, month: month, day: 1)
+            };
 
-                IList<Transaction> transactions = unitOfWork.TransactionRepository.FindAll(item =>
-                    item.Date.Month == month &&
-                    item.Date.Year == year &&
-                    item.UserId == currentUserId &&
-                    item.TransactionCategories.Any(x => budgets.Any(y => y.CategoryId == x.CategoryId) ||
-                                                        budgets.Any(y => y.Category.ChildCategories.Any(z => z.Id == x.CategoryId))),
-                    includeProperties: new string[] { nameof(Transaction.TransactionCategories), "TransactionCategories.Category", "TransactionCategories.Category.ChildCategories" }).ToList();
+            foreach (var budget in budgets)
+            {
+                var amount = transactions.Where(transaction =>
+                    transaction.TransactionCategories.Any(x => budgets.Any(y => y.CategoryId == x.CategoryId) ||
+                                                                budgets.Any(y => y.Category.ChildCategories.Any(z => z.Id == x.CategoryId)))).Sum(x => x.Amount * -1);
 
-                var model = new BudgetStatusModel
+                model.BudgetStatus.Add(new BudgetModel
                 {
-                    StatusDate = new DateTime(year: year, month: month, day: 1)
-                };
-
-                foreach (var budget in budgets)
-                {
-                    var amount = transactions.Where(transaction =>
-                        transaction.TransactionCategories.Any(x => budgets.Any(y => y.CategoryId == x.CategoryId) ||
-                                                                    budgets.Any(y => y.Category.ChildCategories.Any(z => z.Id == x.CategoryId)))).Sum(x => x.Amount * -1);
-
-                    model.BudgetStatus.Add(new BudgetModel
-                    {
-                        Amount = budget.Amount.GetValueOrDefault(),
-                        CategoryName = budget.Category.Name,
-                        ParentCategoryName = budget.Category.ParentCategory?.Name,
-                        CategoryId = budget.CategoryId,
-                        ParentCategoryId = budget.Category.ParentCategory?.Id,
-                        Id = budget.Id
-                    }, amount);
-                }
-                return View(model);
+                    Amount = budget.Amount.GetValueOrDefault(),
+                    CategoryName = budget.Category.Name,
+                    ParentCategoryName = budget.Category.ParentCategory?.Name,
+                    CategoryId = budget.CategoryId,
+                    ParentCategoryId = budget.Category.ParentCategory?.Id,
+                    Id = budget.Id
+                }, amount);
             }
+            return View(model);
         }
     }
 }

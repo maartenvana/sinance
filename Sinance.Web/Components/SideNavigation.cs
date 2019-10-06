@@ -7,21 +7,21 @@ namespace Sinance.Web.Components
 {
     public class SideNavigation : ViewComponent
     {
-        private readonly IBankAccountService bankAccountService;
-        private readonly ICustomReportService customReportService;
+        private readonly IBankAccountService _bankAccountService;
+        private readonly ICustomReportService _customReportService;
 
         public SideNavigation(
             IBankAccountService bankAccountService,
             ICustomReportService customReportService)
         {
-            this.bankAccountService = bankAccountService;
-            this.customReportService = customReportService;
+            _bankAccountService = bankAccountService;
+            _customReportService = customReportService;
         }
 
         public async Task<IViewComponentResult> InvokeAsync()
         {
-            var bankAccounts = await this.bankAccountService.GetActiveBankAccountsForCurrentUser();
-            var customReports = await this.customReportService.GetCustomReportsForCurrentUser();
+            var bankAccounts = await _bankAccountService.GetActiveBankAccountsForCurrentUser();
+            var customReports = await _customReportService.GetCustomReportsForCurrentUser();
 
             var model = new NavigationModel
             {

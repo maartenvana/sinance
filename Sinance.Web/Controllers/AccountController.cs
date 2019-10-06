@@ -1,10 +1,7 @@
 ﻿using Sinance.Domain.Entities;
 using Sinance.Web.Model;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
@@ -61,7 +58,7 @@ namespace Sinance.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult> Login(LoginViewModel loginViewModel, string returnUrl)
         {
-            var user = _authenticationService.SignIn(loginViewModel.UserName, loginViewModel.Password);
+            var user = await _authenticationService.SignIn(loginViewModel.UserName, loginViewModel.Password);
             if (user == null)
             {
                 ModelState.AddModelError("", "User not found");

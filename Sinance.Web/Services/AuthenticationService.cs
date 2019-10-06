@@ -18,7 +18,7 @@ namespace Sinance.Web.Services
 
         public bool IsLoggedIn
         {
-            get { return this._httpContextAccessor.HttpContext.User.Identity.IsAuthenticated; }
+            get { return _httpContextAccessor.HttpContext.User.Identity.IsAuthenticated; }
         }
 
         public AuthenticationService(
@@ -34,7 +34,7 @@ namespace Sinance.Web.Services
         public async Task<SinanceUser> CreateUser(string userName, string password)
         {
             using var unitOfWork = _unitOfWork();
-            var user = unitOfWork.UserRepository.FindSingle(x => x.Username == userName);
+            var user = await unitOfWork.UserRepository.FindSingle(x => x.Username == userName);
 
             if (user == null)
             {
@@ -65,10 +65,10 @@ namespace Sinance.Web.Services
             return Task.FromResult(int.Parse(userIdClaim.Value));
         }
 
-        public SinanceUser SignIn(string userName, string password)
+        public async Task<SinanceUser> SignIn(string userName, string password)
         {
             using var unitOfWork = _unitOfWork();
-            var user = unitOfWork.UserRepository.FindSingle(x => x.Username == userName);
+            var user = await unitOfWork.UserRepository.FindSingle(x => x.Username == userName);
 
             if (user != null)
             {

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using System;
+using System.Threading.Tasks;
 
 namespace Sinance.Business.Handlers
 {
@@ -20,17 +21,52 @@ namespace Sinance.Business.Handlers
         /// <param name="slidingExpiration">If the expiration is a sliding expiration</param>
         /// <param name="expirationTimeSpan">Timespan for when the cache item expires</param>
         /// <returns>Cached object</returns>
+        public static async Task<T> Cache<T>(string key, Func<Task<T>> contentAction, bool slidingExpiration, TimeSpan expirationTimeSpan)
+        {
+            if (contentAction == null)
+                throw new ArgumentNullException(nameof(contentAction));
+
+            var cacheObject = await memoryCache.GetOrCreateAsync(key, async (entry) =>
+            {
+                if (slidingExpiration)
+                {
+                    entry.SlidingExpiration = expirationTimeSpan;
+                }
+                else
+                {
+                    entry.AbsoluteExpiration = DateTime.Now.AddSeconds(expirationTimeSpan.TotalSeconds);
+                }
+
+                return await contentAction.Invoke();
+            });
+
+            return cacheObject;
+        }
+
+        /// <summary>
+        /// Places the result of the action if not present in cache
+        /// </summary>
+        /// <typeparam name="T">Type of value</typeparam>
+        /// <param name="key">Key for identifying the cache item</param>
+        /// <param name="contentAction">Action to run if no value present</param>
+        /// <param name="slidingExpiration">If the expiration is a sliding expiration</param>
+        /// <param name="expirationTimeSpan">Timespan for when the cache item expires</param>
+        /// <returns>Cached object</returns>
         public static T Cache<T>(string key, Func<T> contentAction, bool slidingExpiration, TimeSpan expirationTimeSpan)
         {
             if (contentAction == null)
                 throw new ArgumentNullException(nameof(contentAction));
 
-            T cacheObject = (T)memoryCache.GetOrCreate(key, (entry) =>
+            var cacheObject = (T)memoryCache.GetOrCreate(key, (entry) =>
            {
                if (slidingExpiration)
+               {
                    entry.SlidingExpiration = expirationTimeSpan;
+               }
                else
+               {
                    entry.AbsoluteExpiration = DateTime.Now.AddSeconds(expirationTimeSpan.TotalSeconds);
+               }
 
                return contentAction.Invoke();
            });

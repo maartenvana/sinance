@@ -1,5 +1,4 @@
 ﻿using Sinance.Domain.Entities;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
@@ -42,7 +41,7 @@ namespace Sinance.Storage
 
         public void Migrate()
         {
-            this.Database.Migrate();
+            Database.Migrate();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

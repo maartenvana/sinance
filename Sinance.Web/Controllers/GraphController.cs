@@ -9,7 +9,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 using Sinance.Web.Helper;
@@ -51,43 +50,38 @@ namespace Sinance.Controllers
         /// <param name="bankAccountIds">Number of bank accounts</param>
         /// <returns>Result in Json for display in a graph</returns>
         [HttpPost]
-        [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
         public async Task<JsonResult> BalanceHistory(int years, IList<int> bankAccountIds = null)
         {
-            var userBankAccounts = await this._bankAccountService.GetActiveBankAccountsForCurrentUser();
-            var currentUserId = await this._sessionService.GetCurrentUserId();
+            var userBankAccounts = await _bankAccountService.GetActiveBankAccountsForCurrentUser();
+            var currentUserId = await _sessionService.GetCurrentUserId();
 
-            IList<BankAccount> bankAccounts = bankAccountIds?.Any() == true ? userBankAccounts.Where(item => bankAccountIds.Any(y => y == item.Id)).ToList() : userBankAccounts;
-            IList<int> bankAccountsIdFilter = bankAccounts.Select(x => x.Id).ToList();
+            var bankAccounts = bankAccountIds?.Any() == true ? userBankAccounts.Where(item => bankAccountIds.Any(y => y == item.Id)).ToList() : userBankAccounts;
+            var bankAccountsIdFilter = bankAccounts.Select(x => x.Id);
 
-            JsonResult result;
             if (bankAccounts.Count > 0)
             {
-                List<decimal[]> sumPerDatesJson = new List<decimal[]>();
+                var sumPerDatesJson = new List<decimal[]>();
 
-                int addYears;
-                checked
-                {
-                    addYears = 0 - years;
-                }
-
-                DateTime startDate = DateTime.Now.AddYears(addYears);
-                DateTime endDate = DateTime.Now;
+                var startDate = DateTime.Now.AddYears(years * -1);
+                var endDate = DateTime.Now;
 
                 decimal accountBalance = 0;
                 using var unitOfWork = _unitOfWork();
-                IList<Transaction> transactions = unitOfWork.TransactionRepository.FindAllTracked(item => bankAccountsIdFilter.Any(y => y == item.BankAccountId) &&
+                var transactions = (await unitOfWork.TransactionRepository.FindAll(item => bankAccountsIdFilter.Any(y => y == item.BankAccountId) &&
                                         item.UserId == currentUserId &&
                                         item.Date >= startDate &&
-                                        item.Date <= endDate).OrderBy(item => item.Date).ToList();
+                                        item.Date <= endDate))
+                                        .OrderBy(item => item.Date)
+                                        .ToList();
 
                 accountBalance = bankAccounts.Sum(item => item.StartBalance);
 
                 // Cast it to decimal? incase no transactions were found and sum returns null
-                accountBalance += unitOfWork.TransactionRepository.FindAllTracked(item =>
-                    bankAccountsIdFilter.Any(y => y == item.BankAccountId) && item.Date <= startDate).Sum(item => (decimal?)item.Amount).GetValueOrDefault();
+                accountBalance += await unitOfWork.TransactionRepository.Sum(
+                    findQuery: x => bankAccountsIdFilter.Any(y => y == x.BankAccountId) && x.Date <= startDate,
+                    sumQuery: x => x.Amount);
 
-                List<IGrouping<DateTime, Transaction>> transactionsPerDate = transactions.GroupBy(item => item.Date).ToList();
+                var transactionsPerDate = transactions.GroupBy(item => item.Date).ToList();
 
                 // Add the beginning of the year transaction if there were previous transactions
                 if (accountBalance > bankAccounts.Sum(item => item.StartBalance) && transactionsPerDate.First().Key.Month != 1 &&
@@ -100,7 +94,7 @@ namespace Sinance.Controllers
                     });
                 }
 
-                foreach (IGrouping<DateTime, Transaction> groupedTransactions in transactionsPerDate)
+                foreach (var groupedTransactions in transactionsPerDate)
                 {
                     accountBalance = groupedTransactions.Sum(item => item.Amount) + accountBalance;
 
@@ -110,20 +104,19 @@ namespace Sinance.Controllers
                         accountBalance
                     });
                 }
-                result = Json(new SinanceJsonResult
+
+                return Json(new SinanceJsonResult
                 {
                     Success = true,
                     ObjectData = sumPerDatesJson
                 });
             }
-            else
-                result = Json(new SinanceJsonResult
-                {
-                    Success = false,
-                    ErrorMessage = Resources.Error
-                });
 
-            return result;
+            return Json(new SinanceJsonResult
+            {
+                Success = false,
+                ErrorMessage = Resources.Error
+            });
         }
 
         /// <summary>
@@ -133,38 +126,39 @@ namespace Sinance.Controllers
         /// <param name="year">Year to display transactions for</param>
         /// <returns>Data for display in a graph</returns>
         [HttpPost]
-        [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
         public async Task<JsonResult> BalanceHistoryPerYear(int year, IList<int> bankAccountIds = null)
         {
-            var userBankAccounts = await this._bankAccountService.GetActiveBankAccountsForCurrentUser();
-            var currentUserId = await this._sessionService.GetCurrentUserId();
+            var userBankAccounts = await _bankAccountService.GetActiveBankAccountsForCurrentUser();
+            var currentUserId = await _sessionService.GetCurrentUserId();
 
-            IList<BankAccount> bankAccounts = bankAccountIds != null && bankAccountIds.Any() ?
+            var bankAccounts = bankAccountIds != null && bankAccountIds.Any() ?
                 userBankAccounts.Where(item => bankAccountIds.Any(y => y == item.Id)).ToList() : userBankAccounts;
-            IList<int> validBankAccountIds = bankAccounts.Select(item => item.Id).ToList();
+            var validBankAccountIds = bankAccounts.Select(item => item.Id);
 
-            JsonResult result;
             if (bankAccounts.Count > 0)
             {
-                List<decimal[]> sumPerDatesJson = new List<decimal[]>();
+                var sumPerDatesJson = new List<decimal[]>();
 
-                DateTime thisYearStart = new DateTime(year, 1, 1).Date;
-                DateTime nextYearStart = new DateTime(year, 1, 1).AddYears(1).Date;
+                var thisYearStart = new DateTime(year, 1, 1).Date;
+                var nextYearStart = new DateTime(year, 1, 1).AddYears(1).Date;
 
                 using var unitOfWork = _unitOfWork();
-                IList<Transaction> transactions = unitOfWork.TransactionRepository.FindAllTracked(item => validBankAccountIds.Any(y => y == item.BankAccountId) &&
+
+                var transactions = (await unitOfWork.TransactionRepository.FindAllTracked(item => validBankAccountIds.Any(y => y == item.BankAccountId) &&
                                         item.UserId == currentUserId &&
                                         item.Date >= thisYearStart &&
-                                        item.Date < nextYearStart)
-.OrderBy(item => item.Date).ToList();
+                                        item.Date < nextYearStart))
+                                            .OrderBy(item => item.Date)
+                                            .ToList();
 
                 var accountBalance = bankAccounts.Sum(item => item.StartBalance);
 
                 // Cast it to decimal? incase no transactions were found and sum returns null
-                accountBalance += unitOfWork.TransactionRepository.FindAllTracked(item =>
-                    validBankAccountIds.Any(y => y == item.BankAccountId) && item.Date < thisYearStart).Sum(item => (decimal?)item.Amount).GetValueOrDefault();
+                accountBalance += await unitOfWork.TransactionRepository.Sum(
+                    findQuery: item => validBankAccountIds.Any(y => y == item.BankAccountId) && item.Date < thisYearStart,
+                    sumQuery: item => item.Amount);
 
-                List<IGrouping<DateTime, Transaction>> transactionsPerDate = transactions.GroupBy(item => item.Date).ToList();
+                var transactionsPerDate = transactions.GroupBy(item => item.Date).ToList();
 
                 // Add the beginning of the year transaction if there were previous transactions
                 if (accountBalance > bankAccounts.Sum(item => item.StartBalance) && transactionsPerDate.First().Key.Month != 1 &&
@@ -177,7 +171,7 @@ namespace Sinance.Controllers
                     });
                 }
 
-                foreach (IGrouping<DateTime, Transaction> groupedTransactions in transactionsPerDate)
+                foreach (var groupedTransactions in transactionsPerDate)
                 {
                     accountBalance = groupedTransactions.Sum(item => item.Amount) + accountBalance;
 
@@ -187,20 +181,17 @@ namespace Sinance.Controllers
                         accountBalance
                     });
                 }
-                result = Json(new SinanceJsonResult
+                return Json(new SinanceJsonResult
                 {
                     Success = true,
                     ObjectData = sumPerDatesJson
                 });
             }
-            else
-                result = Json(new SinanceJsonResult
-                {
-                    Success = false,
-                    ErrorMessage = Resources.Error
-                });
-
-            return result;
+            return Json(new SinanceJsonResult
+            {
+                Success = false,
+                ErrorMessage = Resources.Error
+            });
         }
 
         /// <summary>
@@ -209,35 +200,43 @@ namespace Sinance.Controllers
         /// <param name="customReportId">Identifier of the custom report</param>
         /// <param name="year">What year to display</param>
         /// <returns>JSON encoded data for use in a Highcharts graph</returns>
-        [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
         [HttpPost]
         public async Task<ContentResult> CustomReportMonthlyGraph(int customReportId, int? year)
         {
-            var currentUserId = await this._sessionService.GetCurrentUserId();
+            var currentUserId = await _sessionService.GetCurrentUserId();
 
-            DateTime dateRangeStart = new DateTime(year ?? DateTime.Now.Year, 1, 1);
-            DateTime dateRangeEnd = new DateTime(year ?? DateTime.Now.Year, 12, 31);
+            var dateRangeStart = new DateTime(year ?? DateTime.Now.Year, 1, 1);
+            var dateRangeEnd = new DateTime(year ?? DateTime.Now.Year, 12, 31);
 
             using var unitOfWork = _unitOfWork();
-            IList<int> reportCategories = unitOfWork.CustomReportCategoryRepository.FindAllTracked(item => item.CustomReportId == customReportId).Select(item => item.CategoryId).ToList();
+            var reportCategories = (await unitOfWork.CustomReportCategoryRepository.FindAll(item => item.CustomReportId == customReportId)).Select(item => item.CategoryId).ToList();
 
-            IList<Transaction> transactions =
-                unitOfWork.TransactionRepository.FindAllTracked(item => item.Date >= dateRangeStart && item.Date <= dateRangeEnd &&
-                    item.UserId == currentUserId && item.Amount < 0 &&
-                    item.TransactionCategories.Any(transactionCategory => reportCategories.Any(reportCategory => reportCategory == transactionCategory.CategoryId)),
-                    "TransactionCategories", "TransactionCategories.Category");
+            var transactions = await unitOfWork.TransactionRepository.FindAll(
+                    findQuery: item =>
+                        item.Date >= dateRangeStart &&
+                        item.Date <= dateRangeEnd &&
+                        item.UserId == currentUserId &&
+                        item.Amount < 0 &&
+                        item.TransactionCategories.Any(transactionCategory =>
+                            reportCategories.Any(reportCategory =>
+                                reportCategory == transactionCategory.CategoryId)),
+                    includeProperties: new string[] {
+                        nameof(Transaction.TransactionCategories),
+                        $"{nameof(Transaction.TransactionCategories)}.{nameof(TransactionCategory.Category)}"
+                    });
 
             IDictionary<string, IDictionary<int, decimal>> reportDictionary = new Dictionary<string, IDictionary<int, decimal>>();
 
-            foreach (Transaction transaction in transactions)
+            foreach (var transaction in transactions)
             {
                 if (transaction.TransactionCategories != null && transaction.TransactionCategories.Any())
                 {
-                    foreach (TransactionCategory transactionCategory in transaction.TransactionCategories.Where(transactionCategory => reportCategories.Any(reportCategory => reportCategory == transactionCategory.CategoryId)))
+                    foreach (var transactionCategory in transaction.TransactionCategories.Where(transactionCategory => reportCategories.Any(reportCategory => reportCategory == transactionCategory.CategoryId)))
                     {
-                        Category category = transactionCategory.Category;
+                        var category = transactionCategory.Category;
 
                         if (!reportDictionary.ContainsKey(category.Name))
+                        {
                             reportDictionary.Add(category.Name, new Dictionary<int, decimal>
                             {
                                 { 1, 0 },
@@ -253,12 +252,15 @@ namespace Sinance.Controllers
                                 { 11, 0 },
                                 { 12, 0 }
                             });
+                        }
 
                         var amount = transactionCategory.Amount ?? transaction.Amount;
 
                         // Make sure the number is positive;
                         if (amount < 0)
+                        {
                             amount *= -1;
+                        }
 
                         reportDictionary[category.Name][transaction.Date.Month] += amount;
                     }
@@ -305,7 +307,7 @@ namespace Sinance.Controllers
                 });
             }
 
-            JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
+            var jsonSerializerSettings = new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
             var json = JsonConvert.SerializeObject(new SinanceJsonResult
             {
                 Success = true,
@@ -318,19 +320,23 @@ namespace Sinance.Controllers
         [HttpPost]
         public async Task<JsonResult> ExpensePercentagesPerMonth(int year, int month)
         {
-            var currentUserId = await this._sessionService.GetCurrentUserId();
+            var currentUserId = await _sessionService.GetCurrentUserId();
 
             using var unitOfWork = _unitOfWork();
+
             // No need to sort this list, we loop through it by month numbers
-            List<Transaction> transactions = unitOfWork.TransactionRepository
-            .FindAllTracked(
-                item =>
+            var transactions = await unitOfWork.TransactionRepository
+            .FindAll(
+                findQuery: item =>
                     item.Date.Year == year &&
                     item.Date.Month == month &&
                     item.UserId == currentUserId &&
                     item.Amount < 0,
-                nameof(Transaction.TransactionCategories), "TransactionCategories.Category", "TransactionCategories.Category.ParentCategory")
-            .ToList();
+                includeProperties: new string[] {
+                    nameof(Transaction.TransactionCategories),
+                    $"{nameof(Transaction.TransactionCategories)}.{nameof(TransactionCategory.Category)}",
+                    $"{nameof(Transaction.TransactionCategories)}.{nameof(TransactionCategory.Category)}.{nameof(Category.ParentCategory)}"
+                });
 
             var amountPerCategory = new Dictionary<Category, decimal>();
             var noneCategory = new Category()
@@ -387,20 +393,20 @@ namespace Sinance.Controllers
         [HttpPost]
         public async Task<JsonResult> ProfitPerMonthForYear(int year)
         {
-            var currentUserId = await this._sessionService.GetCurrentUserId();
+            var currentUserId = await _sessionService.GetCurrentUserId();
 
             using var unitOfWork = _unitOfWork();
             // No need to sort this list, we loop through it by month numbers
-            var transactionsPerMonth = unitOfWork.TransactionRepository
-            .FindAllTracked(item => item.Date.Year == year && item.UserId == currentUserId && item.BankAccount.IncludeInProfitLossGraph == true)
-            .GroupBy(item => item.Date.Month)
-            .ToList();
+            var transactionsPerMonth = (await unitOfWork.TransactionRepository
+                .FindAll(item => item.Date.Year == year && item.UserId == currentUserId && item.BankAccount.IncludeInProfitLossGraph == true))
+                .GroupBy(item => item.Date.Month)
+                .ToList();
 
-            IList<decimal> jsonData = new List<decimal>();
+            var jsonData = new List<decimal>();
 
             for (var month = 1; month <= 12; month++)
             {
-                IGrouping<int, Transaction> transactions = transactionsPerMonth.SingleOrDefault(item => item.Key == month);
+                var transactions = transactionsPerMonth.SingleOrDefault(item => item.Key == month);
                 jsonData.Add(transactions?.Sum(item => item.Amount) ?? 0);
             }
 

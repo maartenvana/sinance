@@ -21,16 +21,6 @@ namespace Sinance.Storage
             _dbSet = _context.Set<TEntity>();
         }
 
-        public void Delete(int id)
-        {
-            var entity = FindSingleTracked(item => item.Id == id);
-
-            if (entity != null)
-            {
-                Delete(entity);
-            }
-        }
-
         public void Delete(TEntity entity)
         {
             _dbSet.Remove(entity);
@@ -40,20 +30,13 @@ namespace Sinance.Storage
         {
             _dbSet.RemoveRange(entities);
         }
-
-        public void Dispose()
+        
+        public async Task<List<TEntity>> FindAll(Expression<Func<TEntity, bool>> predicate)
         {
-            Dispose(true);
-            GC.SuppressFinalize(this);
+            return await _dbSet.Where(predicate).AsNoTracking().ToListAsync();
         }
 
-        public List<TEntity> FindAll(Expression<Func<TEntity, bool>> predicate)
-        {
-            var query = _dbSet.Where(predicate).AsNoTracking().ToList();
-            return query;
-        }
-
-        public List<TEntity> FindAll(Expression<Func<TEntity, bool>> predicate, params string[] includeProperties)
+        public async Task<List<TEntity>> FindAll(Expression<Func<TEntity, bool>> predicate, params string[] includeProperties)
         {
             if (includeProperties == null)
             {
@@ -63,16 +46,15 @@ namespace Sinance.Storage
             var query = _dbSet.Where(predicate);
             query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
 
-            return query.AsNoTracking().ToList();
+            return await query.AsNoTracking().ToListAsync();
         }
 
-        public List<TEntity> FindAllTracked(Expression<Func<TEntity, bool>> predicate)
+        public async Task<List<TEntity>> FindAllTracked(Expression<Func<TEntity, bool>> predicate)
         {
-            var query = _dbSet.Where(predicate).AsTracking().ToList();
-            return query;
+            return await _dbSet.Where(predicate).AsTracking().ToListAsync();
         }
 
-        public List<TEntity> FindAllTracked(Expression<Func<TEntity, bool>> predicate, params string[] includeProperties)
+        public async Task<List<TEntity>> FindAllTracked(Expression<Func<TEntity, bool>> predicate, params string[] includeProperties)
         {
             if (includeProperties == null)
             {
@@ -82,36 +64,15 @@ namespace Sinance.Storage
             var query = _dbSet.Where(predicate);
             query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
 
-            return query.AsTracking().ToList();
+            return await query.AsTracking().ToListAsync();
         }
 
-        public TEntity FindSingle(Expression<Func<TEntity, bool>> predicate)
+        public async Task<TEntity> FindSingle(Expression<Func<TEntity, bool>> predicate)
         {
-            var query = _dbSet.AsNoTracking().SingleOrDefault(predicate);
-            return query;
+            return await _dbSet.AsNoTracking().SingleOrDefaultAsync(predicate);
         }
 
-        public TEntity FindSingle(Expression<Func<TEntity, bool>> predicate, params string[] includeProperties)
-        {
-            if (includeProperties == null)
-            {
-                throw new ArgumentNullException(nameof(includeProperties));
-            }
-
-            IQueryable<TEntity> query = _dbSet;
-            query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
-            var entity = query.AsNoTracking().SingleOrDefault(predicate);
-
-            return entity;
-        }
-
-        public TEntity FindSingleTracked(Expression<Func<TEntity, bool>> predicate)
-        {
-            var query = _dbSet.AsTracking().SingleOrDefault(predicate);
-            return query;
-        }
-
-        public TEntity FindSingleTracked(Expression<Func<TEntity, bool>> predicate, params string[] includeProperties)
+        public async Task<TEntity> FindSingle(Expression<Func<TEntity, bool>> predicate, params string[] includeProperties)
         {
             if (includeProperties == null)
             {
@@ -120,37 +81,66 @@ namespace Sinance.Storage
 
             IQueryable<TEntity> query = _dbSet;
             query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
-            var entity = query.AsTracking().SingleOrDefault(predicate);
 
-            return entity;
+            return await query.AsNoTracking().SingleOrDefaultAsync(predicate);
         }
 
-        public List<TEntity> FindTopAscending(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderByAscending, int count)
+        public async Task<TEntity> FindSingleTracked(Expression<Func<TEntity, bool>> predicate)
         {
-            var query = _dbSet.Where(predicate).OrderBy(orderByAscending).Take(count).AsNoTracking().ToList();
-
-            return query;
+            return await _dbSet.AsTracking().SingleOrDefaultAsync(predicate);
         }
 
-        public List<TEntity> FindTopAscendingTracked(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderBy, int count)
+        public async Task<TEntity> FindSingleTracked(Expression<Func<TEntity, bool>> predicate, params string[] includeProperties)
         {
-            var query = _dbSet.Where(predicate).OrderBy(orderBy).Take(count).AsTracking().ToList();
+            if (includeProperties == null)
+            {
+                throw new ArgumentNullException(nameof(includeProperties));
+            }
 
-            return query;
+            IQueryable<TEntity> query = _dbSet;
+            query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
+
+            return await query.AsTracking().SingleOrDefaultAsync(predicate);
         }
 
-        public List<TEntity> FindTopDescending(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderByDescending, int count)
+        public async Task<List<TEntity>> FindTopAscending(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderByAscending, int count)
         {
-            var query = _dbSet.Where(predicate).OrderByDescending(orderByDescending).Take(count).AsNoTracking().ToList();
-
-            return query;
+            return await _dbSet
+                .Where(predicate)
+                .OrderBy(orderByAscending)
+                .Take(count)
+                .AsNoTracking()
+                .ToListAsync();
         }
 
-        public List<TEntity> FindTopDescendingTracked(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderByDescending, int count)
+        public async Task<List<TEntity>> FindTopAscendingTracked(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderBy, int count)
         {
-            var query = _dbSet.Where(predicate).OrderByDescending(orderByDescending).Take(count).AsTracking().ToList();
+            return await _dbSet
+                .Where(predicate)
+                .OrderBy(orderBy)
+                .Take(count)
+                .AsTracking()
+                .ToListAsync();
+        }
 
-            return query;
+        public async Task<List<TEntity>> FindTopDescending(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderByDescending, int count)
+        {
+            return await _dbSet
+                .Where(predicate)
+                .OrderByDescending(orderByDescending)
+                .Take(count)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<List<TEntity>> FindTopDescendingTracked(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderByDescending, int count)
+        {
+            return await _dbSet
+                .Where(predicate)
+                .OrderByDescending(orderByDescending)
+                .Take(count)
+                .AsTracking()
+                .ToListAsync();
         }
 
         public void Insert(TEntity entity)
@@ -163,7 +153,7 @@ namespace Sinance.Storage
             _dbSet.AddRange(entities);
         }
 
-        public List<TEntity> ListAll(params string[] includeProperties)
+        public async Task<List<TEntity>> ListAll(params string[] includeProperties)
         {
             if (includeProperties == null)
             {
@@ -173,18 +163,15 @@ namespace Sinance.Storage
             IQueryable<TEntity> query = _dbSet;
             query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
 
-            var result = query.AsNoTracking().ToList();
-
-            return result;
+            return await query.AsNoTracking().ToListAsync();
         }
 
-        public List<TEntity> ListAll()
+        public async Task<List<TEntity>> ListAll()
         {
-            var result = _dbSet.AsNoTracking().ToList();
-            return result;
+            return await _dbSet.AsNoTracking().ToListAsync();
         }
 
-        public List<TEntity> ListAllTracked(params string[] includeProperties)
+        public async Task<List<TEntity>> ListAllTracked(params string[] includeProperties)
         {
             if (includeProperties == null)
             {
@@ -194,30 +181,22 @@ namespace Sinance.Storage
             IQueryable<TEntity> query = _dbSet;
             query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
 
-            var result = query.AsTracking().ToList();
-
-            return result;
+            return await query.AsTracking().ToListAsync();
         }
 
-        public List<TEntity> ListAllTracked()
+        public async Task<List<TEntity>> ListAllTracked()
         {
-            var result = _dbSet.AsTracking().ToList();
-            return result;
+            return await _dbSet.AsTracking().ToListAsync();
         }
 
-        public void Save()
+        public async Task<int> SaveAsync()
         {
-            _context.SaveChanges();
+            return await _context.SaveChangesAsync();
         }
 
-        public async Task SaveAsync()
+        public async Task<decimal> Sum(Expression<Func<TEntity, bool>> filterQuery, Expression<Func<TEntity, decimal>> sumQuery)
         {
-            await _context.SaveChangesAsync();
-        }
-
-        public decimal Sum(Expression<Func<TEntity, bool>> filterQuery, Expression<Func<TEntity, decimal>> sumQuery)
-        {
-            return _dbSet.Where(filterQuery).Sum(sumQuery);
+            return await _dbSet.Where(filterQuery).SumAsync(sumQuery);
         }
 
         public void Update(TEntity entity)

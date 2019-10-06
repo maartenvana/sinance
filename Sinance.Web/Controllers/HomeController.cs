@@ -1,5 +1,4 @@
 ﻿using Sinance.Business.Services;
-using Sinance.Domain.Entities;
 using Sinance.Web.Model;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -37,64 +36,48 @@ namespace Sinance.Controllers
         /// <returns>View containing the overview</returns>
         public async Task<IActionResult> Index()
         {
-            var bankAccounts = await this._bankAccountService.GetActiveBankAccountsForCurrentUser();
-            var currentUserId = await this._sessionService.GetCurrentUserId();
+            var bankAccounts = await _bankAccountService.GetActiveBankAccountsForCurrentUser();
+            var currentUserId = await _sessionService.GetCurrentUserId();
 
             var monthYearDate = DateTime.Now.AddMonths(-1);
 
             // Yes, wow this is inneficient
-            using (var unitOfWork = _unitOfWork())
+            using var unitOfWork = _unitOfWork();
+
+            var transactions = await unitOfWork.TransactionRepository.FindAll(findQuery: x =>
+                        x.Date.Year == monthYearDate.Year &&
+                        x.Date.Month == monthYearDate.Month &&
+                        x.UserId == currentUserId);
+
+            // No need to sort this list, we loop through it by month numbers
+            var totalProfitLossLastMonth = transactions.Sum(x => x.Amount);
+
+            var totalIncomeLastMonth = transactions.Where(x =>
+                        (!x.TransactionCategories.Any() || x.TransactionCategories.Any(x => x.CategoryId != 69)) && // Cashflow
+                        x.Amount > 0).Sum(x => x.Amount);
+
+            var totalExpensesLastMonth = transactions.Where(x =>
+                        (!x.TransactionCategories.Any() || x.TransactionCategories.Any(x => x.CategoryId != 69)) && // Cashflow
+                        x.Amount < 0).Sum(x => x.Amount * -1);
+
+            // Yes it's ascending cause we are looking for the lowest amount
+            var topExpenses = transactions.Where(x =>
+                    (!x.TransactionCategories.Any() || x.TransactionCategories.Any(x => x.CategoryId != 69)) && // Cashflow
+                    x.Amount < 0)
+                .OrderBy(x => x.Amount)
+                .Take(15)
+                .ToList();
+
+            var dashboardModel = new DashboardModel
             {
-                // No need to sort this list, we loop through it by month numbers
-                var totalProfitLossLastMonth = unitOfWork.TransactionRepository
-                    .Sum(
-                        filterQuery: item =>
-                            item.Date.Year == monthYearDate.Year &&
-                            item.Date.Month == monthYearDate.Month &&
-                            item.UserId == currentUserId,
-                        sumQuery: x => x.Amount);
+                BankAccounts = bankAccounts,
+                BiggestExpenses = topExpenses,
+                LastMonthProfitLoss = totalProfitLossLastMonth,
+                LastMonthExpenses = totalExpensesLastMonth,
+                LastMonthIncome = totalIncomeLastMonth
+            };
 
-                var totalIncomeLastMonth = unitOfWork.TransactionRepository
-                    .Sum(
-                        filterQuery: item =>
-                            item.Date.Year == monthYearDate.Year &&
-                            item.Date.Month == monthYearDate.Month &&
-                            item.UserId == currentUserId &&
-                            (!item.TransactionCategories.Any() || item.TransactionCategories.Any(x => x.CategoryId != 69)) && // Cashflow
-                            item.Amount > 0,
-                        sumQuery: x => x.Amount);
-
-                var totalExpensesLastMonth = unitOfWork.TransactionRepository
-                    .Sum(
-                        filterQuery: item =>
-                            item.Date.Year == monthYearDate.Year &&
-                            item.Date.Month == monthYearDate.Month &&
-                            item.UserId == currentUserId &&
-                            (!item.TransactionCategories.Any() || item.TransactionCategories.Any(x => x.CategoryId != 69)) && // Cashflow
-                            item.Amount < 0,
-                        sumQuery: x => x.Amount * -1);
-
-                // Yes it's ascending cause we are looking for the lowest amount
-                var topExpenses = unitOfWork.TransactionRepository.FindTopAscendingTracked(item =>
-                            item.Date.Year == monthYearDate.Year &&
-                            item.Date.Month == monthYearDate.Month &&
-                            item.UserId == currentUserId &&
-                            (!item.TransactionCategories.Any() || item.TransactionCategories.Any(x => x.CategoryId != 69)) && // Cashflow
-                            item.Amount < 0,
-                            orderByAscending: x => x.Amount,
-                            count: 15);
-
-                DashboardModel dashboardModel = new DashboardModel
-                {
-                    BankAccounts = bankAccounts,
-                    BiggestExpenses = topExpenses,
-                    LastMonthProfitLoss = totalProfitLossLastMonth,
-                    LastMonthExpenses = totalExpensesLastMonth,
-                    LastMonthIncome = totalIncomeLastMonth
-                };
-
-                return View(dashboardModel);
-            }
+            return View(dashboardModel);
         }
     }
 }

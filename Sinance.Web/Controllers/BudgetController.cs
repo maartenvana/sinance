@@ -1,10 +1,8 @@
-﻿using Sinance.Business.Services;
-using Sinance.Domain.Entities;
+﻿using Sinance.Domain.Entities;
 using Sinance.Web.Model.Budget;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Sinance.Storage;
@@ -32,11 +30,11 @@ namespace Sinance.Web.Controllers
             var currentUserId = await _sessionService.GetCurrentUserId();
 
             using var unitOfWork = _unitOfWork();
-            var categories = unitOfWork.CategoryRepository.FindAllTracked(x => x.UserId == currentUserId);
+            var categories = await unitOfWork.CategoryRepository.FindAll(x => x.UserId == currentUserId);
 
             var model = new CreateBudgetModel
             {
-                AvailableCategories = categories.ToList()
+                AvailableCategories = categories
             };
 
             return View(model);
@@ -61,17 +59,18 @@ namespace Sinance.Web.Controllers
         public async Task<IActionResult> Delete(int id)
         {
             using var unitOfWork = _unitOfWork();
-            unitOfWork.BudgetRepository.Delete(id);
+            var budget = await unitOfWork.BudgetRepository.FindSingle(x => x.Id == id);
+            unitOfWork.BudgetRepository.Delete(budget);
             await unitOfWork.SaveAsync();
 
             return RedirectToAction("Index");
         }
 
         [HttpGet]
-        public IActionResult Edit(int id)
+        public async Task<IActionResult> Edit(int id)
         {
             using var unitOfWork = _unitOfWork();
-            var budget = unitOfWork.BudgetRepository.FindSingleTracked(x => x.Id == id);
+            var budget = await unitOfWork.BudgetRepository.FindSingle(x => x.Id == id);
 
             var model = new EditBudgetModel
             {
@@ -86,7 +85,7 @@ namespace Sinance.Web.Controllers
         public async Task<IActionResult> Edit(EditBudgetModel model)
         {
             using var unitOfWork = _unitOfWork();
-            var budget = unitOfWork.BudgetRepository.FindSingleTracked(x => x.Id == model.BudgetId);
+            var budget = await unitOfWork.BudgetRepository.FindSingleTracked(x => x.Id == model.BudgetId);
             budget.Amount = model.Amount;
 
             unitOfWork.BudgetRepository.Update(budget);
@@ -102,7 +101,7 @@ namespace Sinance.Web.Controllers
             var currentUserId = await _sessionService.GetCurrentUserId();
 
             using var unitOfWork = _unitOfWork();
-            var budgets = unitOfWork.BudgetRepository.ListAllTracked(nameof(Budget.Category), $"{nameof(Budget.Category)}.{nameof(Budget.Category.ChildCategories)}");
+            var budgets = await unitOfWork.BudgetRepository.ListAll(nameof(Budget.Category), $"{nameof(Budget.Category)}.{nameof(Budget.Category.ChildCategories)}");
 
             var model = new BudgetIndexModel
             {
@@ -136,15 +135,15 @@ namespace Sinance.Web.Controllers
             var currentUserId = await _sessionService.GetCurrentUserId();
 
             using var unitOfWork = _unitOfWork();
-            var budgets = unitOfWork.BudgetRepository.ListAllTracked(nameof(Budget.Category), $"{nameof(Budget.Category)}.{nameof(Budget.Category.ChildCategories)}");
+            var budgets = await unitOfWork.BudgetRepository.ListAll(nameof(Budget.Category), $"{nameof(Budget.Category)}.{nameof(Budget.Category.ChildCategories)}");
 
-            IList<Transaction> transactions = unitOfWork.TransactionRepository.FindAllTracked(item =>
-                item.Date.Month == month &&
-                item.Date.Year == year &&
-                item.UserId == currentUserId &&
-                item.TransactionCategories.Any(x => budgets.Any(y => y.CategoryId == x.CategoryId) ||
-                                                    budgets.Any(y => y.Category.ChildCategories.Any(z => z.Id == x.CategoryId))),
-                includeProperties: new string[] { nameof(Transaction.TransactionCategories), "TransactionCategories.Category", "TransactionCategories.Category.ChildCategories" }).ToList();
+            var transactions = await unitOfWork.TransactionRepository.FindAll(item =>
+               item.Date.Month == month &&
+               item.Date.Year == year &&
+               item.UserId == currentUserId &&
+               item.TransactionCategories.Any(x => budgets.Any(y => y.CategoryId == x.CategoryId) ||
+                                                   budgets.Any(y => y.Category.ChildCategories.Any(z => z.Id == x.CategoryId))),
+                includeProperties: new string[] { nameof(Transaction.TransactionCategories), "TransactionCategories.Category", "TransactionCategories.Category.ChildCategories" });
 
             var model = new BudgetStatusModel
             {

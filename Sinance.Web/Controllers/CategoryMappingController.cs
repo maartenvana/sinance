@@ -1,5 +1,4 @@
 ﻿using Sinance.Business.Classes;
-using Sinance.Business.Services;
 using Sinance.Domain.Entities;
 using Sinance.Web.Model;
 using Sinance.Web;
@@ -43,24 +42,23 @@ namespace Sinance.Controllers
             CategoryMappingModel model = null;
             var currentUserId = await _sessionService.GetCurrentUserId();
 
-            using (var unitOfWork = _unitOfWork())
+            using var unitOfWork = _unitOfWork();
+
+            var category = await unitOfWork.CategoryRepository.FindSingle(item => item.Id == categoryId && item.UserId == currentUserId);
+            if (category != null)
             {
-                Category category = unitOfWork.CategoryRepository.FindSingleTracked(item => item.Id == categoryId && item.UserId == currentUserId);
-                if (category != null)
+                model = new CategoryMappingModel
                 {
-                    model = new CategoryMappingModel
-                    {
-                        CategoryName = category.Name,
-                        CategoryId = categoryId
-                    };
-                }
-                else
-                    TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryNotFound);
-
-                ActionResult actionResult = PartialView("UpsertCategoryMapping", model);
-
-                return actionResult;
+                    CategoryName = category.Name,
+                    CategoryId = categoryId
+                };
             }
+            else
+            {
+                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryNotFound);
+            }
+
+            return PartialView("UpsertCategoryMapping", model);
         }
 
         /// <summary>
@@ -75,20 +73,23 @@ namespace Sinance.Controllers
 
             var currentUserId = await _sessionService.GetCurrentUserId();
 
-            using (var unitOfWork = _unitOfWork())
+            using var unitOfWork = _unitOfWork();
+
+            var existingMapping = await unitOfWork.CategoryMappingRepository.FindSingle(item => item.Id == categoryMappingId &&
+                                       item.Category.UserId == currentUserId,
+                                       includeProperties: "Category");
+            CategoryMappingModel model = null;
+
+            if (existingMapping != null)
             {
-                CategoryMapping existingMapping = unitOfWork.CategoryMappingRepository.FindSingleTracked(item => item.Id == categoryMappingId &&
-                                                                                            item.Category.UserId == currentUserId,
-                                                                                            includeProperties: "Category");
-                CategoryMappingModel model = null;
-
-                if (existingMapping != null)
-                    model = CategoryMappingModel.CreateCategoryMappingModel(existingMapping);
-                else
-                    TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryMappingNotFound);
-
-                return PartialView("UpsertCategoryMapping", model);
+                model = CategoryMappingModel.CreateCategoryMappingModel(existingMapping);
             }
+            else
+            {
+                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryMappingNotFound);
+            }
+
+            return PartialView("UpsertCategoryMapping", model);
         }
 
         /// <summary>
@@ -103,24 +104,23 @@ namespace Sinance.Controllers
 
             var currentUserId = await _sessionService.GetCurrentUserId();
 
-            using (var unitOfWork = _unitOfWork())
+            using var unitOfWork = _unitOfWork();
+
+            var mapping = await unitOfWork.CategoryMappingRepository.FindSingleTracked(item => item.Id == categoryMappingId &&
+                               item.Category.UserId == currentUserId);
+
+            if (mapping != null)
             {
-                CategoryMapping mapping = unitOfWork.CategoryMappingRepository.FindSingleTracked(item => item.Id == categoryMappingId &&
-                                                                                    item.Category.UserId == currentUserId);
+                unitOfWork.CategoryMappingRepository.Delete(mapping);
+                await unitOfWork.SaveAsync();
 
-                if (mapping != null)
-                {
-                    unitOfWork.CategoryMappingRepository.Delete(mapping);
-                    await unitOfWork.SaveAsync();
-
-                    TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.CategoryMappingDeleted);
-                    return RedirectToAction("EditCategory", "Category", new { categoryId = mapping.CategoryId });
-                }
-                else
-                {
-                    TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryMappingNotFound);
-                    return RedirectToAction("Index", "Category");
-                }
+                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.CategoryMappingDeleted);
+                return RedirectToAction("EditCategory", "Category", new { categoryId = mapping.CategoryId });
+            }
+            else
+            {
+                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryMappingNotFound);
+                return RedirectToAction("Index", "Category");
             }
         }
 
@@ -134,75 +134,71 @@ namespace Sinance.Controllers
             if (model == null)
                 throw new ArgumentNullException(nameof(model));
 
-            ActionResult result;
             if (ModelState.IsValid)
             {
                 var currentUserId = await _sessionService.GetCurrentUserId();
 
-                using (var unitOfWork = _unitOfWork())
+                using var unitOfWork = _unitOfWork();
+
+                // Placeholder extra validation, in the future all mappings should be possible
+                if (model.ColumnTypeId != ColumnType.Description &&
+                    model.ColumnTypeId != ColumnType.Name &&
+                    model.ColumnTypeId != ColumnType.DestinationAccount)
                 {
-                    // Placeholder extra validation, in the future all mappings should be possible
-                    if (model.ColumnTypeId != ColumnType.Description &&
-                        model.ColumnTypeId != ColumnType.Name &&
-                        model.ColumnTypeId != ColumnType.DestinationAccount)
+                    ModelState.AddModelError("", Resources.UnsupportedColumnTypeMapping);
+                    return PartialView("UpsertCategoryMapping", model);
+                }
+                else if (unitOfWork.CategoryRepository.FindSingleTracked(item => item.UserId == currentUserId &&
+                                                                        item.Id == model.CategoryId) == null)
+                {
+                    ModelState.AddModelError("", Resources.CategoryNotFound);
+                    return PartialView("UpsertCategoryMapping", model);
+                }
+                else
+                {
+                    if (model.Id > 0)
                     {
-                        ModelState.AddModelError("", Resources.UnsupportedColumnTypeMapping);
-                        result = PartialView("UpsertCategoryMapping", model);
-                    }
-                    else if (unitOfWork.CategoryRepository.FindSingleTracked(item => item.UserId == currentUserId &&
-                                                                            item.Id == model.CategoryId) == null)
-                    {
-                        ModelState.AddModelError("", Resources.CategoryNotFound);
-                        result = PartialView("UpsertCategoryMapping", model);
-                    }
-                    else
-                    {
-                        if (model.Id > 0)
+                        var existingCategoryMapping = await unitOfWork.CategoryMappingRepository.FindSingleTracked(item => item.Id == model.Id &&
+                                                                                                                item.Category.UserId == currentUserId);
+                        if (existingCategoryMapping != null)
                         {
-                            CategoryMapping existingCategoryMapping = unitOfWork.CategoryMappingRepository.FindSingleTracked(item => item.Id == model.Id &&
-                                                                                                                    item.Category.UserId == currentUserId);
-                            if (existingCategoryMapping != null)
-                            {
-                                existingCategoryMapping.Update(matchValue: model.MatchValue,
-                                    columnType: model.ColumnTypeId,
-                                    categoryId: model.CategoryId);
-
-                                unitOfWork.CategoryMappingRepository.Update(existingCategoryMapping);
-                                await unitOfWork.SaveAsync();
-
-                                result = Json(new SinanceJsonResult
-                                {
-                                    Success = true
-                                });
-                            }
-                            else
-                            {
-                                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryMappingNotFound);
-                                result = PartialView("UpsertCategoryMapping", model);
-                            }
-                        }
-                        else
-                        {
-                            CategoryMapping newCategoryMapping = new CategoryMapping();
-                            newCategoryMapping.Update(matchValue: model.MatchValue,
+                            existingCategoryMapping.Update(matchValue: model.MatchValue,
                                 columnType: model.ColumnTypeId,
                                 categoryId: model.CategoryId);
 
-                            unitOfWork.CategoryMappingRepository.Insert(newCategoryMapping);
+                            unitOfWork.CategoryMappingRepository.Update(existingCategoryMapping);
                             await unitOfWork.SaveAsync();
 
-                            result = Json(new SinanceJsonResult
+                            return Json(new SinanceJsonResult
                             {
                                 Success = true
                             });
                         }
+                        else
+                        {
+                            TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryMappingNotFound);
+                            return PartialView("UpsertCategoryMapping", model);
+                        }
+                    }
+                    else
+                    {
+                        var newCategoryMapping = new CategoryMapping();
+                        newCategoryMapping.Update(matchValue: model.MatchValue,
+                            columnType: model.ColumnTypeId,
+                            categoryId: model.CategoryId);
+
+                        unitOfWork.CategoryMappingRepository.Insert(newCategoryMapping);
+                        await unitOfWork.SaveAsync();
+
+                        return Json(new SinanceJsonResult
+                        {
+                            Success = true
+                        });
                     }
                 }
             }
-            else
-                result = PartialView("UpsertCategoryMapping", model);
 
-            return result;
+            return PartialView("UpsertCategoryMapping", model);
         }
     }
 }

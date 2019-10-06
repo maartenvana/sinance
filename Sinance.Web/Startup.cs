@@ -1,14 +1,10 @@
 ﻿using Autofac;
-using Autofac.Extensions.DependencyInjection;
 using Sinance.Business;
 using Sinance.Common;
-using Sinance.Domain.Entities;
 using Sinance.Storage;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;

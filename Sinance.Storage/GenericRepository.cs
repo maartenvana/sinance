@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Sinance.Domain.Entities;
 
 namespace Sinance.Storage
 {
@@ -30,7 +31,7 @@ namespace Sinance.Storage
         {
             _dbSet.RemoveRange(entities);
         }
-        
+
         public async Task<List<TEntity>> FindAll(Expression<Func<TEntity, bool>> predicate)
         {
             return await _dbSet.Where(predicate).AsNoTracking().ToListAsync();
@@ -187,11 +188,6 @@ namespace Sinance.Storage
         public async Task<List<TEntity>> ListAllTracked()
         {
             return await _dbSet.AsTracking().ToListAsync();
-        }
-
-        public async Task<int> SaveAsync()
-        {
-            return await _context.SaveChangesAsync();
         }
 
         public async Task<decimal> Sum(Expression<Func<TEntity, bool>> filterQuery, Expression<Func<TEntity, decimal>> sumQuery)

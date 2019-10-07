@@ -7,11 +7,7 @@ namespace Sinance.Storage
     public interface IUnitOfWork : IDisposable
     {
         IGenericRepository<BankAccount> BankAccountRepository { get; }
-
-        IGenericRepository<Budget> BudgetRepository { get; }
-
         IGenericRepository<CategoryMapping> CategoryMappingRepository { get; }
-
         IGenericRepository<Category> CategoryRepository { get; }
         SinanceContext Context { get; }
         IGenericRepository<CustomReportCategory> CustomReportCategoryRepository { get; }

@@ -1,4 +1,4 @@
-﻿namespace Sinance.Common
+﻿namespace Sinance.Common.Configuration
 {
     public class ConnectionStrings
     {

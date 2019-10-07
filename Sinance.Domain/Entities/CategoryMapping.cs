@@ -7,7 +7,7 @@ namespace Sinance.Domain.Entities
     /// <summary>
     /// Category mapping entity
     /// </summary>
-    public class CategoryMapping : EntityBase
+    public class CategoryMapping : UserEntityBase
     {
         /// <summary>
         /// Category

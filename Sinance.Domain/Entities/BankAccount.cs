@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Sinance.Domain.Entities
@@ -9,7 +8,7 @@ namespace Sinance.Domain.Entities
     /// <summary>
     /// Bank account entity
     /// </summary>
-    public class BankAccount : EntityBase
+    public class BankAccount : UserEntityBase
     {
         /// <summary>
         /// Bank account type
@@ -49,18 +48,6 @@ namespace Sinance.Domain.Entities
         /// </summary>
         [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<Transaction> Transactions { get; set; }
-
-        /// <summary>
-        /// User associated with this bank account
-        /// </summary>
-        [ForeignKey("UserId")]
-        public virtual SinanceUser User { get; set; }
-
-        /// <summary>
-        /// User id associated with this bank account
-        /// </summary>
-        [Required]
-        public int UserId { get; set; }
 
         /// <summary>
         /// Default constructor

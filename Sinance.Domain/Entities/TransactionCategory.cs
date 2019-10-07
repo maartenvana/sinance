@@ -6,7 +6,7 @@ namespace Sinance.Domain.Entities
     /// <summary>
     /// Transaction category entity
     /// </summary>
-    public class TransactionCategory : EntityBase
+    public class TransactionCategory : UserEntityBase
     {
         /// <summary>
         /// Amount

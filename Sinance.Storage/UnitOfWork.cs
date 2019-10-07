@@ -9,8 +9,6 @@ namespace Sinance.Storage
 
         public IGenericRepository<BankAccount> BankAccountRepository { get; }
 
-        public IGenericRepository<Budget> BudgetRepository { get; }
-
         public IGenericRepository<CategoryMapping> CategoryMappingRepository { get; }
 
         public IGenericRepository<Category> CategoryRepository { get; }
@@ -35,7 +33,6 @@ namespace Sinance.Storage
             SinanceContext context,
             IGenericRepository<SinanceUser> userRepository,
             IGenericRepository<BankAccount> bankAccountRepository,
-            IGenericRepository<Budget> budgetRepository,
             IGenericRepository<Category> categorieRepository,
             IGenericRepository<CategoryMapping> categoryMappingRepository,
             IGenericRepository<CustomReportCategory> customReportCategorieRepository,
@@ -48,7 +45,6 @@ namespace Sinance.Storage
             Context = context;
             UserRepository = userRepository;
             BankAccountRepository = bankAccountRepository;
-            BudgetRepository = budgetRepository;
             CategoryRepository = categorieRepository;
             CategoryMappingRepository = categoryMappingRepository;
             CustomReportCategoryRepository = customReportCategorieRepository;

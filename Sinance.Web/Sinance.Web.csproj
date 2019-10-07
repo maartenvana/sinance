@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="Autofac" Version="4.9.4" />
-    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="5.0.0" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="5.0.1" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="3.0.0" />
     <PackageReference Include="Serilog.AspNetCore" Version="3.0.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />
@@ -39,12 +39,6 @@
   <ItemGroup>
     <Watch Remove="Components\SideNavigation.cs" />
     <Watch Remove="Components\SimpleMonthSelector.cs" />
-    <Watch Remove="Controllers\BudgetController.cs" />
-    <Watch Remove="Model\Budget\BudgetIndexModel.cs" />
-    <Watch Remove="Model\Budget\BudgetModel.cs" />
-    <Watch Remove="Model\Budget\BudgetStatusModel.cs" />
-    <Watch Remove="Model\Budget\CreateBudgetModel.cs" />
-    <Watch Remove="Model\Budget\EditBudgetModel.cs" />
     <Watch Remove="Model\CategoriesOverviewModel.cs" />
     <Watch Remove="Model\MonthYearSelectionModel.cs" />
     <Watch Remove="Services\AuthenticationService.cs" />
@@ -166,6 +160,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="appsettings.development.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="appsettings.production.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

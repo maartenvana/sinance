@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Autofac.Features.OwnedInstances;
 using System;
 using Microsoft.Extensions.Logging;
+using Sinance.Common.Configuration;
 
 namespace Sinance.Storage
 {
@@ -26,14 +27,23 @@ namespace Sinance.Storage
 
             builder.Register(regContext =>
             {
-                var connectionStrings = regContext.Resolve<ConnectionStrings>();
-
+                var appSettings = regContext.Resolve<AppSettings>();
                 var contextOptionsBuilder = new DbContextOptionsBuilder();
-                contextOptionsBuilder.UseLoggerFactory(regContext.Resolve<ILoggerFactory>());
-                contextOptionsBuilder.UseMySql(connectionStrings.Sql);
-                var context = new SinanceContext(contextOptionsBuilder.Options);
 
-                return context;
+                if (appSettings.Database.LoggingEnabled)
+                {
+                    contextOptionsBuilder.UseLoggerFactory(regContext.Resolve<ILoggerFactory>());
+                }
+                contextOptionsBuilder.UseMySql(appSettings.ConnectionStrings.Sql);
+
+                return contextOptionsBuilder.Options;
+            }).SingleInstance();
+
+            builder.Register(regContext =>
+            {
+                var options = regContext.Resolve<DbContextOptions>();
+
+                return new SinanceContext(options);
             }).AsSelf().InstancePerOwned<IUnitOfWork>();
 
             builder.RegisterType<UnitOfWork>().As<IUnitOfWork>();

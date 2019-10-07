@@ -6,7 +6,7 @@ namespace Sinance.Domain.Entities
     /// <summary>
     /// CustomReportCategory entity class
     /// </summary>
-    public class CustomReportCategory : EntityBase
+    public class CustomReportCategory : UserEntityBase
     {
         /// <summary>
         /// Category reference

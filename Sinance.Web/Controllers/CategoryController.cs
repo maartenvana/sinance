@@ -66,7 +66,11 @@ namespace Sinance.Controllers
 
             var category = await unitOfWork.CategoryRepository.FindSingle(item => item.Id == categoryId &&
                    item.UserId == currentUserId,
-                   "ParentCategory", "ChildCategories", "CategoryMappings");
+                   includeProperties: new string[] {
+                       nameof(Category.ParentCategory),
+                       nameof(Category.ChildCategories),
+                       nameof(Category.CategoryMappings)
+                   });
 
             if (category != null)
             {
@@ -160,7 +164,7 @@ namespace Sinance.Controllers
 
             using var unitOfWork = _unitOfWork();
 
-            var category = await unitOfWork.CategoryRepository.FindSingle(item => item.Id == categoryId && item.UserId == currentUserId, "CategoryMappings");
+            var category = await unitOfWork.CategoryRepository.FindSingle(item => item.Id == categoryId && item.UserId == currentUserId, nameof(Category.CategoryMappings));
 
             if (category != null)
             {

@@ -1,4 +1,4 @@
-﻿namespace Sinance.Domain
+﻿namespace Sinance.Domain.Entities
 {
     /// <summary>
     /// Base class for entities

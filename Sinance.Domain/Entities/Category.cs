@@ -9,7 +9,7 @@ namespace Sinance.Domain.Entities
     /// <summary>
     /// Category entity
     /// </summary>
-    public class Category : EntityBase
+    public class Category : UserEntityBase
     {
         /// <summary>
         /// Category mappings
@@ -57,18 +57,6 @@ namespace Sinance.Domain.Entities
         /// </summary>
         [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<TransactionCategory> TransactionCategories { get; set; }
-
-        /// <summary>
-        /// User associated with this category
-        /// </summary>
-        [ForeignKey("UserId")]
-        public virtual SinanceUser User { get; set; }
-
-        /// <summary>
-        /// User id associated with this category
-        /// </summary>
-        [Required]
-        public int UserId { get; set; }
 
         /// <summary>
         /// Default constructor

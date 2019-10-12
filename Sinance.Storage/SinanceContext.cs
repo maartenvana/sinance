@@ -10,8 +10,6 @@ namespace Sinance.Storage
     {
         public DbSet<BankAccount> BankAccounts { get; set; }
 
-        public DbSet<Budget> Budgets { get; set; }
-
         public DbSet<Category> Categories { get; set; }
 
         public DbSet<CategoryMapping> CategoryMappings { get; set; }
@@ -54,7 +52,6 @@ namespace Sinance.Storage
             modelBuilder.Entity<BankAccount>().ToTable("BankAccount").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
 
             modelBuilder.Entity<SinanceUser>().ToTable("Users").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
-            modelBuilder.Entity<Budget>().ToTable("Budget").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
             modelBuilder.Entity<Category>().ToTable("Category").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
             modelBuilder.Entity<CategoryMapping>().ToTable("CategoryMapping").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
             modelBuilder.Entity<Transaction>().ToTable("Transaction").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();

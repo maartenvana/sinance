@@ -14,6 +14,7 @@ using Sinance.Web.Services;
 using Sinance.Business.Services.Authentication;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Authorization;
+using Sinance.Common.Configuration;
 
 namespace Sinance.Web
 {
@@ -65,13 +66,13 @@ namespace Sinance.Web
         public void ConfigureContainer(ContainerBuilder builder)
         {
             var appSettings = _configuration.Get<AppSettings>();
-
-            builder.RegisterInstance(appSettings.ConnectionStrings);
+            builder.RegisterInstance(appSettings);
 
             builder.RegisterType<HttpContextAccessor>().As<IHttpContextAccessor>();
             builder.RegisterType<AuthenticationService>().As<IAuthenticationService>();
 
             builder.RegisterModule<BusinessModule>();
+            builder.RegisterModule<StorageModule>();
 
             builder.RegisterType<SelectListHelper>().AsSelf();
         }
@@ -97,16 +98,6 @@ namespace Sinance.Web
                     .RequireAuthenticatedUser()
                     .Build();
             });
-
-            /*var mvcBuilder = services.AddMvcCore(options =>
-            {
-                //options.Filters.Add(typeof(AuthorizeAttribute));
-            })
-            .AddRazorPages()
-            .AddRazorViewEngine()
-            .AddAuthorization()
-            .AddFormatterMappings();
-            */
         }
     }
 }

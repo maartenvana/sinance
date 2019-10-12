@@ -1,4 +1,5 @@
 ﻿using Sinance.Domain;
+using Sinance.Domain.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -168,11 +169,6 @@ namespace Sinance.Storage
         /// </summary>
         /// <returns>Found entities</returns>
         Task<List<TEntity>> ListAllTracked();
-
-        /// <summary>
-        /// Save changes
-        /// </summary>
-        Task<int> SaveAsync();
 
         /// <summary>
         /// Returns the sum of a given field from an entity

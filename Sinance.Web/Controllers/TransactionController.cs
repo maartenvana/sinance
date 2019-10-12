@@ -3,6 +3,7 @@ using System.Linq;
 using System;
 using Sinance.Storage;
 using System.Threading.Tasks;
+using Sinance.Business.Services;
 
 namespace Sinance.Controllers
 {
@@ -11,11 +12,14 @@ namespace Sinance.Controllers
     /// </summary>
     public class TransactionController : Controller
     {
+        private readonly IBankAccountService _bankAccountService;
         private readonly Func<IUnitOfWork> _unitOfWork;
 
         public TransactionController(
+            IBankAccountService bankAccountService,
             Func<IUnitOfWork> unitOfWork)
         {
+            _bankAccountService = bankAccountService;
             _unitOfWork = unitOfWork;
         }
 
@@ -32,6 +36,13 @@ namespace Sinance.Controllers
             ActionResult result;
 
             using var unitOfWork = _unitOfWork();
+
+            var bankAccounts = await _bankAccountService.GetAllBankAccountsForCurrentUser();
+
+            if (!bankAccounts.Any(x => x.Id == bankAccountId))
+            {
+                return NotFound();
+            }
 
             var allTransactions = await unitOfWork.TransactionRepository.FindAll(item => item.BankAccountId == bankAccountId);
 

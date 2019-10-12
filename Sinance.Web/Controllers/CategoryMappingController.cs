@@ -77,7 +77,7 @@ namespace Sinance.Controllers
 
             var existingMapping = await unitOfWork.CategoryMappingRepository.FindSingle(item => item.Id == categoryMappingId &&
                                        item.Category.UserId == currentUserId,
-                                       includeProperties: "Category");
+                                       includeProperties: nameof(CategoryMapping.Category));
             CategoryMappingModel model = null;
 
             if (existingMapping != null)

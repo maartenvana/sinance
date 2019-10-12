@@ -205,7 +205,7 @@ namespace Sinance.Controllers
             using var unitOfWork = _unitOfWork();
             var transaction = await unitOfWork.TransactionRepository.FindSingleTracked(item => item.Id == transactionId &&
                            item.UserId == currentUserId,
-                           includeProperties: "TransactionCategories");
+                           includeProperties: nameof(Transaction.TransactionCategories));
             var category = await unitOfWork.CategoryRepository.FindSingle(item => item.Id == categoryId &&
                                                                         item.UserId == currentUserId);
 

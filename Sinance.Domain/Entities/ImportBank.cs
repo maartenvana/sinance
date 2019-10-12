@@ -7,7 +7,7 @@ namespace Sinance.Domain.Entities
     /// <summary>
     /// Import bank record for configuration of an import for a bank
     /// </summary>
-    public class ImportBank : UserEntityBase
+    public class ImportBank : EntityBase
     {
         /// <summary>
         /// Delimiter for the import

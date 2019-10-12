@@ -6,7 +6,7 @@ namespace Sinance.Domain.Entities
     /// <summary>
     /// Transaction mapping entity
     /// </summary>
-    public class ImportMapping : UserEntityBase
+    public class ImportMapping : EntityBase
     {
         /// <summary>
         /// Column index

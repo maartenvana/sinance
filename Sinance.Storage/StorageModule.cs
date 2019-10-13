@@ -1,10 +1,9 @@
 ﻿using Autofac;
-using Sinance.Common;
-using Microsoft.EntityFrameworkCore;
 using Autofac.Features.OwnedInstances;
-using System;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sinance.Common.Configuration;
+using System;
 
 namespace Sinance.Storage
 {

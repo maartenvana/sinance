@@ -15,6 +15,9 @@ using Sinance.Business.Services.Authentication;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Authorization;
 using Sinance.Common.Configuration;
+using Sinance.Web.Extensions;
+using Serilog;
+using AutofacSerilogIntegration;
 
 namespace Sinance.Web
 {
@@ -36,31 +39,32 @@ namespace Sinance.Web
             _environment = env;
         }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder appBuilder)
         {
             if (_environment.EnvironmentName == Environments.Development)
             {
-                app.UseDeveloperExceptionPage();
+                appBuilder.UseDeveloperExceptionPage();
             }
+            appBuilder.UseSerilogRequestLogging();
 
-            app.UseStaticFiles();
+            appBuilder.UseStaticFiles();
 
-            app.UseRouting();
-            app.UseCors();
+            appBuilder.UseRouting();
+            appBuilder.UseCors();
 
-            app.UseAuthentication();
-            app.UseAuthorization();
+            appBuilder.UseAuthentication();
+            appBuilder.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
+            appBuilder.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();
                 endpoints.MapControllerRoute(
                     "default", "{controller=Home}/{action=Index}/{id?}");
             });
 
-            var unitOfWorkFunc = app.ApplicationServices.GetRequiredService<Func<IUnitOfWork>>();
-            using var unitOfWork = unitOfWorkFunc();
-            unitOfWork.Context.Migrate();
+            appBuilder
+                .MigrateDatabase()
+                .ApplyDataSeed();
         }
 
         public void ConfigureContainer(ContainerBuilder builder)
@@ -75,6 +79,8 @@ namespace Sinance.Web
             builder.RegisterModule<StorageModule>();
 
             builder.RegisterType<SelectListHelper>().AsSelf();
+
+            builder.RegisterLogger();
         }
 
         public void ConfigureServices(IServiceCollection services)
@@ -91,6 +97,9 @@ namespace Sinance.Web
 
             services.AddControllersWithViews();
             services.AddRazorPages();
+
+            services.AddLogging(loggingBuilder =>
+                loggingBuilder.AddSerilog(dispose: true));
 
             services.AddAuthorization(options =>
             {

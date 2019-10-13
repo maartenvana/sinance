@@ -163,7 +163,9 @@ namespace Sinance.Controllers
             {
                 using var unitOfWork = _unitOfWork();
                 var transactions = await unitOfWork.TransactionRepository
-                    .FindAll(item => item.BankAccount.Id == bankAccountId,
+                    .FindTopDescending(item => item.BankAccount.Id == bankAccountId,
+                                        orderByDescending: x => x.Date,
+                                        count: 200,
                                         includeProperties: new string[] {
                                                 nameof(Transaction.TransactionCategories),
                                                 $"{nameof(Transaction.TransactionCategories)}.{nameof(TransactionCategory.Category)}"
@@ -176,7 +178,7 @@ namespace Sinance.Controllers
                 {
                     Account = bankAccount,
                     Transactions = transactions.Take(200).ToList(),
-                    AccountBalance = transactions.Sum(item => item.Amount) + bankAccount.StartBalance,
+                    AccountBalance = bankAccount.CurrentBalance.GetValueOrDefault(),
                     AvailableCategories = categories
                 };
 

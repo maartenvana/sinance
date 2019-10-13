@@ -32,116 +32,113 @@ namespace Sinance.Storage
             _dbSet.RemoveRange(entities);
         }
 
-        public async Task<List<TEntity>> FindAll(Expression<Func<TEntity, bool>> predicate)
-        {
-            return await _dbSet.Where(predicate).AsNoTracking().ToListAsync();
-        }
-
         public async Task<List<TEntity>> FindAll(Expression<Func<TEntity, bool>> predicate, params string[] includeProperties)
         {
-            if (includeProperties == null)
-            {
-                throw new ArgumentNullException(nameof(includeProperties));
-            }
-
             var query = _dbSet.Where(predicate);
-            query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
 
+            if (includeProperties != null)
+            {
+                query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
+            }
             return await query.AsNoTracking().ToListAsync();
-        }
-
-        public async Task<List<TEntity>> FindAllTracked(Expression<Func<TEntity, bool>> predicate)
-        {
-            return await _dbSet.Where(predicate).AsTracking().ToListAsync();
         }
 
         public async Task<List<TEntity>> FindAllTracked(Expression<Func<TEntity, bool>> predicate, params string[] includeProperties)
         {
-            if (includeProperties == null)
-            {
-                throw new ArgumentNullException(nameof(includeProperties));
-            }
-
             var query = _dbSet.Where(predicate);
-            query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
 
+            if (includeProperties != null)
+            {
+                query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
+            }
             return await query.AsTracking().ToListAsync();
-        }
-
-        public async Task<TEntity> FindSingle(Expression<Func<TEntity, bool>> predicate)
-        {
-            return await _dbSet.AsNoTracking().SingleOrDefaultAsync(predicate);
         }
 
         public async Task<TEntity> FindSingle(Expression<Func<TEntity, bool>> predicate, params string[] includeProperties)
         {
-            if (includeProperties == null)
+            var query = _dbSet.AsNoTracking();
+
+            if (includeProperties != null)
             {
-                throw new ArgumentNullException(nameof(includeProperties));
+                query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
             }
 
-            IQueryable<TEntity> query = _dbSet;
-            query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
-
-            return await query.AsNoTracking().SingleOrDefaultAsync(predicate);
-        }
-
-        public async Task<TEntity> FindSingleTracked(Expression<Func<TEntity, bool>> predicate)
-        {
-            return await _dbSet.AsTracking().SingleOrDefaultAsync(predicate);
+            return await query.SingleOrDefaultAsync(predicate);
         }
 
         public async Task<TEntity> FindSingleTracked(Expression<Func<TEntity, bool>> predicate, params string[] includeProperties)
         {
-            if (includeProperties == null)
+            var query = _dbSet.AsTracking();
+
+            if (includeProperties != null)
             {
-                throw new ArgumentNullException(nameof(includeProperties));
+                query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
             }
 
-            IQueryable<TEntity> query = _dbSet;
-            query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
-
-            return await query.AsTracking().SingleOrDefaultAsync(predicate);
+            return await query.SingleOrDefaultAsync(predicate);
         }
 
-        public async Task<List<TEntity>> FindTopAscending(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderByAscending, int count)
+        public async Task<List<TEntity>> FindTopAscending(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderByAscending, int count, params string[] includeProperties)
         {
-            return await _dbSet
-                .Where(predicate)
-                .OrderBy(orderByAscending)
-                .Take(count)
-                .AsNoTracking()
-                .ToListAsync();
+            var query = _dbSet
+                 .Where(predicate)
+                 .OrderBy(orderByAscending)
+                 .Take(count)
+                 .AsNoTracking();
+
+            if (includeProperties != null)
+            {
+                query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
+            }
+
+            return await query.ToListAsync();
         }
 
-        public async Task<List<TEntity>> FindTopAscendingTracked(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderBy, int count)
+        public async Task<List<TEntity>> FindTopAscendingTracked(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderBy, int count, params string[] includeProperties)
         {
-            return await _dbSet
+            var query = _dbSet
                 .Where(predicate)
                 .OrderBy(orderBy)
                 .Take(count)
-                .AsTracking()
-                .ToListAsync();
+                .AsTracking();
+
+            if (includeProperties != null)
+            {
+                query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
+            }
+
+            return await query.ToListAsync();
         }
 
-        public async Task<List<TEntity>> FindTopDescending(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderByDescending, int count)
+        public async Task<List<TEntity>> FindTopDescending(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderByDescending, int count, params string[] includeProperties)
         {
-            return await _dbSet
+            var query = _dbSet
                 .Where(predicate)
                 .OrderByDescending(orderByDescending)
                 .Take(count)
-                .AsNoTracking()
-                .ToListAsync();
+                .AsNoTracking();
+
+            if (includeProperties != null)
+            {
+                query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
+            }
+            return await query.ToListAsync();
         }
 
-        public async Task<List<TEntity>> FindTopDescendingTracked(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderByDescending, int count)
+        public async Task<List<TEntity>> FindTopDescendingTracked(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderByDescending, int count, params string[] includeProperties)
         {
-            return await _dbSet
+            var query = _dbSet
                 .Where(predicate)
                 .OrderByDescending(orderByDescending)
                 .Take(count)
-                .AsTracking()
-                .ToListAsync();
+                .AsTracking();
+
+            if (includeProperties != null)
+            {
+                query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
+            }
+
+            return await query.ToListAsync();
         }
 
         public void Insert(TEntity entity)
@@ -156,38 +153,26 @@ namespace Sinance.Storage
 
         public async Task<List<TEntity>> ListAll(params string[] includeProperties)
         {
-            if (includeProperties == null)
-            {
-                throw new ArgumentNullException(nameof(includeProperties));
-            }
-
             IQueryable<TEntity> query = _dbSet;
-            query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
+
+            if (includeProperties != null)
+            {
+                query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
+            }
 
             return await query.AsNoTracking().ToListAsync();
         }
 
-        public async Task<List<TEntity>> ListAll()
-        {
-            return await _dbSet.AsNoTracking().ToListAsync();
-        }
-
         public async Task<List<TEntity>> ListAllTracked(params string[] includeProperties)
         {
-            if (includeProperties == null)
+            IQueryable<TEntity> query = _dbSet;
+
+            if (includeProperties != null)
             {
-                throw new ArgumentNullException(nameof(includeProperties));
+                query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
             }
 
-            IQueryable<TEntity> query = _dbSet;
-            query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
-
             return await query.AsTracking().ToListAsync();
-        }
-
-        public async Task<List<TEntity>> ListAllTracked()
-        {
-            return await _dbSet.AsTracking().ToListAsync();
         }
 
         public async Task<decimal> Sum(Expression<Func<TEntity, bool>> filterQuery, Expression<Func<TEntity, decimal>> sumQuery)

@@ -31,25 +31,9 @@ namespace Sinance.Storage
         /// </summary>
         /// <typeparam name="TEntity">Entity type</typeparam>
         /// <param name="findQuery">Predicate</param>
-        /// <returns>Found entities</returns>
-        Task<List<TEntity>> FindAll(Expression<Func<TEntity, bool>> findQuery);
-
-        /// <summary>
-        /// Find entities by predicate without tracking
-        /// </summary>
-        /// <typeparam name="TEntity">Entity type</typeparam>
-        /// <param name="findQuery">Predicate</param>
         /// <param name="includeProperties">What properties to include</param>
         /// <returns>Found entities</returns>
         Task<List<TEntity>> FindAll(Expression<Func<TEntity, bool>> findQuery, params string[] includeProperties);
-
-        /// <summary>
-        /// Find entities by predicate with tracking
-        /// </summary>
-        /// <typeparam name="TEntity">Entity type</typeparam>
-        /// <param name="findQuery">Predicate</param>
-        /// <returns>Found entities</returns>
-        Task<List<TEntity>> FindAllTracked(Expression<Func<TEntity, bool>> findQuery);
 
         /// <summary>
         /// Find entities by predicate with tracking
@@ -65,25 +49,9 @@ namespace Sinance.Storage
         /// </summary>
         /// <typeparam name="TEntity">Entity type</typeparam>
         /// <param name="findQuery">Predicate</param>
-        /// <returns>Found entities</returns>
-        Task<TEntity> FindSingle(Expression<Func<TEntity, bool>> findQuery);
-
-        /// <summary>
-        /// Find single entity without tracking
-        /// </summary>
-        /// <typeparam name="TEntity">Entity type</typeparam>
-        /// <param name="findQuery">Predicate</param>
         /// <param name="includeProperties">What properties to include</param>
         /// <returns>Found entities</returns>
         Task<TEntity> FindSingle(Expression<Func<TEntity, bool>> findQuery, params string[] includeProperties);
-
-        /// <summary>
-        /// Find single entity with tracking
-        /// </summary>
-        /// <typeparam name="TEntity">Entity type</typeparam>
-        /// <param name="findQuery">Predicate</param>
-        /// <returns>Found entities</returns>
-        Task<TEntity> FindSingleTracked(Expression<Func<TEntity, bool>> findQuery);
 
         /// <summary>
         /// Find single entity with tracking
@@ -101,7 +69,7 @@ namespace Sinance.Storage
         /// <param name="orderByAscending">The order to ascend by</param>
         /// <param name="count">How many to find</param>
         /// <returns>Found entities</returns>
-        Task<List<TEntity>> FindTopAscending(Expression<Func<TEntity, bool>> findQuery, Expression<Func<TEntity, object>> orderByAscending, int count);
+        Task<List<TEntity>> FindTopAscending(Expression<Func<TEntity, bool>> findQuery, Expression<Func<TEntity, object>> orderByAscending, int count, params string[] includeProperties);
 
         /// <summary>
         /// Finds the top entities sorted ascending with tracking
@@ -110,7 +78,7 @@ namespace Sinance.Storage
         /// <param name="orderByAscending">The order to ascend by</param>
         /// <param name="count">How many to find</param>
         /// <returns>Found entities</returns>
-        Task<List<TEntity>> FindTopAscendingTracked(Expression<Func<TEntity, bool>> findQuery, Expression<Func<TEntity, object>> orderByAscending, int count);
+        Task<List<TEntity>> FindTopAscendingTracked(Expression<Func<TEntity, bool>> findQuery, Expression<Func<TEntity, object>> orderByAscending, int count, params string[] includeProperties);
 
         /// <summary>
         /// Finds the top entities sorted descending without tracking
@@ -119,7 +87,7 @@ namespace Sinance.Storage
         /// <param name="orderByAscending">The order to descend by</param>
         /// <param name="count">How many to find</param>
         /// <returns>Found entities</returns>
-        Task<List<TEntity>> FindTopDescending(Expression<Func<TEntity, bool>> findQuery, Expression<Func<TEntity, object>> orderByDescending, int count);
+        Task<List<TEntity>> FindTopDescending(Expression<Func<TEntity, bool>> findQuery, Expression<Func<TEntity, object>> orderByDescending, int count, params string[] includeProperties);
 
         /// <summary>
         /// Finds the top entities sorted descending with tracking
@@ -128,7 +96,7 @@ namespace Sinance.Storage
         /// <param name="orderByAscending">The order to descend by</param>
         /// <param name="count">How many to find</param>
         /// <returns>Found entities</returns>
-        Task<List<TEntity>> FindTopDescendingTracked(Expression<Func<TEntity, bool>> findQuery, Expression<Func<TEntity, object>> orderByDescending, int count);
+        Task<List<TEntity>> FindTopDescendingTracked(Expression<Func<TEntity, bool>> findQuery, Expression<Func<TEntity, object>> orderByDescending, int count, params string[] includeProperties);
 
         /// <summary>
         /// Insert entity
@@ -152,23 +120,11 @@ namespace Sinance.Storage
         Task<List<TEntity>> ListAll(params string[] includeProperties);
 
         /// <summary>
-        /// Lists all entities without tracking
-        /// </summary>
-        /// <returns>Found entities</returns>
-        Task<List<TEntity>> ListAll();
-
-        /// <summary>
         /// Lists all entities with tracking
         /// </summary>
         /// <param name="includeProperties">Properties to include with query</param>
         /// <returns>Found entities</returns>
         Task<List<TEntity>> ListAllTracked(params string[] includeProperties);
-
-        /// <summary>
-        /// Lists all entities with tracking
-        /// </summary>
-        /// <returns>Found entities</returns>
-        Task<List<TEntity>> ListAllTracked();
 
         /// <summary>
         /// Returns the sum of a given field from an entity

@@ -333,14 +333,15 @@ namespace Sinance.Controllers
                     item.UserId == currentUserId &&
                     item.Amount < 0,
                 includeProperties: new string[] {
-                    nameof(Transaction.TransactionCategories),
-                    $"{nameof(Transaction.TransactionCategories)}.{nameof(TransactionCategory.Category)}",
-                    $"{nameof(Transaction.TransactionCategories)}.{nameof(TransactionCategory.Category)}.{nameof(Category.ParentCategory)}"
+                    nameof(Transaction.TransactionCategories)
                 });
 
-            var amountPerCategory = new Dictionary<Category, decimal>();
+            var categories = await unitOfWork.CategoryRepository.FindAll(x => x.UserId == currentUserId);
+
+            var amountPerCategory = new Dictionary<int, decimal>();
             var noneCategory = new Category()
             {
+                Id = 0,
                 Name = "Geen"
             };
 
@@ -350,23 +351,23 @@ namespace Sinance.Controllers
                 {
                     foreach (var transactionCategory in transaction.TransactionCategories.Where(item => item.CategoryId != 69))
                     {
-                        var categoryToUse = transactionCategory.Category.ParentCategory ?? transactionCategory.Category;
+                        var categoryId = transactionCategory.CategoryId;
 
-                        if (!amountPerCategory.ContainsKey(categoryToUse))
+                        if (!amountPerCategory.ContainsKey(categoryId))
                         {
-                            amountPerCategory.Add(categoryToUse, 0M);
+                            amountPerCategory.Add(categoryId, 0M);
                         }
 
-                        amountPerCategory[categoryToUse] += (transactionCategory.Amount ?? transaction.Amount) * -1;
+                        amountPerCategory[categoryId] += (transactionCategory.Amount ?? transaction.Amount) * -1;
                     }
                 }
                 else
                 {
-                    if (!amountPerCategory.ContainsKey(noneCategory))
+                    if (!amountPerCategory.ContainsKey(noneCategory.Id))
                     {
-                        amountPerCategory.Add(noneCategory, 0M);
+                        amountPerCategory.Add(noneCategory.Id, 0M);
                     }
-                    amountPerCategory[noneCategory] += transaction.Amount * -1;
+                    amountPerCategory[noneCategory.Id] += transaction.Amount * -1;
                 }
             }
 
@@ -374,7 +375,7 @@ namespace Sinance.Controllers
 
             var jsonData = amountPerCategory.Select(x => new GraphDataEntry
             {
-                Name = x.Key.Name,
+                Name = categories.Single(cat => cat.Id == x.Key).Name,
                 Y = (x.Value / total) * 100
             });
 

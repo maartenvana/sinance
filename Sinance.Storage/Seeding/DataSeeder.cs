@@ -29,7 +29,7 @@ namespace Sinance.Storage.Seeding
         private static async Task<SinanceUser> InsertOrGetUser(IUnitOfWork unitOfWork)
         {
             const string demoUserName = "DemoUser";
-            var demoUser = unitOfWork.UserRepository.FindSingle(x => x.Username == demoUserName);
+            var demoUser = await unitOfWork.UserRepository.FindSingleTracked(x => x.Username == demoUserName);
 
             if (demoUser != null)
             {
@@ -46,9 +46,9 @@ namespace Sinance.Storage.Seeding
             return demoUser;
         }
 
-        private Category InsertOrGetCategory(IUnitOfWork unitOfWork, SinanceUser demoUser, string categoryName, bool isRegular, Category parentCategory = null)
+        private async Task<Category> InsertOrGetCategory(IUnitOfWork unitOfWork, SinanceUser demoUser, string categoryName, bool isRegular, Category parentCategory = null)
         {
-            var category = unitOfWork.CategoryRepository.FindSingle(x => x.Name == categoryName);
+            var category = await unitOfWork.CategoryRepository.FindSingleTracked(x => x.Name == categoryName);
 
             if (category == null)
             {
@@ -69,25 +69,25 @@ namespace Sinance.Storage.Seeding
 
         private async Task InsertTransactionsAndCategories(IUnitOfWork unitOfWork, SinanceUser demoUser)
         {
-            var essentialsCategory = InsertOrGetCategory(unitOfWork, demoUser, "Essentials", false);
+            var essentialsCategory = await InsertOrGetCategory(unitOfWork, demoUser, "Essentials", false);
 
-            var foodCategory = InsertOrGetCategory(unitOfWork, demoUser, "Food", false, essentialsCategory);
-            var salaryCategory = InsertOrGetCategory(unitOfWork, demoUser, "Salary", true, essentialsCategory);
-            var electricityAndGasCategory = InsertOrGetCategory(unitOfWork, demoUser, "Electricity and Gas", true, essentialsCategory);
-            var waterCategory = InsertOrGetCategory(unitOfWork, demoUser, "Water", true, essentialsCategory);
-            var internetCategory = InsertOrGetCategory(unitOfWork, demoUser, "Internet", true, essentialsCategory);
+            var foodCategory = await InsertOrGetCategory(unitOfWork, demoUser, "Food", false, essentialsCategory);
+            var salaryCategory = await InsertOrGetCategory(unitOfWork, demoUser, "Salary", true, essentialsCategory);
+            var electricityAndGasCategory = await InsertOrGetCategory(unitOfWork, demoUser, "Electricity and Gas", true, essentialsCategory);
+            var waterCategory = await InsertOrGetCategory(unitOfWork, demoUser, "Water", true, essentialsCategory);
+            var internetCategory = await InsertOrGetCategory(unitOfWork, demoUser, "Internet", true, essentialsCategory);
 
-            var clothesCategory = InsertOrGetCategory(unitOfWork, demoUser, "Clothes", false);
-            var electronicsCategory = InsertOrGetCategory(unitOfWork, demoUser, "Electronics", false);
+            var clothesCategory = await InsertOrGetCategory(unitOfWork, demoUser, "Clothes", false);
+            var electronicsCategory = await InsertOrGetCategory(unitOfWork, demoUser, "Electronics", false);
 
-            var hobbyCategory = InsertOrGetCategory(unitOfWork, demoUser, "Hobby", false);
-            var gamesCategory = InsertOrGetCategory(unitOfWork, demoUser, "Games", false, hobbyCategory);
-            var knittingCategory = InsertOrGetCategory(unitOfWork, demoUser, "Knitting", false, hobbyCategory);
+            var hobbyCategory = await InsertOrGetCategory(unitOfWork, demoUser, "Hobby", false);
+            var gamesCategory = await InsertOrGetCategory(unitOfWork, demoUser, "Games", false, hobbyCategory);
+            var knittingCategory = await InsertOrGetCategory(unitOfWork, demoUser, "Knitting", false, hobbyCategory);
 
-            var subscriptionsCategory = InsertOrGetCategory(unitOfWork, demoUser, "Subscriptions", true);
-            var netflixCategory = InsertOrGetCategory(unitOfWork, demoUser, "Netflix", true, subscriptionsCategory);
+            var subscriptionsCategory = await InsertOrGetCategory(unitOfWork, demoUser, "Subscriptions", true);
+            var netflixCategory = await InsertOrGetCategory(unitOfWork, demoUser, "Netflix", true, subscriptionsCategory);
 
-            var internalCashflowCategory = InsertOrGetCategory(unitOfWork, demoUser, "InternalCashFlow", false);
+            var internalCashflowCategory = await InsertOrGetCategory(unitOfWork, demoUser, "InternalCashFlow", false);
         }
     }
 }

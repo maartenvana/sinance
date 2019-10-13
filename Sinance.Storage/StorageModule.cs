@@ -3,6 +3,7 @@ using Autofac.Features.OwnedInstances;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Sinance.Common;
+using Sinance.Common.Configuration;
 using Sinance.Storage.Seeding;
 using System;
 

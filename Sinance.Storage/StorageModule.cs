@@ -1,9 +1,10 @@
 ﻿using Autofac;
-using Sinance.Common;
-using Microsoft.EntityFrameworkCore;
 using Autofac.Features.OwnedInstances;
-using System;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Sinance.Common;
+using Sinance.Storage.Seeding;
+using System;
 
 namespace Sinance.Storage
 {
@@ -37,6 +38,8 @@ namespace Sinance.Storage
             }).AsSelf().InstancePerOwned<IUnitOfWork>();
 
             builder.RegisterType<UnitOfWork>().As<IUnitOfWork>();
+
+            builder.RegisterType<DataSeeder>().AsSelf();
         }
     }
 }

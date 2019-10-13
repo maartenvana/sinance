@@ -1,8 +1,8 @@
 ﻿using Autofac;
 using Microsoft.AspNetCore.Identity;
+using Sinance.Business.DataSeeding;
 using Sinance.Business.Services;
 using Sinance.Domain.Entities;
-using Sinance.Storage;
 
 namespace Sinance.Business
 {
@@ -14,6 +14,8 @@ namespace Sinance.Business
 
             builder.RegisterType<BankAccountService>().As<IBankAccountService>();
             builder.RegisterType<CustomReportService>().As<ICustomReportService>();
+
+            builder.RegisterType<DataSeedService>().AsSelf();
         }
     }
 }

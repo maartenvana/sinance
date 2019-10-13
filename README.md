@@ -1,3 +1,7 @@
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=maartenvana_sinance&metric=alert_status)](https://sonarcloud.io/dashboard?id=maartenvana_sinance)
+![Docker Pulls](https://img.shields.io/docker/pulls/maartenvana/sinance)
+![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/maartenvana/sinance)
+
 # Sinance
 Simple finances
 

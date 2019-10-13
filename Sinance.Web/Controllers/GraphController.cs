@@ -375,7 +375,7 @@ namespace Sinance.Controllers
 
             var jsonData = amountPerCategory.Select(x => new GraphDataEntry
             {
-                Name = categories.Single(cat => cat.Id == x.Key).Name,
+                Name = categories.SingleOrDefault(cat => cat.Id == x.Key)?.Name ?? "Geen",
                 Y = (x.Value / total) * 100
             });
 

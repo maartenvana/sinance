@@ -12,7 +12,6 @@ Version 2.0:
   - Refactor code from controllers to services
 - (re)Add unit tests
 - Incorporate default (ING/ABN AMRO) import rules in the software
-- Add (optional) demo data seed
 - Translate all dutch texts to english
 - Create instructions to run the software
 

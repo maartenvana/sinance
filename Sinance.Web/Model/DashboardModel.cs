@@ -16,6 +16,7 @@ namespace Sinance.Web.Model
         public IList<BankAccount> BankAccounts { get; set; }
 
         public IList<Transaction> BiggestExpenses { get; set; }
+
         public decimal LastMonthExpenses { get; set; }
 
         public decimal LastMonthIncome { get; set; }

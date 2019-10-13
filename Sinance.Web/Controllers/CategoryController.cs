@@ -1,5 +1,4 @@
 ﻿using Sinance.Business.Handlers;
-using Sinance.Business.Services;
 using Sinance.Domain.Entities;
 using Sinance.Web.Model;
 using Sinance.Web;
@@ -41,7 +40,7 @@ namespace Sinance.Controllers
         /// <returns>Actionresult for adding a new category</returns>
         public async Task<IActionResult> AddCategory()
         {
-            CategoryModel model = new CategoryModel
+            var model = new CategoryModel
             {
                 AvailableCategories = await AvailableParentCategories(new Category())
             };
@@ -61,34 +60,36 @@ namespace Sinance.Controllers
             if (categoryId < 0)
                 throw new ArgumentOutOfRangeException(nameof(categoryId));
 
-            ActionResult result;
             var currentUserId = await _sessionService.GetCurrentUserId();
 
-            using (var unitOfWork = _unitOfWork())
+            using var unitOfWork = _unitOfWork();
+
+            var category = await unitOfWork.CategoryRepository.FindSingle(item => item.Id == categoryId &&
+                   item.UserId == currentUserId,
+                   includeProperties: new string[] {
+                       nameof(Category.ParentCategory),
+                       nameof(Category.ChildCategories),
+                       nameof(Category.CategoryMappings)
+                   });
+
+            if (category != null)
             {
-                Category category = unitOfWork.CategoryRepository.FindSingle(item => item.Id == categoryId &&
-                                                                        item.UserId == currentUserId,
-                                                                        "ParentCategory", "ChildCategories", "CategoryMappings");
+                var availableCategories = await AvailableParentCategories(category);
 
-                if (category != null)
+                var model = CategoryModel.CreateCategoryModel(category);
+                model.AvailableCategories = availableCategories;
+
+                if (includeTransactions)
                 {
-                    IEnumerable<SelectListItem> availableCategories = await AvailableParentCategories(category);
-
-                    CategoryModel model = CategoryModel.CreateCategoryModel(category);
-                    model.AvailableCategories = availableCategories;
-
-                    if (includeTransactions)
-                        model.AutomaticMappings = (await CreateMappingPreview(category)).OrderByDescending(item => item.Key.Date).ToList();
-
-                    result = View("UpsertCategory", model);
-                }
-                else
-                {
-                    TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryNotFound);
-                    result = RedirectToAction("Index");
+                    model.AutomaticMappings = (await CreateMappingPreview(category)).OrderByDescending(item => item.Key.Date).ToList();
                 }
 
-                return result;
+                return View("UpsertCategory", model);
+            }
+            else
+            {
+                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryNotFound);
+                return RedirectToAction("Index");
             }
         }
 
@@ -100,19 +101,18 @@ namespace Sinance.Controllers
         {
             var currentUserId = await _sessionService.GetCurrentUserId();
 
-            using (var unitOfWork = _unitOfWork())
+            using var unitOfWork = _unitOfWork();
+
+            var categories = await unitOfWork.CategoryRepository.FindAll(item => item.UserId == currentUserId);
+
+            var regularCategories = categories.Where(x => x.IsRegular || x.ChildCategories.Any(y => y.IsRegular) || x.ParentCategory?.IsRegular == true).ToList();
+            var irregularCategories = categories.Where(x => (x.ParentCategory?.IsRegular != true && !x.IsRegular) || (!x.IsRegular && x.ChildCategories.Any(y => !y.IsRegular))).ToList();
+
+            return View("Index", new CategoriesOverviewModel
             {
-                IList<Category> categories = unitOfWork.CategoryRepository.FindAll(item => item.UserId == currentUserId);
-
-                var regularCategories = categories.Where(x => x.IsRegular || x.ChildCategories.Any(y => y.IsRegular) || x.ParentCategory?.IsRegular == true).ToList();
-                var irregularCategories = categories.Where(x => (x.ParentCategory?.IsRegular != true && !x.IsRegular) || (!x.IsRegular && x.ChildCategories.Any(y => !y.IsRegular))).ToList();
-
-                return View("Index", new CategoriesOverviewModel
-                {
-                    RegularCategories = regularCategories,
-                    IrregularCategories = irregularCategories
-                });
-            }
+                RegularCategories = regularCategories,
+                IrregularCategories = irregularCategories
+            });
         }
 
         /// <summary>
@@ -127,25 +127,26 @@ namespace Sinance.Controllers
 
             var currentUserId = await _sessionService.GetCurrentUserId();
 
-            using (var unitOfWork = _unitOfWork())
+            using var unitOfWork = _unitOfWork();
+
+            var category = await unitOfWork.CategoryRepository.FindSingleTracked(item => item.Id == categoryId && item.UserId == currentUserId);
+            var transactionCategories = await unitOfWork.TransactionCategoryRepository.FindAllTracked(x => x.CategoryId == categoryId);
+
+            if (category != null)
             {
-                Category category = unitOfWork.CategoryRepository.FindSingle(item => item.Id == categoryId && item.UserId == currentUserId);
-                var transactionCategories = unitOfWork.TransactionCategoryRepository.FindAll(x => x.CategoryId == categoryId);
+                unitOfWork.TransactionCategoryRepository.DeleteRange(transactionCategories);
+                unitOfWork.CategoryRepository.Delete(category);
 
-                if (category != null)
-                {
-                    unitOfWork.TransactionCategoryRepository.DeleteRange(transactionCategories);
-                    unitOfWork.CategoryRepository.Delete(category);
-
-                    await unitOfWork.SaveAsync();
-                    TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.CategoryRemoved);
-                }
-                else
-                    TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error,
-                        ViewBag.Message = Resources.CategoryNotFound);
-
-                return RedirectToAction("Index");
+                await unitOfWork.SaveAsync();
+                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.CategoryRemoved);
             }
+            else
+            {
+                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error,
+                    ViewBag.Message = Resources.CategoryNotFound);
+            }
+
+            return RedirectToAction("Index");
         }
 
         /// <summary>
@@ -161,32 +162,27 @@ namespace Sinance.Controllers
 
             var currentUserId = await _sessionService.GetCurrentUserId();
 
-            IActionResult result;
+            using var unitOfWork = _unitOfWork();
 
-            using (var unitOfWork = _unitOfWork())
+            var category = await unitOfWork.CategoryRepository.FindSingle(item => item.Id == categoryId && item.UserId == currentUserId, nameof(Category.CategoryMappings));
+
+            if (category != null)
             {
-                Category category = unitOfWork.CategoryRepository.FindSingle(item => item.Id == categoryId && item.UserId == currentUserId, "CategoryMappings");
+                var transactions = await unitOfWork.TransactionRepository.FindAllTracked(item => item.UserId == currentUserId);
+                var mappedTransactions = CategoryHandler.PreviewMapTransactions(category.CategoryMappings, transactions).ToList();
 
-                if (category != null)
-                {
-                    IList<Transaction> transactions = unitOfWork.TransactionRepository.FindAll(item => item.UserId == currentUserId);
-                    IEnumerable<Transaction> mappedTransactions = CategoryHandler.PreviewMapTransactions(category.CategoryMappings, transactions).ToList();
+                await CategoryHandler.MapCategoryToTransactions(unitOfWork, categoryId, mappedTransactions);
 
-                    await CategoryHandler.MapCategoryToTransactions(unitOfWork, categoryId, mappedTransactions);
+                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success,
+                    ViewBag.Message = Resources.CategoryMappingsAppliedToTransactions);
 
-                    TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success,
-                        ViewBag.Message = Resources.CategoryMappingsAppliedToTransactions);
-
-                    result = RedirectToAction("EditCategory", new { categoryId });
-                }
-                else
-                {
-                    TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error,
-                        ViewBag.Message = Resources.CategoryNotFound);
-                    result = RedirectToAction("Index");
-                }
-
-                return result;
+                return RedirectToAction("EditCategory", new { categoryId });
+            }
+            else
+            {
+                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error,
+                    ViewBag.Message = Resources.CategoryNotFound);
+                return RedirectToAction("Index");
             }
         }
 
@@ -201,8 +197,6 @@ namespace Sinance.Controllers
             if (model == null)
                 throw new ArgumentNullException(nameof(model));
 
-            ActionResult result;
-
             if (ModelState.IsValid)
             {
                 var currentUserId = await _sessionService.GetCurrentUserId();
@@ -210,52 +204,50 @@ namespace Sinance.Controllers
                 // Set the parent id to null if 0 (otherwise it does not pass client side validation
                 try
                 {
-                    using (var unitOfWork = _unitOfWork())
+                    using var unitOfWork = _unitOfWork();
+                    if (model.Id > 0)
                     {
-                        if (model.Id > 0)
+                        var existingCategory = await unitOfWork.CategoryRepository.FindSingleTracked(item => item.Id == model.Id && item.UserId == currentUserId);
+                        if (existingCategory != null)
                         {
-                            var existingCategory = unitOfWork.CategoryRepository.FindSingle(item => item.Id == model.Id && item.UserId == currentUserId);
-                            if (existingCategory != null)
-                            {
-                                existingCategory.Update(name: model.Name,
-                                    colorCode: model.ColorCode,
-                                    parentId: model.ParentId.GetValueOrDefault() == 0 ? null : model.ParentId,
-                                    isRegular: model.IsRegular);
-
-                                unitOfWork.CategoryRepository.Update(existingCategory);
-                                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.CategoryUpdated);
-                            }
-                            else
-                                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryNotFound);
-                        }
-                        else
-                        {
-                            Category newCategory = new Category();
-                            newCategory.Update(name: model.Name,
+                            existingCategory.Update(name: model.Name,
                                 colorCode: model.ColorCode,
                                 parentId: model.ParentId.GetValueOrDefault() == 0 ? null : model.ParentId,
                                 isRegular: model.IsRegular);
 
-                            newCategory.UserId = currentUserId;
-
-                            unitOfWork.CategoryRepository.Insert(newCategory);
-                            TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.CategoryCreated);
+                            unitOfWork.CategoryRepository.Update(existingCategory);
+                            TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.CategoryUpdated);
                         }
-
-                        await unitOfWork.SaveAsync();
-                        result = RedirectToAction("Index");
+                        else
+                        {
+                            TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryNotFound);
+                        }
                     }
+                    else
+                    {
+                        var newCategory = new Category();
+                        newCategory.Update(name: model.Name,
+                            colorCode: model.ColorCode,
+                            parentId: model.ParentId.GetValueOrDefault() == 0 ? null : model.ParentId,
+                            isRegular: model.IsRegular);
+
+                        newCategory.UserId = currentUserId;
+
+                        unitOfWork.CategoryRepository.Insert(newCategory);
+                        TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.CategoryCreated);
+                    }
+
+                    await unitOfWork.SaveAsync();
+                    return RedirectToAction("Index");
                 }
                 catch (Exception)
                 {
                     TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.Error);
-                    result = View(model);
+                    return View(model);
                 }
             }
-            else
-                result = View(model);
 
-            return result;
+            return View(model);
         }
 
         /// <summary>
@@ -267,14 +259,14 @@ namespace Sinance.Controllers
         {
             var currentUserId = await _sessionService.GetCurrentUserId();
 
-            using (var unitOfWork = _unitOfWork())
-            {
-                // Only select category that arent linked to a parent, no sub categories for recursive linking
-                List<Category> categories = unitOfWork.CategoryRepository.FindAll(item => item.ParentId == null &&
-                                                                            item.Id != category.Id &&
-                                                                            item.UserId == currentUserId).ToList();
+            using var unitOfWork = _unitOfWork();
 
-                List<SelectListItem> availableCategories = new List<SelectListItem>{
+            // Only select category that arent linked to a parent, no sub categories for recursive linking
+            var categories = await unitOfWork.CategoryRepository.FindAll(item => item.ParentId == null &&
+                                                                        item.Id != category.Id &&
+                                                                        item.UserId == currentUserId);
+
+            var availableCategories = new List<SelectListItem>{
                     new SelectListItem {
                         Text = Resources.NoMainCategory,
                         Value = "0",
@@ -282,15 +274,14 @@ namespace Sinance.Controllers
                     }
                 };
 
-                availableCategories.AddRange(categories.ConvertAll(item => new SelectListItem
-                {
-                    Value = item.Id.ToString(CultureInfo.InvariantCulture),
-                    Text = item.Name,
-                    Selected = item.Id == category.ParentId
-                }));
+            availableCategories.AddRange(categories.ConvertAll(item => new SelectListItem
+            {
+                Value = item.Id.ToString(CultureInfo.InvariantCulture),
+                Text = item.Name,
+                Selected = item.Id == category.ParentId
+            }));
 
-                return availableCategories;
-            }
+            return availableCategories;
         }
 
         /// <summary>
@@ -302,21 +293,20 @@ namespace Sinance.Controllers
         {
             var currentUserId = await _sessionService.GetCurrentUserId();
 
-            using (var unitOfWork = _unitOfWork())
+            using var unitOfWork = _unitOfWork();
+
+            var allTransactions = await unitOfWork.TransactionRepository.FindAll(item => item.UserId == currentUserId);
+
+            var transactions =
+                CategoryHandler.PreviewMapTransactions(category.CategoryMappings, allTransactions).Select(item => new KeyValuePair<Transaction, bool>(item, true)).ToList();
+
+            foreach (var transaction in
+            allTransactions.Except(transactions.Select(item => item.Key))
+                .Where(item => item.TransactionCategories.Any(categoryItem => categoryItem.CategoryId == category.Id)))
             {
-                IEnumerable<Transaction> allTransactions = unitOfWork.TransactionRepository.FindAll(item => item.UserId == currentUserId);
-
-                IList<KeyValuePair<Transaction, bool>> transactions =
-                    CategoryHandler.PreviewMapTransactions(category.CategoryMappings, allTransactions).ToList().ConvertAll(item => new KeyValuePair<Transaction, bool>(item, true));
-
-                foreach (Transaction transaction in
-                allTransactions.Except(transactions.Select(item => item.Key))
-                    .Where(item => item.TransactionCategories.Any(categoryItem => categoryItem.CategoryId == category.Id)))
-                {
-                    transactions.Add(new KeyValuePair<Transaction, bool>(transaction, false));
-                }
-                return transactions;
+                transactions.Add(new KeyValuePair<Transaction, bool>(transaction, false));
             }
+            return transactions;
         }
     }
 }

@@ -13,9 +13,9 @@
                 <ul class="nav nav-second-level">
                     @foreach (var bankAccount in Model.BankAccounts?.Where(item => !item.Disabled && item.AccountType == BankAccountType.Checking))
                     {
-                    <li>
-                        <a href="@Url.Action("Index", "AccountOverview", new {@bankAccountId = bankAccount.Id})"><span>@bankAccount.Name</span></a>
-                    </li>
+                        <li>
+                            <a href="@Url.Action("Index", "AccountOverview", new {@bankAccountId = bankAccount.Id})"><span>@bankAccount.Name</span></a>
+                        </li>
                     }
                 </ul>
             </li>
@@ -24,9 +24,20 @@
                 <ul class="nav nav-second-level">
                     @foreach (var bankAccount in Model.BankAccounts?.Where(item => !item.Disabled && item.AccountType == BankAccountType.Savings))
                     {
-                    <li>
-                        <a href="@Url.Action("Index", "AccountOverview", new { @bankAccountId = bankAccount.Id })"><span>@bankAccount.Name</span></a>
-                    </li>
+                        <li>
+                            <a href="@Url.Action("Index", "AccountOverview", new { @bankAccountId = bankAccount.Id })"><span>@bankAccount.Name</span></a>
+                        </li>
+                    }
+                </ul>
+            </li>
+            <li>
+                <a href="#"><i class="fa fa-table fa-fw"></i> Overige rekeningen<span class="fa arrow"></span></a>
+                <ul class="nav nav-second-level">
+                    @foreach (var bankAccount in Model.BankAccounts?.Where(item => !item.Disabled && item.AccountType != BankAccountType.Savings && item.AccountType != BankAccountType.Checking))
+                    {
+                        <li>
+                            <a href="@Url.Action("Index", "AccountOverview", new { @bankAccountId = bankAccount.Id })"><span>@bankAccount.Name</span></a>
+                        </li>
                     }
                 </ul>
             </li>
@@ -38,12 +49,9 @@
                     <!--<li>@Html.ActionLink("Uitgaves per categorie", "ExpensePerCategory", "Report")</li>-->
                     @foreach (var customReport in Model.CustomReports)
                     {
-                    <li>@Html.ActionLink(customReport.Name, "CustomReport", "Report", new { reportId = customReport.Id }, new { })</li>
+                        <li>@Html.ActionLink(customReport.Name, "CustomReport", "Report", new { reportId = customReport.Id }, new { })</li>
                     }
                 </ul>
-            </li>
-            <li>
-                <a href="@Url.Action("Status", "Budget")"><i class="fa fa-dollar fa-fw"></i> Budget</a>
             </li>
             <li>
                 <a href="@Url.Action("Index", "Category")"><i class="fa fa-pencil fa-fw"></i> Categorieen</a>
@@ -59,7 +67,6 @@
                     </li>
                     <li>@Html.ActionLink("Rekeningen beheren", "Index", "BankAccount")</li>
                     <li>@Html.ActionLink("Rekening toevoegen", "AddAccount", "BankAccount")</li>
-                    <li>@Html.ActionLink("Budget beheren", "Index", "Budget")</li>
                 </ul>
             </li>
         </ul>

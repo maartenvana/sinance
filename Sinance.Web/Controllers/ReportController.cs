@@ -1,5 +1,4 @@
-﻿using Sinance.Business.Services;
-using Sinance.Domain.Entities;
+﻿using Sinance.Domain.Entities;
 using Sinance.Web.Model;
 using Sinance.Web;
 using Microsoft.AspNetCore.Authorization;
@@ -40,23 +39,21 @@ namespace Sinance.Controllers
         {
             var currentUserId = await _sessionService.GetCurrentUserId();
 
-            using (var unitOfWork = _unitOfWork())
+            using var unitOfWork = _unitOfWork();
+            var allCategories = await unitOfWork.CategoryRepository.FindAll(item => item.UserId == currentUserId);
+
+            var availableCategories = new List<BasicCheckBoxItem>();
+
+            availableCategories.AddRange(allCategories.ConvertAll(item => new BasicCheckBoxItem
             {
-                List<Category> allCategories = unitOfWork.CategoryRepository.FindAll(item => item.UserId == currentUserId).ToList();
+                Id = item.Id,
+                Name = item.Name,
+            }));
 
-                List<BasicCheckBoxItem> availableCategories = new List<BasicCheckBoxItem>();
-
-                availableCategories.AddRange(allCategories.ConvertAll(item => new BasicCheckBoxItem
-                {
-                    Id = item.Id,
-                    Name = item.Name,
-                }));
-
-                return View("UpsertCustomGraphReport", new CustomGraphReportSettingsModel
-                {
-                    AvailableCategories = availableCategories
-                });
-            }
+            return View("UpsertCustomGraphReport", new CustomGraphReportSettingsModel
+            {
+                AvailableCategories = availableCategories
+            });
         }
 
         /// <summary>
@@ -68,13 +65,10 @@ namespace Sinance.Controllers
         {
             var currentUserId = await _sessionService.GetCurrentUserId();
 
-            using (var unitOfWork = _unitOfWork())
-            {
-                CustomReport report =
-                unitOfWork.CustomReportRepository.FindSingle(item => item.Id == reportId && item.UserId == currentUserId);
+            using var unitOfWork = _unitOfWork();
+            var report = await unitOfWork.CustomReportRepository.FindSingle(item => item.Id == reportId && item.UserId == currentUserId);
 
-                return View("CustomReport", report);
-            }
+            return View("CustomReport", report);
         }
 
         /// <summary>
@@ -84,39 +78,35 @@ namespace Sinance.Controllers
         /// <returns>View with the custom report to edit</returns>
         public async Task<IActionResult> EditCustomGraphReport(int reportId)
         {
-            ActionResult result = null;
-
             var currentUserId = await _sessionService.GetCurrentUserId();
 
-            using (var unitOfWork = _unitOfWork())
+            using var unitOfWork = _unitOfWork();
+            var allCategories = await unitOfWork.CategoryRepository.FindAll(item => item.UserId == currentUserId);
+
+            var customReport = await unitOfWork.CustomReportRepository.FindSingle(
+                findQuery: item => item.Id == reportId && item.UserId == currentUserId,
+                includeProperties: new string[] { nameof(Domain.Entities.CustomReport.ReportCategories) });
+
+            var availableCategories = new List<BasicCheckBoxItem>();
+
+            availableCategories.AddRange(allCategories.ConvertAll(category => new BasicCheckBoxItem
             {
-                List<Category> allCategories = unitOfWork.CategoryRepository.FindAll(item => item.UserId == currentUserId).ToList();
+                Id = category.Id,
+                Name = category.Name,
+                Checked = customReport.ReportCategories.Any(reportCategory => reportCategory.Id == category.Id)
+            }));
 
-                CustomReport customReport = unitOfWork.CustomReportRepository.FindSingle(item => item.Id == reportId && item.UserId == currentUserId, "ReportCategories");
-
-                List<BasicCheckBoxItem> availableCategories = new List<BasicCheckBoxItem>();
-
-                availableCategories.AddRange(allCategories.ConvertAll(category => new BasicCheckBoxItem
-                {
-                    Id = category.Id,
-                    Name = category.Name,
-                    Checked = customReport.ReportCategories.Any(reportCategory => reportCategory.Id == category.Id)
-                }));
-
-                if (customReport != null)
-                {
-                    result = View("UpsertCustomGraphReport", new CustomGraphReportSettingsModel
-                    {
-                        AvailableCategories = availableCategories,
-                        Id = reportId,
-                        Name = customReport.Name
-                    });
-                }
-                else
-                    throw new ArgumentOutOfRangeException(nameof(reportId), Resources.NoReportFound);
-
-                return result;
+            if (customReport == null)
+            {
+                throw new ArgumentOutOfRangeException(nameof(reportId), Resources.NoReportFound);
             }
+
+            return View("UpsertCustomGraphReport", new CustomGraphReportSettingsModel
+            {
+                AvailableCategories = availableCategories,
+                Id = reportId,
+                Name = customReport.Name
+            });
         }
 
         /// <summary>
@@ -129,65 +119,73 @@ namespace Sinance.Controllers
             var currentUserId = await _sessionService.GetCurrentUserId();
 
             // E.G. 01-02-2014
-            DateTime previousMonthStart = new DateTime(DateTime.Now.AddMonths(-1).Year, DateTime.Now.AddMonths(-1).Month, 1);
+            var previousMonthStart = new DateTime(DateTime.Now.AddMonths(-1).Year, DateTime.Now.AddMonths(-1).Month, 1);
             // E.G. 01-03-2014
-            DateTime thisMonthStart = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+            var thisMonthStart = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
             // E.G. 01-04-2014
-            DateTime nextMonthStart = new DateTime(DateTime.Now.AddMonths(1).Year, DateTime.Now.AddMonths(1).Month, 1);
+            var nextMonthStart = new DateTime(DateTime.Now.AddMonths(1).Year, DateTime.Now.AddMonths(1).Month, 1);
 
-            using (var unitOfWork = _unitOfWork())
+            using var unitOfWork = _unitOfWork();
+
+            var transactions = await unitOfWork.TransactionRepository.FindAll(
+                 findQuery: item =>
+                     item.Date >= previousMonthStart &&
+                     item.Date < nextMonthStart &&
+                     item.UserId == currentUserId &&
+                     item.Amount < 0,
+                 includeProperties: nameof(Transaction.TransactionCategories));
+
+            var allCategories = await unitOfWork.CategoryRepository.FindAll(
+                findQuery: item => item.UserId == currentUserId,
+                includeProperties: new string[] {
+                    nameof(Category.ParentCategory),
+                    nameof(Category.ChildCategories)
+                });
+
+            var regularBimonthlyExpenseReport = new BimonthlyExpenseReport
             {
-                IList<Transaction> transactions =
-                unitOfWork.TransactionRepository.FindAll(item => item.Date >= previousMonthStart && item.Date < nextMonthStart &&
-                    item.UserId == currentUserId && item.Amount < 0,
-                    includeProperties: "TransactionCategories").ToList();
-                IEnumerable<Category> allCategories = unitOfWork.CategoryRepository.FindAll(item => item.UserId == currentUserId, "ParentCategory", "ChildCategories");
+                Expenses = new List<BimonthlyExpense>(),
+                PreviousMonthDate = previousMonthStart,
+                ThisMonthDate = thisMonthStart
+            };
+            var volatileMonthlyExpenseReport = new BimonthlyExpenseReport
+            {
+                Expenses = new List<BimonthlyExpense>(),
+                PreviousMonthDate = previousMonthStart,
+                ThisMonthDate = thisMonthStart
+            };
 
-                BimonthlyExpenseReport regularBimonthlyExpenseReport = new BimonthlyExpenseReport
-                {
-                    Expenses = new List<BimonthlyExpense>(),
-                    PreviousMonthDate = previousMonthStart,
-                    ThisMonthDate = thisMonthStart
-                };
-                BimonthlyExpenseReport volatileMonthlyExpenseReport = new BimonthlyExpenseReport
-                {
-                    Expenses = new List<BimonthlyExpense>(),
-                    PreviousMonthDate = previousMonthStart,
-                    ThisMonthDate = thisMonthStart
-                };
-
-                // loop through all the regular top categories
-                foreach (Category parentCategory in allCategories.Where(category =>
-                    category.ParentId == null &&
-                    (category.IsRegular || category.ChildCategories.Any(childCategory => childCategory.IsRegular))))
-                {
-                    AddCategoryToBimonthlyExpense(transactions, parentCategory, regularBimonthlyExpenseReport, previousMonthStart, thisMonthStart, nextMonthStart, true);
-                }
-
-                // loop through all the volatile top categories
-                foreach (Category parentCategory in allCategories.Where(category =>
-                    category.ParentId == null &&
-                    (!category.IsRegular || category.ChildCategories.Any(childCategory =>
-                        !childCategory.IsRegular &&
-                        (childCategory.ParentCategory != null && !childCategory.ParentCategory.IsRegular)))))
-                {
-                    AddCategoryToBimonthlyExpense(transactions, parentCategory, volatileMonthlyExpenseReport, previousMonthStart, thisMonthStart, nextMonthStart, false);
-                }
-
-                IList<Transaction> uncategorizedTransactionsThisMonth = transactions.Where(item =>
-                    item.TransactionCategories.Count == 0 &&
-                    item.Date < nextMonthStart &&
-                    item.Date >= thisMonthStart).ToList();
-
-                ExpensesModel expensesModel = new ExpensesModel
-                {
-                    RegularBimonthlyExpenseReport = regularBimonthlyExpenseReport,
-                    VolatileBimonthlyExpenseReport = volatileMonthlyExpenseReport,
-                    UncategorizedTransactionsThisMonth = uncategorizedTransactionsThisMonth
-                };
-
-                return View("ExpenseOverview", expensesModel);
+            // loop through all the regular top categories
+            foreach (var parentCategory in allCategories.Where(category =>
+                category.ParentId == null &&
+                (category.IsRegular || category.ChildCategories.Any(childCategory => childCategory.IsRegular))))
+            {
+                AddCategoryToBimonthlyExpense(transactions, parentCategory, regularBimonthlyExpenseReport, previousMonthStart, thisMonthStart, nextMonthStart, true);
             }
+
+            // loop through all the volatile top categories
+            foreach (var parentCategory in allCategories.Where(category =>
+                category.ParentId == null &&
+                (!category.IsRegular || category.ChildCategories.Any(childCategory =>
+                    !childCategory.IsRegular &&
+                    (childCategory.ParentCategory != null && !childCategory.ParentCategory.IsRegular)))))
+            {
+                AddCategoryToBimonthlyExpense(transactions, parentCategory, volatileMonthlyExpenseReport, previousMonthStart, thisMonthStart, nextMonthStart, false);
+            }
+
+            var uncategorizedTransactionsThisMonth = transactions.Where(item =>
+                item.TransactionCategories.Count == 0 &&
+                item.Date < nextMonthStart &&
+                item.Date >= thisMonthStart).ToList();
+
+            var expensesModel = new ExpensesModel
+            {
+                RegularBimonthlyExpenseReport = regularBimonthlyExpenseReport,
+                VolatileBimonthlyExpenseReport = volatileMonthlyExpenseReport,
+                UncategorizedTransactionsThisMonth = uncategorizedTransactionsThisMonth
+            };
+
+            return View("ExpenseOverview", expensesModel);
         }
 
         /// <summary>
@@ -198,22 +196,21 @@ namespace Sinance.Controllers
         {
             var currentUserId = await _sessionService.GetCurrentUserId();
 
-            using (var unitOfWork = _unitOfWork())
+            using var unitOfWork = _unitOfWork();
+
+            var categories = await unitOfWork.CategoryRepository.FindAll(item => item.UserId == currentUserId);
+            var model = new ExpensePerCategoryModel();
+
+            if (categories != null)
             {
-                var categories = unitOfWork.CategoryRepository.FindAll(item => item.UserId == currentUserId);
-                ExpensePerCategoryModel model = new ExpensePerCategoryModel();
-
-                if (categories != null)
-                {
-                    model.AvailableCategories = categories;
-                    model.TimeFilter = TimeFilter.Month;
-                    model.SelectedCategoryId = categories.First().Id;
-                    model.SelectedMonth = DateTime.Now.Month.ToString(CultureInfo.CurrentCulture);
-                    model.SelectedYear = DateTime.Now.Year.ToString(CultureInfo.CurrentCulture);
-                }
-
-                return View(model);
+                model.AvailableCategories = categories;
+                model.TimeFilter = TimeFilter.Month;
+                model.SelectedCategoryId = categories.First().Id;
+                model.SelectedMonth = DateTime.Now.Month.ToString(CultureInfo.CurrentCulture);
+                model.SelectedYear = DateTime.Now.Year.ToString(CultureInfo.CurrentCulture);
             }
+
+            return View(model);
         }
 
         /// <summary>
@@ -221,39 +218,37 @@ namespace Sinance.Controllers
         /// </summary>
         /// <param name="model">Model containing the parameters for the report</param>
         /// <returns>Report of expenses within a category</returns>
-        [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
-        public ActionResult ExpensePerCategoryPartial(ExpensePerCategoryModel model)
+        public async Task<ActionResult> ExpensePerCategoryPartial(ExpensePerCategoryModel model)
         {
-            using (var unitOfWork = _unitOfWork())
+            using var unitOfWork = _unitOfWork();
+
+            var category = await unitOfWork.CategoryRepository.FindSingle(item => item.Id == model.SelectedCategoryId);
+
+            var transactions = category.TransactionCategories.Where(
+                item => item.Transaction.Date.Month == int.Parse(model.SelectedMonth, CultureInfo.CurrentCulture) &&
+                item.Transaction.Date.Year == int.Parse(model.SelectedYear, CultureInfo.CurrentCulture) &&
+                item.Transaction.Amount < 0).Select(item => item.Transaction);
+
+            var utcStartDate = new DateTime(1970, 1, 1);
+            var transactionsPerDate = transactions.GroupBy(item => item.Date).ToList();
+
+            var sumPerDate = new List<decimal[]>();
+
+            foreach (var groupedTransactions in transactionsPerDate)
             {
-                Category category = unitOfWork.CategoryRepository.FindSingle(item => item.Id == model.SelectedCategoryId);
-
-                IEnumerable<Transaction> transactions = category.TransactionCategories.Where(
-                    item => item.Transaction.Date.Month == int.Parse(model.SelectedMonth, CultureInfo.CurrentCulture) &&
-                    item.Transaction.Date.Year == int.Parse(model.SelectedYear, CultureInfo.CurrentCulture) &&
-                    item.Transaction.Amount < 0).Select(item => item.Transaction);
-
-                DateTime utcStartDate = new DateTime(1970, 1, 1);
-                List<IGrouping<DateTime, Transaction>> transactionsPerDate = transactions.GroupBy(item => item.Date).ToList();
-
-                IList<decimal[]> sumPerDate = new List<decimal[]>();
-
-                foreach (IGrouping<DateTime, Transaction> groupedTransactions in transactionsPerDate)
+                sumPerDate.Add(new[]
                 {
-                    sumPerDate.Add(new[]
-                    {
                     Convert.ToDecimal(groupedTransactions.Key.Subtract(utcStartDate).TotalMilliseconds),
                     groupedTransactions.Sum(item => item.Amount * -1)
                 });
-                }
-
-                return PartialView("ExpensePerCategoryPartial", new ExpensesPerCategoryPartialModel
-                {
-                    CategoryName = category.Name,
-                    Transactions = transactions.OrderByDescending(item => item.Date).ThenBy(item => item.BankAccountId).ToList(),
-                    GraphValues = sumPerDate
-                });
             }
+
+            return PartialView("ExpensePerCategoryPartial", new ExpensesPerCategoryPartialModel
+            {
+                CategoryName = category.Name,
+                Transactions = transactions.OrderByDescending(item => item.Date).ThenBy(item => item.BankAccountId).ToList(),
+                GraphValues = sumPerDate
+            });
         }
 
         /// <summary>
@@ -266,47 +261,56 @@ namespace Sinance.Controllers
             var currentUserId = await _sessionService.GetCurrentUserId();
 
             // E.G. 01-02-2014
-            DateTime previousMonthStart = new DateTime(DateTime.Now.AddMonths(-1).Year, DateTime.Now.AddMonths(-1).Month, 1);
+            var previousMonthStart = new DateTime(DateTime.Now.AddMonths(-1).Year, DateTime.Now.AddMonths(-1).Month, 1);
             // E.G. 01-03-2014
-            DateTime thisMonthStart = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+            var thisMonthStart = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
             // E.G. 01-04-2014
-            DateTime nextMonthStart = new DateTime(DateTime.Now.AddMonths(1).Year, DateTime.Now.AddMonths(1).Month, 1);
+            var nextMonthStart = new DateTime(DateTime.Now.AddMonths(1).Year, DateTime.Now.AddMonths(1).Month, 1);
 
-            using (var unitOfWork = _unitOfWork())
-            {
-                IList<Transaction> transactions =
-                unitOfWork.TransactionRepository.FindAll(item => item.Date >= previousMonthStart && item.Date < nextMonthStart &&
-                    item.UserId == currentUserId && item.Amount > 0,
-                    includeProperties: "TransactionCategories").ToList();
-                IEnumerable<Category> allCategories = unitOfWork.CategoryRepository.FindAll(item => item.UserId == currentUserId, "ParentCategory", "ChildCategories");
+            using var unitOfWork = _unitOfWork();
 
-                BimonthlyIncomeReport bimonthlyIncomeReport = new BimonthlyIncomeReport
-                {
-                    Incomes = new List<BimonthlyIncome>(),
-                    PreviousMonthDate = previousMonthStart,
-                    ThisMonthDate = thisMonthStart
-                };
-
-                // loop through all the regular top categories
-                foreach (Category parentCategory in allCategories.Where(category =>
-                    category.ParentId == null))
-                {
-                    AddCategoryToBimonthlyIncome(transactions, parentCategory, bimonthlyIncomeReport, previousMonthStart, thisMonthStart, nextMonthStart);
-                }
-
-                IList<Transaction> uncategorizedTransactionsThisMonth = transactions.Where(item =>
-                    item.TransactionCategories.Count == 0 &&
+            var transactions = await unitOfWork.TransactionRepository.FindAll(
+                findQuery: item =>
+                    item.Date >= previousMonthStart &&
                     item.Date < nextMonthStart &&
-                    item.Date >= thisMonthStart).ToList();
+                    item.UserId == currentUserId &&
+                    item.Amount > 0,
+                includeProperties: nameof(Transaction.TransactionCategories));
 
-                IncomeModel incomeModel = new IncomeModel
+            var allCategories = await unitOfWork.CategoryRepository.FindAll(
+                findQuery: item => item.UserId == currentUserId,
+                includeProperties: new string[]
                 {
-                    BimonthlyIncomeReport = bimonthlyIncomeReport,
-                    UncategorizedTransactionsThisMonth = uncategorizedTransactionsThisMonth
-                };
+                    nameof(Category.ParentCategory),
+                    nameof(Category.ChildCategories)
+                });
 
-                return View("IncomeOverview", incomeModel);
+            var bimonthlyIncomeReport = new BimonthlyIncomeReport
+            {
+                Incomes = new List<BimonthlyIncome>(),
+                PreviousMonthDate = previousMonthStart,
+                ThisMonthDate = thisMonthStart
+            };
+
+            // loop through all the regular top categories
+            foreach (var parentCategory in allCategories.Where(category =>
+                category.ParentId == null))
+            {
+                AddCategoryToBimonthlyIncome(transactions, parentCategory, bimonthlyIncomeReport, previousMonthStart, thisMonthStart, nextMonthStart);
             }
+
+            var uncategorizedTransactionsThisMonth = transactions.Where(item =>
+                item.TransactionCategories.Count == 0 &&
+                item.Date < nextMonthStart &&
+                item.Date >= thisMonthStart).ToList();
+
+            var incomeModel = new IncomeModel
+            {
+                BimonthlyIncomeReport = bimonthlyIncomeReport,
+                UncategorizedTransactionsThisMonth = uncategorizedTransactionsThisMonth
+            };
+
+            return View("IncomeOverview", incomeModel);
         }
 
         /// <summary>
@@ -320,45 +324,48 @@ namespace Sinance.Controllers
 
             CustomReport customReport = null;
 
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                using (var unitOfWork = _unitOfWork())
+                throw new ArgumentException("Upsert of custom report failed");
+            }
+
+            using var unitOfWork = _unitOfWork();
+
+            if (model.Id == 0)
+            {
+                customReport = new CustomReport
                 {
-                    if (model.Id <= 0)
-                    {
-                        customReport = new CustomReport
-                        {
-                            Name = model.Name,
-                            UserId = currentUserId
-                        };
-                        unitOfWork.CustomReportRepository.Insert(customReport);
-                        await unitOfWork.SaveAsync();
-                    }
-                    else
-                        customReport = unitOfWork.CustomReportRepository.FindSingle(item => item.UserId == currentUserId && item.Id == model.Id);
-
-                    if (customReport != null)
-                    {
-                        unitOfWork.CustomReportCategoryRepository.DeleteRange(unitOfWork.CustomReportCategoryRepository.FindAll(item => item.CustomReportId == customReport.Id));
-                        await unitOfWork.SaveAsync();
-
-                        List<BasicCheckBoxItem> selectedCategories = model.AvailableCategories.Where(item => item.Checked).ToList();
-
-                        foreach (BasicCheckBoxItem selectedCategory in selectedCategories)
-                        {
-                            unitOfWork.CustomReportCategoryRepository.Insert(new CustomReportCategory
-                            {
-                                CategoryId = selectedCategory.Id,
-                                CustomReportId = customReport.Id
-                            });
-                        }
-
-                        await unitOfWork.SaveAsync();
-                    }
-                }
+                    Name = model.Name,
+                    UserId = currentUserId
+                };
+                unitOfWork.CustomReportRepository.Insert(customReport);
+                await unitOfWork.SaveAsync();
             }
             else
-                throw new ArgumentException("Upsert of custom report failed");
+            {
+                customReport = await unitOfWork.CustomReportRepository.FindSingleTracked(item => item.UserId == currentUserId && item.Id == model.Id);
+            }
+
+            if (customReport != null)
+            {
+                // Just rebuild the Custom report categories list
+                var customReportCategories = await unitOfWork.CustomReportCategoryRepository.FindAllTracked(item => item.CustomReportId == customReport.Id);
+                unitOfWork.CustomReportCategoryRepository.DeleteRange(customReportCategories);
+                await unitOfWork.SaveAsync();
+
+                var selectedCategories = model.AvailableCategories.Where(item => item.Checked).ToList();
+
+                foreach (var selectedCategory in selectedCategories)
+                {
+                    unitOfWork.CustomReportCategoryRepository.Insert(new CustomReportCategory
+                    {
+                        CategoryId = selectedCategory.Id,
+                        CustomReportId = customReport.Id
+                    });
+                }
+
+                await unitOfWork.SaveAsync();
+            }
 
             return RedirectToAction("CustomReport", new { reportId = customReport?.Id ?? model.Id });
         }
@@ -376,10 +383,10 @@ namespace Sinance.Controllers
         private static void AddCategoryToBimonthlyExpense(IList<Transaction> transactions, Category category,
             BimonthlyExpenseReport bimonthlyExpenseReport, DateTime previousMonthStart, DateTime thisMonthStart, DateTime nextMonthStart, bool regularExpense)
         {
-            IList<Transaction> lastMonthParentTransactions = TransactionsForMonth(transactions, category, previousMonthStart, thisMonthStart);
-            IList<Transaction> thisMonthParentTransactions = TransactionsForMonth(transactions, category, thisMonthStart, nextMonthStart);
+            var lastMonthParentTransactions = TransactionsForMonth(transactions, category, previousMonthStart, thisMonthStart);
+            var thisMonthParentTransactions = TransactionsForMonth(transactions, category, thisMonthStart, nextMonthStart);
 
-            BimonthlyExpense bimonthlyParentExpense = new BimonthlyExpense
+            var bimonthlyParentExpense = new BimonthlyExpense
             {
                 Name = category.Name,
                 AmountPrevious = CalculateSumCategoryTransactions(category, lastMonthParentTransactions),
@@ -388,7 +395,9 @@ namespace Sinance.Controllers
 
             if (bimonthlyParentExpense.AmountNow != bimonthlyParentExpense.AmountPrevious &&
                 thisMonthParentTransactions.Count() < lastMonthParentTransactions.Count())
+            {
                 bimonthlyExpenseReport.RemainingAmount -= bimonthlyParentExpense.AmountNow - bimonthlyParentExpense.AmountPrevious;
+            }
 
             bimonthlyExpenseReport.ThisMonthTotal += bimonthlyParentExpense.AmountNow;
             bimonthlyExpenseReport.PreviousMonthTotal += bimonthlyParentExpense.AmountPrevious;
@@ -397,12 +406,12 @@ namespace Sinance.Controllers
 
             if (category.ChildCategories.Any())
             {
-                foreach (Category childCategory in category.ChildCategories.Where(item => item.IsRegular == regularExpense || category.IsRegular == regularExpense))
+                foreach (var childCategory in category.ChildCategories.Where(item => item.IsRegular == regularExpense || category.IsRegular == regularExpense))
                 {
-                    IList<Transaction> lastMonthChildTransactions = TransactionsForMonth(transactions, childCategory, previousMonthStart, thisMonthStart);
-                    IList<Transaction> thisMonthChildTransactions = TransactionsForMonth(transactions, childCategory, thisMonthStart, nextMonthStart);
+                    var lastMonthChildTransactions = TransactionsForMonth(transactions, childCategory, previousMonthStart, thisMonthStart);
+                    var thisMonthChildTransactions = TransactionsForMonth(transactions, childCategory, thisMonthStart, nextMonthStart);
 
-                    BimonthlyExpense bimonthlyChildExpense = new BimonthlyExpense
+                    var bimonthlyChildExpense = new BimonthlyExpense
                     {
                         Name = childCategory.Name,
                         AmountPrevious = CalculateSumCategoryTransactions(childCategory, lastMonthChildTransactions),
@@ -411,7 +420,9 @@ namespace Sinance.Controllers
 
                     if (bimonthlyChildExpense.AmountNow != bimonthlyChildExpense.AmountPrevious &&
                         thisMonthChildTransactions.Count() < lastMonthChildTransactions.Count())
+                    {
                         bimonthlyExpenseReport.RemainingAmount -= bimonthlyChildExpense.AmountNow - bimonthlyChildExpense.AmountPrevious;
+                    }
 
                     bimonthlyExpenseReport.ThisMonthTotal += bimonthlyChildExpense.AmountNow;
                     bimonthlyExpenseReport.PreviousMonthTotal += bimonthlyChildExpense.AmountPrevious;
@@ -427,10 +438,10 @@ namespace Sinance.Controllers
         private static void AddCategoryToBimonthlyIncome(IList<Transaction> transactions, Category category,
             BimonthlyIncomeReport bimonthlyExpenseReport, DateTime previousMonthStart, DateTime thisMonthStart, DateTime nextMonthStart)
         {
-            IList<Transaction> lastMonthParentTransactions = TransactionsForMonth(transactions, category, previousMonthStart, thisMonthStart);
-            IList<Transaction> thisMonthParentTransactions = TransactionsForMonth(transactions, category, thisMonthStart, nextMonthStart);
+            var lastMonthParentTransactions = TransactionsForMonth(transactions, category, previousMonthStart, thisMonthStart);
+            var thisMonthParentTransactions = TransactionsForMonth(transactions, category, thisMonthStart, nextMonthStart);
 
-            BimonthlyIncome bimonthlyParentIncome = new BimonthlyIncome
+            var bimonthlyParentIncome = new BimonthlyIncome
             {
                 Name = category.Name,
                 AmountPrevious = CalculateSumCategoryTransactions(category, lastMonthParentTransactions),
@@ -444,12 +455,12 @@ namespace Sinance.Controllers
 
             if (category.ChildCategories.Any())
             {
-                foreach (Category childCategory in category.ChildCategories)
+                foreach (var childCategory in category.ChildCategories)
                 {
-                    IList<Transaction> lastMonthChildTransactions = TransactionsForMonth(transactions, childCategory, previousMonthStart, thisMonthStart);
-                    IList<Transaction> thisMonthChildTransactions = TransactionsForMonth(transactions, childCategory, thisMonthStart, nextMonthStart);
+                    var lastMonthChildTransactions = TransactionsForMonth(transactions, childCategory, previousMonthStart, thisMonthStart);
+                    var thisMonthChildTransactions = TransactionsForMonth(transactions, childCategory, thisMonthStart, nextMonthStart);
 
-                    BimonthlyIncome bimonthlyChildIncome = new BimonthlyIncome
+                    var bimonthlyChildIncome = new BimonthlyIncome
                     {
                         Name = childCategory.Name,
                         AmountPrevious = CalculateSumCategoryTransactions(childCategory, lastMonthChildTransactions),

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Sinance.Domain.Entities
@@ -9,7 +8,7 @@ namespace Sinance.Domain.Entities
     /// <summary>
     /// Bank account entity
     /// </summary>
-    public class BankAccount : EntityBase
+    public class BankAccount : UserEntityBase
     {
         /// <summary>
         /// Bank account type
@@ -26,6 +25,11 @@ namespace Sinance.Domain.Entities
         /// If the account is disabled and should not be shown anymore
         /// </summary>
         public bool Disabled { get; set; }
+
+        /// <summary>
+        /// If the account should be included in profit/loss graphs
+        /// </summary>
+        public bool IncludeInProfitLossGraph { get; set; }
 
         /// <summary>
         /// Name
@@ -46,18 +50,6 @@ namespace Sinance.Domain.Entities
         public virtual ICollection<Transaction> Transactions { get; set; }
 
         /// <summary>
-        /// User associated with this bank account
-        /// </summary>
-        [ForeignKey("UserId")]
-        public virtual SinanceUser User { get; set; }
-
-        /// <summary>
-        /// User id associated with this bank account
-        /// </summary>
-        [Required]
-        public int UserId { get; set; }
-
-        /// <summary>
         /// Default constructor
         /// </summary>
         [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "EF needs virtual collections for lazy loading")]
@@ -73,9 +65,10 @@ namespace Sinance.Domain.Entities
         /// <param name="startBalance">Start balance of the bank account</param>
         /// <param name="accountType">Type of the bank account</param>
         /// <param name="disabled">If the account is disabled</param>
-        public void Update(string name, decimal startBalance, bool disabled, BankAccountType accountType)
+        public void Update(string name, decimal startBalance, bool disabled, BankAccountType accountType, bool includeInProfitLossGraph)
         {
             Name = name ?? throw new ArgumentNullException(nameof(name));
+            IncludeInProfitLossGraph = includeInProfitLossGraph;
             StartBalance = startBalance;
             AccountType = accountType;
             Disabled = disabled;

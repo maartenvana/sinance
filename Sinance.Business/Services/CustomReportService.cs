@@ -24,17 +24,15 @@ namespace Sinance.Business.Services
         /// </summary>
         public async Task<IList<CustomReport>> GetCustomReportsForCurrentUser()
         {
-            var userId = await this._sessionService.GetCurrentUserId();
+            var userId = await _sessionService.GetCurrentUserId();
 
-            using (var unitOfWork = _unitOfWork())
-            {
-                var customReports = unitOfWork.CustomReportRepository
-                .FindAll(item => item.UserId == userId)
+            using var unitOfWork = _unitOfWork();
+            var customReports = (await unitOfWork.CustomReportRepository
+                .FindAll(item => item.UserId == userId))
                 .OrderBy(item => item.Name)
                 .ToList();
 
-                return customReports;
-            }
+            return customReports;
         }
     }
 }

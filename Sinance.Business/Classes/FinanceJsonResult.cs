@@ -31,7 +31,7 @@
         /// <param name="success">If the call is successfull</param>
         public SinanceJsonResult(bool success)
         {
-            this.Success = success;
+            Success = success;
         }
     }
 }

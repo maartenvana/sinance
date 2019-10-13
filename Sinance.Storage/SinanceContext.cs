@@ -1,5 +1,4 @@
 ﻿using Sinance.Domain.Entities;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
@@ -10,8 +9,6 @@ namespace Sinance.Storage
     public class SinanceContext : DbContext
     {
         public DbSet<BankAccount> BankAccounts { get; set; }
-
-        public DbSet<Budget> Budgets { get; set; }
 
         public DbSet<Category> Categories { get; set; }
 
@@ -42,7 +39,7 @@ namespace Sinance.Storage
 
         public void Migrate()
         {
-            this.Database.Migrate();
+            Database.Migrate();
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -55,7 +52,6 @@ namespace Sinance.Storage
             modelBuilder.Entity<BankAccount>().ToTable("BankAccount").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
 
             modelBuilder.Entity<SinanceUser>().ToTable("Users").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
-            modelBuilder.Entity<Budget>().ToTable("Budget").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
             modelBuilder.Entity<Category>().ToTable("Category").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
             modelBuilder.Entity<CategoryMapping>().ToTable("CategoryMapping").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
             modelBuilder.Entity<Transaction>().ToTable("Transaction").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();

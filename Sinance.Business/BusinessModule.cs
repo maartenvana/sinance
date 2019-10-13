@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Identity;
 using Sinance.Business.Services;
 using Sinance.Domain.Entities;
 using Sinance.Storage;
-using Sinance.Business.Services.Authentication;
 
 namespace Sinance.Business
 {
@@ -15,9 +14,6 @@ namespace Sinance.Business
 
             builder.RegisterType<BankAccountService>().As<IBankAccountService>();
             builder.RegisterType<CustomReportService>().As<ICustomReportService>();
-            builder.RegisterType<AuthenticationService>().As<IAuthenticationService>();
-
-            builder.RegisterModule<StorageModule>();
         }
     }
 }

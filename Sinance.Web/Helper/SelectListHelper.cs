@@ -1,6 +1,5 @@
 ﻿using Sinance.Business.Services;
 using Sinance.Domain.Entities;
-using Sinance.Web;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
@@ -28,7 +27,7 @@ namespace Sinance.Web.Helper
         /// <returns>A select list containing all months</returns>
         public static SelectList CreateMonthSelectList()
         {
-            List<SelectListItem> availableMonths = new List<SelectListItem>
+            var availableMonths = new List<SelectListItem>
             {
                 new SelectListItem { Text = Resources.January, Value = "1" },
                 new SelectListItem { Text = Resources.February, Value = "2" },
@@ -44,7 +43,7 @@ namespace Sinance.Web.Helper
                 new SelectListItem { Text = Resources.December, Value = "12" }
             };
 
-            SelectList selectList = new SelectList(availableMonths, "Value", "Text", DateTime.Now.Month.ToString(CultureInfo.InvariantCulture));
+            var selectList = new SelectList(availableMonths, "Value", "Text", DateTime.Now.Month.ToString(CultureInfo.InvariantCulture));
 
             return selectList;
         }
@@ -55,9 +54,9 @@ namespace Sinance.Web.Helper
         /// <returns>Select list containing the years</returns>
         public static IList<SelectListItem> CreateYearSelectList()
         {
-            List<SelectListItem> availableYears = new List<SelectListItem>();
+            var availableYears = new List<SelectListItem>();
 
-            for (int i = DateTime.Now.Year - 5; i < DateTime.Now.Year; i++)
+            for (var i = DateTime.Now.Year - 5; i < DateTime.Now.Year; i++)
             {
                 availableYears.Add(new SelectListItem { Text = i.ToString(CultureInfo.InvariantCulture), Value = i.ToString(CultureInfo.InvariantCulture), Selected = i == DateTime.Now.Year });
             }
@@ -71,7 +70,7 @@ namespace Sinance.Web.Helper
         /// <returns>Created list of bank accounts</returns>
         public async Task<IList<SelectListItem>> CreateActiveBankAccountSelectList(BankAccountType? typeFilter)
         {
-            List<SelectListItem> availableAccounts = new List<SelectListItem>
+            var availableAccounts = new List<SelectListItem>
                 {
                     new SelectListItem
                     {

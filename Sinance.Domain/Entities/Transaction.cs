@@ -9,7 +9,7 @@ namespace Sinance.Domain.Entities
     /// <summary>
     /// Transaction entity
     /// </summary>
-    public class Transaction : EntityBase
+    public class Transaction : UserEntityBase
     {
         /// <summary>
         /// Account number from
@@ -75,18 +75,6 @@ namespace Sinance.Domain.Entities
         /// </summary>
         [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<TransactionCategory> TransactionCategories { get; set; }
-
-        /// <summary>
-        /// User associated with this bank account
-        /// </summary>
-        [ForeignKey("UserId")]
-        public virtual SinanceUser User { get; set; }
-
-        /// <summary>
-        /// User id associated with this bank account
-        /// </summary>
-        [Required]
-        public int UserId { get; set; }
 
         /// <summary>
         /// Default constructors

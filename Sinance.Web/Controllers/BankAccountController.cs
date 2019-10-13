@@ -40,7 +40,7 @@ namespace Sinance.Controllers
         /// <returns>ActionResult with the add action page</returns>
         public IActionResult AddAccount()
         {
-            BankAccountModel bankAccount = new BankAccountModel();
+            var bankAccount = new BankAccountModel();
 
             return View("UpsertAccount", bankAccount);
         }
@@ -57,9 +57,9 @@ namespace Sinance.Controllers
 
             ActionResult result;
 
-            var bankAccounts = await this._bankAccountService.GetAllBankAccountsForCurrentUser();
+            var bankAccounts = await _bankAccountService.GetAllBankAccountsForCurrentUser();
 
-            BankAccount bankAccount = bankAccounts.SingleOrDefault(item => item.Id == accountId);
+            var bankAccount = bankAccounts.SingleOrDefault(item => item.Id == accountId);
 
             if (bankAccount == null)
             {
@@ -68,7 +68,7 @@ namespace Sinance.Controllers
             }
             else
             {
-                BankAccountModel model = BankAccountModel.CreateBankAccountModel(bankAccount);
+                var model = BankAccountModel.CreateBankAccountModel(bankAccount);
                 result = View("UpsertAccount", model);
             }
 
@@ -81,7 +81,7 @@ namespace Sinance.Controllers
         /// <returns>Default view</returns>
         public async Task<IActionResult> Index()
         {
-            var bankAccounts = await this._bankAccountService.GetAllBankAccountsForCurrentUser();
+            var bankAccounts = await _bankAccountService.GetAllBankAccountsForCurrentUser();
 
             return View(bankAccounts);
         }
@@ -96,25 +96,28 @@ namespace Sinance.Controllers
             if (accountId <= 0)
                 throw new ArgumentOutOfRangeException(nameof(accountId));
 
-            var currentUserId = await this._sessionService.GetCurrentUserId();
+            var currentUserId = await _sessionService.GetCurrentUserId();
 
             using (var unitOfWork = _unitOfWork())
             {
-                BankAccount bankAccount = unitOfWork.BankAccountRepository.FindSingle(item => item.Id == accountId && item.UserId == currentUserId,
-                includeProperties: "Transactions");
+                var bankAccount =
+                    await unitOfWork.BankAccountRepository.FindSingleTracked(item => item.Id == accountId && item.UserId == currentUserId,
+                    includeProperties: nameof(BankAccount.Transactions));
 
                 if (bankAccount != null)
                 {
                     unitOfWork.TransactionRepository.DeleteRange(bankAccount.Transactions);
-                    unitOfWork.BankAccountRepository.Delete(bankAccount.Id);
+                    unitOfWork.BankAccountRepository.Delete(bankAccount);
 
                     await unitOfWork.SaveAsync();
                     TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success,
                         ViewBag.Message = Resources.BankAccountRemoved);
                 }
                 else
+                {
                     TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error,
                         ViewBag.Message = Resources.BankAccountNotFound);
+                }
             }
 
             return RedirectToAction("Index");
@@ -134,19 +137,19 @@ namespace Sinance.Controllers
 
             if (ModelState.IsValid)
             {
-                var currentUserId = await this._sessionService.GetCurrentUserId();
+                var currentUserId = await _sessionService.GetCurrentUserId();
 
                 using (var unitOfWork = _unitOfWork())
                 {
                     // If the account already exists update the current one
                     if (model.Id > 0)
                     {
-                        var bankAccounts = await this._bankAccountService.GetAllBankAccountsForCurrentUser();
+                        var bankAccounts = await _bankAccountService.GetAllBankAccountsForCurrentUser();
 
-                        BankAccount bankAccount = bankAccounts.SingleOrDefault(item => item.Id == model.Id);
+                        var bankAccount = bankAccounts.SingleOrDefault(item => item.Id == model.Id);
                         if (bankAccount != null)
                         {
-                            bankAccount.Update(model.Name, model.StartBalance, model.Disabled, model.AccountType);
+                            bankAccount.Update(model.Name, model.StartBalance, model.Disabled, model.AccountType, model.IncludeInProfitLossGraph);
 
                             unitOfWork.BankAccountRepository.Update(bankAccount);
                             await unitOfWork.SaveAsync();
@@ -154,14 +157,18 @@ namespace Sinance.Controllers
                             TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.BankAccountUpdated);
                         }
                         else
+                        {
                             ModelState.AddModelError("Message", Resources.BankAccountNotFound);
+                        }
                     }
                     else
                     {
-                        if (!unitOfWork.BankAccountRepository.FindAll(item => item.Name == model.Name).Any())
+                        var bankAccounts = await unitOfWork.BankAccountRepository.FindAll(item => item.Name == model.Name);
+
+                        if (!bankAccounts.Any())
                         {
-                            BankAccount insertBankAccount = new BankAccount();
-                            insertBankAccount.Update(model.Name, model.StartBalance, model.Disabled, model.AccountType);
+                            var insertBankAccount = new BankAccount();
+                            insertBankAccount.Update(model.Name, model.StartBalance, model.Disabled, model.AccountType, model.IncludeInProfitLossGraph);
                             insertBankAccount.CurrentBalance = model.StartBalance;
                             insertBankAccount.UserId = currentUserId;
 
@@ -171,7 +178,9 @@ namespace Sinance.Controllers
                             TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.BankAccountCreated);
                         }
                         else
+                        {
                             ModelState.AddModelError("Message", Resources.BankAccountAlreadyExists);
+                        }
                     }
                 }
 

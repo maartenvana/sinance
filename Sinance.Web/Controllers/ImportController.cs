@@ -1,6 +1,5 @@
 ﻿using Sinance.Business.Handlers;
 using Sinance.Business.Services;
-using Sinance.Common;
 using Sinance.Domain.Entities;
 using Sinance.Web.Model;
 using Sinance.Web;
@@ -8,9 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Sinance.Web.Helper;
@@ -57,81 +54,74 @@ namespace Sinance.Controllers
             if (model == null)
                 throw new ArgumentNullException(nameof(model));
 
-            ActionResult result;
-
             // Clear the previous cache (if it exists)
             FinanceCacheHandler.ClearCache(await ConstructImportModelCacheKey());
 
-            using (var unitOfWork = _unitOfWork())
+            using var unitOfWork = _unitOfWork();
+
+            var importBank = await unitOfWork.ImportBankRepository.FindSingle(item => item.Id == model.ImportBankId);
+
+            if (importBank != null)
             {
-                ImportBank importBank = unitOfWork.ImportBankRepository.FindSingle(item => item.Id == model.ImportBankId);
+                var bankAccounts = await _bankAccountService.GetActiveBankAccountsForCurrentUser();
 
-                if (importBank != null)
+                var importMappings = await unitOfWork.ImportMappingRepository.FindAll(item => item.ImportBankId == importBank.Id);
+                var bankAccount = bankAccounts.SingleOrDefault(item => item.Id == model.BankAccountId);
+
+                if (bankAccount != null)
                 {
-                    var bankAccounts = await this._bankAccountService.GetActiveBankAccountsForCurrentUser();
-
-                    IList<ImportMapping> importMappings = unitOfWork.ImportMappingRepository.FindAll(item => item.ImportBankId == importBank.Id);
-                    BankAccount bankAccount = bankAccounts.SingleOrDefault(item => item.Id == model.BankAccountId);
-
-                    if (bankAccount != null)
+                    try
                     {
-                        try
-                        {
-                            using (Stream stream = file.OpenReadStream())
-                            {
-                                model.ImportRows = ImportHandler.ProcessImport(unitOfWork, fileInputStream: stream,
-                                    userId: bankAccount.UserId, importMappings: importMappings, importBank: importBank, bankAccountId: bankAccount.Id);
+                        using var stream = file.OpenReadStream();
 
-                                if (TestHelper.IsTestAssembly())
-                                    FinanceCacheHandler.ClearCache(await ConstructImportModelCacheKey());
+                        model.ImportRows = await ImportHandler.ProcessImport(
+                            unitOfWork,
+                            fileInputStream: stream,
+                            userId: bankAccount.UserId,
+                            importMappings: importMappings,
+                            importBank: importBank,
+                            bankAccountId: bankAccount.Id);
 
-                                // Place the import model in the cache for easy acces later
-                                FinanceCacheHandler.Cache(key: await ConstructImportModelCacheKey(),
-                                    contentAction: () => model,
-                                    slidingExpiration: false,
-                                    expirationTimeSpan: new TimeSpan(0, 0, 15, 0));
+                        // Place the import model in the cache for easy acces later
+                        FinanceCacheHandler.Cache(key: await ConstructImportModelCacheKey(),
+                            contentAction: () => model,
+                            slidingExpiration: false,
+                            expirationTimeSpan: new TimeSpan(0, 0, 15, 0));
 
-                                result = View("ImportResult", model);
-                            }
-                        }
-                        catch (Exception)
-                        {
-                            TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, message: Resources.ErrorWhileProcessingImport);
-                            result = RedirectToAction("Index");
-                        }
+                        return View("ImportResult", model);
                     }
-                    else
+                    catch (Exception)
                     {
-                        TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, message: Resources.BankAccountNotFound);
-                        result = RedirectToAction("Index");
+                        TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, message: Resources.ErrorWhileProcessingImport);
+                        return RedirectToAction("Index");
                     }
                 }
                 else
                 {
-                    TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, message: Resources.Error);
-                    result = RedirectToAction("Index");
+                    TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, message: Resources.BankAccountNotFound);
+                    return RedirectToAction("Index");
                 }
-
-                return result;
             }
+
+            TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, message: Resources.Error);
+            return RedirectToAction("Index");
         }
 
         /// <summary>
         /// Index page for importing
         /// </summary>
         /// <returns>ActionResult for user</returns>
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            using (var unitOfWork = _unitOfWork())
-            {
-                // Retrieve all import banks
-                IList<ImportBank> importBanks = unitOfWork.ImportBankRepository.FindAll(item => item.Id > 0);
+            using var unitOfWork = _unitOfWork();
 
-                return View("Index", new ImportModel
-                {
-                    AvailableImportBanks = importBanks
-                });
-            }
+            // Retrieve all import banks
+            var importBanks = await unitOfWork.ImportBankRepository.FindAll(item => item.Id > 0);
+
+            return View("Index", new ImportModel
+            {
+                AvailableImportBanks = importBanks
+            });
         }
 
         /// <summary>
@@ -145,55 +135,49 @@ namespace Sinance.Controllers
             if (model == null)
                 throw new ArgumentNullException(nameof(model));
 
-            ActionResult result;
-            ImportModel cachedModel = FinanceCacheHandler.RetrieveCache<ImportModel>(await ConstructImportModelCacheKey());
+            var cachedModel = FinanceCacheHandler.RetrieveCache<ImportModel>(await ConstructImportModelCacheKey());
             if (cachedModel != null)
             {
-                var bankAccounts = await this._bankAccountService.GetActiveBankAccountsForCurrentUser();
+                var bankAccounts = await _bankAccountService.GetActiveBankAccountsForCurrentUser();
 
                 // Get the bank account from session to prevent malicious adding of transactions
-                BankAccount bankAccount = bankAccounts.SingleOrDefault(item => item.Id == model.BankAccountId);
+                var bankAccount = bankAccounts.SingleOrDefault(item => item.Id == model.BankAccountId);
 
                 if (bankAccount != null)
                 {
-                    using (var unitOfWork = _unitOfWork())
-                    {
-                        var skippedTransactions = model.ImportRows.Count(item => item.ExistsInDatabase || !item.Import);
-                        var savedTransactions = await ImportHandler.SaveImportResultToDatabase(unitOfWork,
-                            bankAccountId: bankAccount.Id,
-                            importRows: model.ImportRows,
-                            cachedImportRows: cachedModel.ImportRows,
-                            userId: bankAccount.UserId);
+                    using var unitOfWork = _unitOfWork();
 
-                        // Update the current balance of bank account and refresh them
-                        await TransactionHandler.UpdateCurrentBalance(unitOfWork,
-                            bankAccountId: bankAccount.Id,
-                            userId: bankAccount.UserId);
+                    var skippedTransactions = model.ImportRows.Count(item => item.ExistsInDatabase || !item.Import);
+                    var savedTransactions = await ImportHandler.SaveImportResultToDatabase(unitOfWork,
+                        bankAccountId: bankAccount.Id,
+                        importRows: model.ImportRows,
+                        cachedImportRows: cachedModel.ImportRows,
+                        userId: bankAccount.UserId);
 
-                        // Clear the cache entry
-                        FinanceCacheHandler.ClearCache(await ConstructImportModelCacheKey());
+                    // Update the current balance of bank account and refresh them
+                    await TransactionHandler.UpdateCurrentBalance(unitOfWork,
+                        bankAccountId: bankAccount.Id,
+                        userId: bankAccount.UserId);
 
-                        var message = string.Format(CultureInfo.CurrentCulture, Resources.TransactionsAddedAndSkippedFormat, savedTransactions, skippedTransactions);
+                    // Clear the cache entry
+                    FinanceCacheHandler.ClearCache(await ConstructImportModelCacheKey());
 
-                        TempDataHelper.SetTemporaryMessage(tempData: TempData,
-                            state: savedTransactions != 0 ? MessageState.Success : MessageState.Warning,
-                            message: message);
-                        result = RedirectToAction("Index", "AccountOverview", new { @bankAccountId = model.BankAccountId });
-                    }
+                    var message = string.Format(CultureInfo.CurrentCulture, Resources.TransactionsAddedAndSkippedFormat, savedTransactions, skippedTransactions);
+
+                    TempDataHelper.SetTemporaryMessage(tempData: TempData,
+                        state: savedTransactions != 0 ? MessageState.Success : MessageState.Warning,
+                        message: message);
+                    return RedirectToAction("Index", "AccountOverview", new { @bankAccountId = model.BankAccountId });
                 }
                 else
                 {
                     TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.BankAccountNotFound);
-                    result = RedirectToAction("Index", "Home");
+                    return RedirectToAction("Index", "Home");
                 }
             }
-            else
-            {
-                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Warning, Resources.ImportTimeOut);
-                result = View("Index");
-            }
 
-            return result;
+            TempDataHelper.SetTemporaryMessage(TempData, MessageState.Warning, Resources.ImportTimeOut);
+            return View("Index");
         }
 
         /// <summary>

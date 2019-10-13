@@ -1,8 +1,9 @@
 ﻿using Sinance.Domain;
+using Sinance.Domain.Entities;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace Sinance.Storage
 {
@@ -11,14 +12,6 @@ namespace Sinance.Storage
     /// </summary>
     public interface IGenericRepository<TEntity> where TEntity : EntityBase
     {
-        /// <summary>
-        /// Delete entity
-        /// </summary>
-        /// <typeparam name="TEntity">Entity type</typeparam>
-        /// <param name="id">Id</param>
-        [SuppressMessage("Microsoft.Design", "CA1004:GenericMethodsShouldProvideTypeParameter", Justification = "Type parameter needed")]
-        void Delete(int id);
-
         /// <summary>
         /// Delete entity
         /// </summary>
@@ -34,46 +27,108 @@ namespace Sinance.Storage
         void DeleteRange(IEnumerable<TEntity> entities);
 
         /// <summary>
-        /// Find entities by predicate
+        /// Find entities by predicate without tracking
         /// </summary>
         /// <typeparam name="TEntity">Entity type</typeparam>
-        /// <param name="predicate">Predicate</param>
+        /// <param name="findQuery">Predicate</param>
         /// <returns>Found entities</returns>
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "By design")]
-        IList<TEntity> FindAll(Expression<Func<TEntity, bool>> predicate);
+        Task<List<TEntity>> FindAll(Expression<Func<TEntity, bool>> findQuery);
 
         /// <summary>
-        /// Find entities by predicate
+        /// Find entities by predicate without tracking
         /// </summary>
         /// <typeparam name="TEntity">Entity type</typeparam>
-        /// <param name="predicate">Predicate</param>
+        /// <param name="findQuery">Predicate</param>
         /// <param name="includeProperties">What properties to include</param>
         /// <returns>Found entities</returns>
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "By design")]
-        IList<TEntity> FindAll(Expression<Func<TEntity, bool>> predicate, params string[] includeProperties);
+        Task<List<TEntity>> FindAll(Expression<Func<TEntity, bool>> findQuery, params string[] includeProperties);
 
         /// <summary>
-        /// Find entities by predicate
+        /// Find entities by predicate with tracking
         /// </summary>
         /// <typeparam name="TEntity">Entity type</typeparam>
-        /// <param name="predicate">Predicate</param>
+        /// <param name="findQuery">Predicate</param>
         /// <returns>Found entities</returns>
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "By design")]
-        TEntity FindSingle(Expression<Func<TEntity, bool>> predicate);
+        Task<List<TEntity>> FindAllTracked(Expression<Func<TEntity, bool>> findQuery);
 
         /// <summary>
-        /// Find entities by predicate
+        /// Find entities by predicate with tracking
         /// </summary>
         /// <typeparam name="TEntity">Entity type</typeparam>
-        /// <param name="predicate">Predicate</param>
+        /// <param name="findQuery">Predicate</param>
         /// <param name="includeProperties">What properties to include</param>
         /// <returns>Found entities</returns>
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures", Justification = "By design")]
-        TEntity FindSingle(Expression<Func<TEntity, bool>> predicate, params string[] includeProperties);
+        Task<List<TEntity>> FindAllTracked(Expression<Func<TEntity, bool>> findQuery, params string[] includeProperties);
 
-        IList<TEntity> FindTopAscending(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderByAscending, int count);
+        /// <summary>
+        /// Find single entity without tracking
+        /// </summary>
+        /// <typeparam name="TEntity">Entity type</typeparam>
+        /// <param name="findQuery">Predicate</param>
+        /// <returns>Found entities</returns>
+        Task<TEntity> FindSingle(Expression<Func<TEntity, bool>> findQuery);
 
-        IList<TEntity> FindTopDescending(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderByDescending, int count);
+        /// <summary>
+        /// Find single entity without tracking
+        /// </summary>
+        /// <typeparam name="TEntity">Entity type</typeparam>
+        /// <param name="findQuery">Predicate</param>
+        /// <param name="includeProperties">What properties to include</param>
+        /// <returns>Found entities</returns>
+        Task<TEntity> FindSingle(Expression<Func<TEntity, bool>> findQuery, params string[] includeProperties);
+
+        /// <summary>
+        /// Find single entity with tracking
+        /// </summary>
+        /// <typeparam name="TEntity">Entity type</typeparam>
+        /// <param name="findQuery">Predicate</param>
+        /// <returns>Found entities</returns>
+        Task<TEntity> FindSingleTracked(Expression<Func<TEntity, bool>> findQuery);
+
+        /// <summary>
+        /// Find single entity with tracking
+        /// </summary>
+        /// <typeparam name="TEntity">Entity type</typeparam>
+        /// <param name="findQuery">Predicate</param>
+        /// <param name="includeProperties">What properties to include</param>
+        /// <returns>Found entities</returns>
+        Task<TEntity> FindSingleTracked(Expression<Func<TEntity, bool>> findQuery, params string[] includeProperties);
+
+        /// <summary>
+        /// Finds the top entities sorted ascending without tracking
+        /// </summary>
+        /// <param name="findQuery">Predicate</param>
+        /// <param name="orderByAscending">The order to ascend by</param>
+        /// <param name="count">How many to find</param>
+        /// <returns>Found entities</returns>
+        Task<List<TEntity>> FindTopAscending(Expression<Func<TEntity, bool>> findQuery, Expression<Func<TEntity, object>> orderByAscending, int count);
+
+        /// <summary>
+        /// Finds the top entities sorted ascending with tracking
+        /// </summary>
+        /// <param name="findQuery">Predicate</param>
+        /// <param name="orderByAscending">The order to ascend by</param>
+        /// <param name="count">How many to find</param>
+        /// <returns>Found entities</returns>
+        Task<List<TEntity>> FindTopAscendingTracked(Expression<Func<TEntity, bool>> findQuery, Expression<Func<TEntity, object>> orderByAscending, int count);
+
+        /// <summary>
+        /// Finds the top entities sorted descending without tracking
+        /// </summary>
+        /// <param name="findQuery">Predicate</param>
+        /// <param name="orderByAscending">The order to descend by</param>
+        /// <param name="count">How many to find</param>
+        /// <returns>Found entities</returns>
+        Task<List<TEntity>> FindTopDescending(Expression<Func<TEntity, bool>> findQuery, Expression<Func<TEntity, object>> orderByDescending, int count);
+
+        /// <summary>
+        /// Finds the top entities sorted descending with tracking
+        /// </summary>
+        /// <param name="findQuery">Predicate</param>
+        /// <param name="orderByAscending">The order to descend by</param>
+        /// <param name="count">How many to find</param>
+        /// <returns>Found entities</returns>
+        Task<List<TEntity>> FindTopDescendingTracked(Expression<Func<TEntity, bool>> findQuery, Expression<Func<TEntity, object>> orderByDescending, int count);
 
         /// <summary>
         /// Insert entity
@@ -89,16 +144,39 @@ namespace Sinance.Storage
         /// <param name="entities">Collection of entities</param>
         void InsertRange(IEnumerable<TEntity> entities);
 
-        IList<TEntity> ListAll();
-
-        IList<TEntity> ListAll(params string[] includeProperties);
+        /// <summary>
+        /// Lists all entities without tracking
+        /// </summary>
+        /// <param name="includeProperties">Properties to include with query</param>
+        /// <returns>Found entities</returns>
+        Task<List<TEntity>> ListAll(params string[] includeProperties);
 
         /// <summary>
-        /// Save changes
+        /// Lists all entities without tracking
         /// </summary>
-        void Save();
+        /// <returns>Found entities</returns>
+        Task<List<TEntity>> ListAll();
 
-        decimal Sum(Expression<Func<TEntity, bool>> filterPredicate, Expression<Func<TEntity, decimal>> sumPredicate);
+        /// <summary>
+        /// Lists all entities with tracking
+        /// </summary>
+        /// <param name="includeProperties">Properties to include with query</param>
+        /// <returns>Found entities</returns>
+        Task<List<TEntity>> ListAllTracked(params string[] includeProperties);
+
+        /// <summary>
+        /// Lists all entities with tracking
+        /// </summary>
+        /// <returns>Found entities</returns>
+        Task<List<TEntity>> ListAllTracked();
+
+        /// <summary>
+        /// Returns the sum of a given field from an entity
+        /// </summary>
+        /// <param name="findQuery">Query to filter with</param>
+        /// <param name="sumQuery">Query to sum by</param>
+        /// <returns>Sum of the given field</returns>
+        Task<decimal> Sum(Expression<Func<TEntity, bool>> findQuery, Expression<Func<TEntity, decimal>> sumQuery);
 
         /// <summary>
         /// Update entity

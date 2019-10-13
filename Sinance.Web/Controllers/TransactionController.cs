@@ -1,10 +1,9 @@
-﻿using Sinance.Business.Services;
-using Sinance.Domain.Entities;
-using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 using System;
 using Sinance.Storage;
+using System.Threading.Tasks;
+using Sinance.Business.Services;
 
 namespace Sinance.Controllers
 {
@@ -14,15 +13,14 @@ namespace Sinance.Controllers
     public class TransactionController : Controller
     {
         private readonly IBankAccountService _bankAccountService;
-
         private readonly Func<IUnitOfWork> _unitOfWork;
 
         public TransactionController(
-            Func<IUnitOfWork> unitOfWork,
-            IBankAccountService bankAccountService)
+            IBankAccountService bankAccountService,
+            Func<IUnitOfWork> unitOfWork)
         {
-            _unitOfWork = unitOfWork;
             _bankAccountService = bankAccountService;
+            _unitOfWork = unitOfWork;
         }
 
         /// <summary>
@@ -33,19 +31,25 @@ namespace Sinance.Controllers
         /// <param name="takeTransactions">Ammount of transactions to load</param>
         /// <returns>Partial view containing rows of transactions</returns>
         [HttpPost]
-        public IActionResult LoadMoreEditTransactionsPartial(int bankAccountId, int skipTransactions, int takeTransactions)
+        public async Task<IActionResult> LoadMoreEditTransactionsPartial(int bankAccountId, int skipTransactions, int takeTransactions)
         {
             ActionResult result;
 
-            using (var unitOfWork = _unitOfWork())
+            using var unitOfWork = _unitOfWork();
+
+            var bankAccounts = await _bankAccountService.GetAllBankAccountsForCurrentUser();
+
+            if (!bankAccounts.Any(x => x.Id == bankAccountId))
             {
-                IList<Transaction> allTransactions = unitOfWork.TransactionRepository.FindAll(item => item.BankAccountId == bankAccountId);
-
-                List<Transaction> transactions = allTransactions.OrderByDescending(item => item.Date).Skip(skipTransactions).Take(takeTransactions).ToList();
-                result = PartialView(transactions);
-
-                return result;
+                return NotFound();
             }
+
+            var allTransactions = await unitOfWork.TransactionRepository.FindAll(item => item.BankAccountId == bankAccountId);
+
+            var transactions = allTransactions.OrderByDescending(item => item.Date).Skip(skipTransactions).Take(takeTransactions).ToList();
+            result = PartialView(transactions);
+
+            return result;
         }
     }
 }

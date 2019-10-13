@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Sinance.Storage;
 
 namespace Sinance.Storage.Migrations
 {
     [DbContext(typeof(SinanceContext))]
-    partial class SinanceContextModelSnapshot : ModelSnapshot
+    [Migration("20191007194155_MissingUserReferences")]
+    partial class MissingUserReferences
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -152,11 +154,16 @@ namespace Sinance.Storage.Migrations
                     b.Property<int>("CustomReportId")
                         .HasColumnType("int");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
 
                     b.HasIndex("CustomReportId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("CustomReportCategory");
                 });
@@ -179,7 +186,12 @@ namespace Sinance.Storage.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("ImportBank");
                 });
@@ -207,9 +219,14 @@ namespace Sinance.Storage.Migrations
                     b.Property<int>("ImportBankId")
                         .HasColumnType("int");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ImportBankId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("ImportMapping");
                 });
@@ -296,11 +313,16 @@ namespace Sinance.Storage.Migrations
                     b.Property<int>("TransactionId")
                         .HasColumnType("int");
 
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CategoryId");
 
                     b.HasIndex("TransactionId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("TransactionCategory");
                 });
@@ -364,6 +386,21 @@ namespace Sinance.Storage.Migrations
                         .HasForeignKey("CustomReportId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("Sinance.Domain.Entities.SinanceUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Sinance.Domain.Entities.ImportBank", b =>
+                {
+                    b.HasOne("Sinance.Domain.Entities.SinanceUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Sinance.Domain.Entities.ImportMapping", b =>
@@ -371,6 +408,12 @@ namespace Sinance.Storage.Migrations
                     b.HasOne("Sinance.Domain.Entities.ImportBank", "ImportBank")
                         .WithMany("ImportMappings")
                         .HasForeignKey("ImportBankId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Sinance.Domain.Entities.SinanceUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
@@ -401,6 +444,12 @@ namespace Sinance.Storage.Migrations
                     b.HasOne("Sinance.Domain.Entities.Transaction", "Transaction")
                         .WithMany("TransactionCategories")
                         .HasForeignKey("TransactionId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Sinance.Domain.Entities.SinanceUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });

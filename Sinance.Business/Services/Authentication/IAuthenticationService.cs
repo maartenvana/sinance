@@ -9,6 +9,6 @@ namespace Sinance.Business.Services.Authentication
 
         Task<int> GetCurrentUserId();
 
-        SinanceUser SignIn(string userName, string password);
+        Task<SinanceUser> SignIn(string userName, string password);
     }
 }

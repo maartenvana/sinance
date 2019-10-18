@@ -1,4 +1,5 @@
-﻿using Sinance.Domain.Entities;
+﻿using Sinance.Communication.BankAccount;
+using Sinance.Communication.Model.Transaction;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
@@ -13,9 +14,9 @@ namespace Sinance.Web.Model
         /// List of bank accounts to show
         /// </summary>
         [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public IList<BankAccount> BankAccounts { get; set; }
+        public IList<BankAccountModel> BankAccounts { get; set; }
 
-        public IList<Transaction> BiggestExpenses { get; set; }
+        public IList<TransactionModel> BiggestExpenses { get; set; }
 
         public decimal LastMonthExpenses { get; set; }
 

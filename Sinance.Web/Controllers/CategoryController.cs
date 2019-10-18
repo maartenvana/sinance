@@ -1,19 +1,19 @@
-﻿using Sinance.Business.Handlers;
-using Sinance.Domain.Entities;
-using Sinance.Web.Model;
-using Sinance.Web;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Sinance.Business.Handlers;
+using Sinance.Business.Services.Authentication;
+using Sinance.Business.Services.Categories;
+using Sinance.Communication.Model.Category;
+using Sinance.Web;
+using Sinance.Web.Helper;
+using Sinance.Web.Model;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Sinance.Web.Helper;
-using Sinance.Storage;
-using Sinance.Business.Services.Authentication;
 
 namespace Sinance.Controllers
 {
@@ -23,14 +23,14 @@ namespace Sinance.Controllers
     [Authorize]
     public class CategoryController : Controller
     {
+        private readonly ICategoryService _categoryService;
         private readonly IAuthenticationService _sessionService;
-        private readonly Func<IUnitOfWork> _unitOfWork;
 
         public CategoryController(
-            Func<IUnitOfWork> unitOfWork,
+            ICategoryService categoryService,
             IAuthenticationService sessionService)
         {
-            _unitOfWork = unitOfWork;
+            _categoryService = categoryService;
             _sessionService = sessionService;
         }
 
@@ -40,9 +40,9 @@ namespace Sinance.Controllers
         /// <returns>Actionresult for adding a new category</returns>
         public async Task<IActionResult> AddCategory()
         {
-            var model = new CategoryModel
+            var model = new AddCategoryModel
             {
-                AvailableCategories = await AvailableParentCategories(new Category())
+                AvailableCategories = await AvailableParentCategoriesSelectList(new CategoryModel())
             };
 
             return View("UpsertCategory", model);
@@ -57,9 +57,6 @@ namespace Sinance.Controllers
         [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed", Justification = "Needed for optional parameter from outside")]
         public async Task<IActionResult> EditCategory(int categoryId, bool includeTransactions = false)
         {
-            if (categoryId < 0)
-                throw new ArgumentOutOfRangeException(nameof(categoryId));
-
             var currentUserId = await _sessionService.GetCurrentUserId();
 
             using var unitOfWork = _unitOfWork();
@@ -255,16 +252,11 @@ namespace Sinance.Controllers
         /// </summary>
         /// <param name="category">Current category to get possible parent categories for</param>
         /// <returns>List of available categories</returns>
-        internal async Task<IEnumerable<SelectListItem>> AvailableParentCategories(Category category)
+        internal async Task<List<SelectListItem>> AvailableParentCategoriesSelectList(CategoryModel category)
         {
             var currentUserId = await _sessionService.GetCurrentUserId();
 
-            using var unitOfWork = _unitOfWork();
-
-            // Only select category that arent linked to a parent, no sub categories for recursive linking
-            var categories = await unitOfWork.CategoryRepository.FindAll(item => item.ParentId == null &&
-                                                                        item.Id != category.Id &&
-                                                                        item.UserId == currentUserId);
+            var categories = await _categoryService.GetPossibleParentCategoriesForUser(currentUserId, category.Id);
 
             var availableCategories = new List<SelectListItem>{
                     new SelectListItem {
@@ -274,14 +266,14 @@ namespace Sinance.Controllers
                     }
                 };
 
-            availableCategories.AddRange(categories.ConvertAll(item => new SelectListItem
+            availableCategories.AddRange(categories.Select(item => new SelectListItem
             {
                 Value = item.Id.ToString(CultureInfo.InvariantCulture),
                 Text = item.Name,
                 Selected = item.Id == category.ParentId
             }));
 
-            return availableCategories;
+            return availableCategories.ToList();
         }
 
         /// <summary>

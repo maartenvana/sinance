@@ -1,5 +1,5 @@
-﻿using Sinance.Domain.Entities;
-using Sinance.Storage;
+﻿using Sinance.Storage;
+using Sinance.Storage.Entities;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -31,7 +31,7 @@ namespace Sinance.Business.Handlers
         /// <param name="genericRepository">Generic repository to use for queries</param>
         /// <param name="userId">User to get the transactions for</param>
         /// <returns>List of cached transactions</returns>
-        public static async Task<IList<Transaction>> TransactionsForUserCached(IUnitOfWork unitOfWork, int userId)
+        public static async Task<IList<TransactionEntity>> TransactionsForUserCached(IUnitOfWork unitOfWork, int userId)
         {
             var cacheKey = string.Format(CultureInfo.CurrentCulture, _transactionCacheKeyFormat, userId);
 
@@ -52,6 +52,7 @@ namespace Sinance.Business.Handlers
         /// <param name="userId">Id of the user</param>
         public static async Task UpdateCurrentBalance(IUnitOfWork unitOfWork, int bankAccountId, int userId)
         {
+            // TODO: Do not save, let the caller do that!
             var bankAccount = await unitOfWork.BankAccountRepository.FindSingleTracked(item => item.Id == bankAccountId &&
                                                                                         item.UserId == userId);
             if (bankAccount != null)

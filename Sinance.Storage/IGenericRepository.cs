@@ -1,5 +1,4 @@
-﻿using Sinance.Domain;
-using Sinance.Domain.Entities;
+﻿using Sinance.Storage.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
@@ -69,7 +68,7 @@ namespace Sinance.Storage
         /// <param name="orderByAscending">The order to ascend by</param>
         /// <param name="count">How many to find</param>
         /// <returns>Found entities</returns>
-        Task<List<TEntity>> FindTopAscending(Expression<Func<TEntity, bool>> findQuery, Expression<Func<TEntity, object>> orderByAscending, int count, params string[] includeProperties);
+        Task<List<TEntity>> FindTopAscending(Expression<Func<TEntity, bool>> findQuery, Expression<Func<TEntity, object>> orderByAscending, int count, int skip, params string[] includeProperties);
 
         /// <summary>
         /// Finds the top entities sorted ascending with tracking
@@ -78,7 +77,7 @@ namespace Sinance.Storage
         /// <param name="orderByAscending">The order to ascend by</param>
         /// <param name="count">How many to find</param>
         /// <returns>Found entities</returns>
-        Task<List<TEntity>> FindTopAscendingTracked(Expression<Func<TEntity, bool>> findQuery, Expression<Func<TEntity, object>> orderByAscending, int count, params string[] includeProperties);
+        Task<List<TEntity>> FindTopAscendingTracked(Expression<Func<TEntity, bool>> findQuery, Expression<Func<TEntity, object>> orderByAscending, int count, int skip, params string[] includeProperties);
 
         /// <summary>
         /// Finds the top entities sorted descending without tracking
@@ -87,7 +86,7 @@ namespace Sinance.Storage
         /// <param name="orderByAscending">The order to descend by</param>
         /// <param name="count">How many to find</param>
         /// <returns>Found entities</returns>
-        Task<List<TEntity>> FindTopDescending(Expression<Func<TEntity, bool>> findQuery, Expression<Func<TEntity, object>> orderByDescending, int count, params string[] includeProperties);
+        Task<List<TEntity>> FindTopDescending(Expression<Func<TEntity, bool>> findQuery, Expression<Func<TEntity, object>> orderByDescending, int count, int skip, params string[] includeProperties);
 
         /// <summary>
         /// Finds the top entities sorted descending with tracking
@@ -96,7 +95,7 @@ namespace Sinance.Storage
         /// <param name="orderByAscending">The order to descend by</param>
         /// <param name="count">How many to find</param>
         /// <returns>Found entities</returns>
-        Task<List<TEntity>> FindTopDescendingTracked(Expression<Func<TEntity, bool>> findQuery, Expression<Func<TEntity, object>> orderByDescending, int count, params string[] includeProperties);
+        Task<List<TEntity>> FindTopDescendingTracked(Expression<Func<TEntity, bool>> findQuery, Expression<Func<TEntity, object>> orderByDescending, int count, int skip, params string[] includeProperties);
 
         /// <summary>
         /// Insert entity

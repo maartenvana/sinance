@@ -1,4 +1,4 @@
-﻿using Sinance.Domain.Entities;
+﻿using Sinance.Storage.Entities;
 using System.Threading.Tasks;
 
 namespace Sinance.Storage
@@ -7,40 +7,40 @@ namespace Sinance.Storage
     {
         private bool _disposedValue = false;
 
-        public IGenericRepository<BankAccount> BankAccountRepository { get; }
+        public IGenericRepository<BankAccountEntity> BankAccountRepository { get; }
 
-        public IGenericRepository<CategoryMapping> CategoryMappingRepository { get; }
+        public IGenericRepository<CategoryMappingEntity> CategoryMappingRepository { get; }
 
-        public IGenericRepository<Category> CategoryRepository { get; }
+        public IGenericRepository<CategoryEntity> CategoryRepository { get; }
 
         public SinanceContext Context { get; }
 
         public IGenericRepository<CustomReportCategory> CustomReportCategoryRepository { get; }
 
-        public IGenericRepository<CustomReport> CustomReportRepository { get; }
+        public IGenericRepository<CustomReportEntity> CustomReportRepository { get; }
 
-        public IGenericRepository<ImportBank> ImportBankRepository { get; }
+        public IGenericRepository<ImportBankEntity> ImportBankRepository { get; }
 
-        public IGenericRepository<ImportMapping> ImportMappingRepository { get; }
+        public IGenericRepository<ImportMappingEntity> ImportMappingRepository { get; }
 
         public IGenericRepository<TransactionCategory> TransactionCategoryRepository { get; }
 
-        public IGenericRepository<Transaction> TransactionRepository { get; }
+        public IGenericRepository<TransactionEntity> TransactionRepository { get; }
 
-        public IGenericRepository<SinanceUser> UserRepository { get; }
+        public IGenericRepository<SinanceUserEntity> UserRepository { get; }
 
         public UnitOfWork(
             SinanceContext context,
-            IGenericRepository<SinanceUser> userRepository,
-            IGenericRepository<BankAccount> bankAccountRepository,
-            IGenericRepository<Category> categorieRepository,
-            IGenericRepository<CategoryMapping> categoryMappingRepository,
+            IGenericRepository<SinanceUserEntity> userRepository,
+            IGenericRepository<BankAccountEntity> bankAccountRepository,
+            IGenericRepository<CategoryEntity> categorieRepository,
+            IGenericRepository<CategoryMappingEntity> categoryMappingRepository,
             IGenericRepository<CustomReportCategory> customReportCategorieRepository,
-            IGenericRepository<CustomReport> customReportRepository,
-            IGenericRepository<ImportBank> importBankRepository,
-            IGenericRepository<ImportMapping> importMappingRepository,
+            IGenericRepository<CustomReportEntity> customReportRepository,
+            IGenericRepository<ImportBankEntity> importBankRepository,
+            IGenericRepository<ImportMappingEntity> importMappingRepository,
             IGenericRepository<TransactionCategory> transactionCategorieRepository,
-            IGenericRepository<Transaction> transactionRepository)
+            IGenericRepository<TransactionEntity> transactionRepository)
         {
             Context = context;
             UserRepository = userRepository;

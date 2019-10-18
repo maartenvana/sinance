@@ -1,11 +1,10 @@
-﻿using Sinance.Domain;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Sinance.Domain.Entities;
+using Sinance.Storage.Entities;
 
 namespace Sinance.Storage
 {
@@ -78,12 +77,13 @@ namespace Sinance.Storage
             return await query.SingleOrDefaultAsync(predicate);
         }
 
-        public async Task<List<TEntity>> FindTopAscending(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderByAscending, int count, params string[] includeProperties)
+        public async Task<List<TEntity>> FindTopAscending(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderByAscending, int count, int skip, params string[] includeProperties)
         {
             var query = _dbSet
                  .Where(predicate)
                  .OrderBy(orderByAscending)
                  .Take(count)
+                 .Skip(skip)
                  .AsNoTracking();
 
             if (includeProperties != null)
@@ -94,12 +94,13 @@ namespace Sinance.Storage
             return await query.ToListAsync();
         }
 
-        public async Task<List<TEntity>> FindTopAscendingTracked(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderBy, int count, params string[] includeProperties)
+        public async Task<List<TEntity>> FindTopAscendingTracked(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderBy, int count, int skip, params string[] includeProperties)
         {
             var query = _dbSet
                 .Where(predicate)
                 .OrderBy(orderBy)
                 .Take(count)
+                .Skip(skip)
                 .AsTracking();
 
             if (includeProperties != null)
@@ -110,12 +111,13 @@ namespace Sinance.Storage
             return await query.ToListAsync();
         }
 
-        public async Task<List<TEntity>> FindTopDescending(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderByDescending, int count, params string[] includeProperties)
+        public async Task<List<TEntity>> FindTopDescending(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderByDescending, int count, int skip, params string[] includeProperties)
         {
             var query = _dbSet
                 .Where(predicate)
                 .OrderByDescending(orderByDescending)
                 .Take(count)
+                .Skip(skip)
                 .AsNoTracking();
 
             if (includeProperties != null)
@@ -125,12 +127,13 @@ namespace Sinance.Storage
             return await query.ToListAsync();
         }
 
-        public async Task<List<TEntity>> FindTopDescendingTracked(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderByDescending, int count, params string[] includeProperties)
+        public async Task<List<TEntity>> FindTopDescendingTracked(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderByDescending, int count, int skip, params string[] includeProperties)
         {
             var query = _dbSet
                 .Where(predicate)
                 .OrderByDescending(orderByDescending)
                 .Take(count)
+                .Skip(skip)
                 .AsTracking();
 
             if (includeProperties != null)

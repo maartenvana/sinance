@@ -1,20 +1,21 @@
-﻿using Sinance.Business.Classes;
-using Sinance.Business.Handlers;
-using Sinance.Business.Services;
-using Sinance.Domain.Entities;
-using Sinance.Web.Model;
-using Sinance.Web;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Sinance.Business.Classes;
+using Sinance.Business.Exceptions;
+using Sinance.Business.Services.Authentication;
+using Sinance.Business.Services.BankAccounts;
+using Sinance.Business.Services.Categories;
+using Sinance.Business.Services.Transactions;
+using Sinance.Communication.Model.Transaction;
+using Sinance.Web;
+using Sinance.Web.Helper;
+using Sinance.Web.Model;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Sinance.Web.Helper;
-using Sinance.Storage;
-using Sinance.Business.Services.Authentication;
 
 namespace Sinance.Controllers
 {
@@ -25,17 +26,20 @@ namespace Sinance.Controllers
     public class AccountOverviewController : Controller
     {
         private readonly IBankAccountService _bankAccountService;
+        private readonly ICategoryService _categoryService;
         private readonly IAuthenticationService _sessionService;
-        private readonly Func<IUnitOfWork> _unitOfWork;
+        private readonly ITransactionService _transactionService;
 
         public AccountOverviewController(
-            Func<IUnitOfWork> unitOfWork,
             IAuthenticationService sessionService,
-            IBankAccountService bankAccountService)
+            ICategoryService categoryService,
+            IBankAccountService bankAccountService,
+            ITransactionService transactionService)
         {
-            _unitOfWork = unitOfWork;
             _sessionService = sessionService;
+            _categoryService = categoryService;
             _bankAccountService = bankAccountService;
+            _transactionService = transactionService;
         }
 
         /// <summary>
@@ -43,27 +47,13 @@ namespace Sinance.Controllers
         /// </summary>
         /// <param name="bankAccountId">Id of the bank account to add the model to</param>
         /// <returns>Partial view for creating the model</returns>
-        public async Task<IActionResult> AddTransaction(int bankAccountId)
+        public IActionResult AddTransaction(int bankAccountId)
         {
-            ActionResult result;
-            var bankAccounts = await _bankAccountService.GetActiveBankAccountsForCurrentUser();
-            var bankAccount = bankAccounts.SingleOrDefault(item => item.Id == bankAccountId);
-
-            if (bankAccount != null)
+            return PartialView("UpsertTransactionPartial", new TransactionModel
             {
-                result = PartialView("UpsertTransactionPartial", new TransactionModel
-                {
-                    BankAccountId = bankAccountId,
-                    Date = DateTime.Now
-                });
-            }
-            else
-            {
-                result = PartialView("UpsertTransactionPartial");
-                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.BankAccountNotFound);
-            }
-
-            return result;
+                BankAccountId = bankAccountId,
+                Date = DateTime.Now
+            });
         }
 
         /// <summary>
@@ -71,32 +61,20 @@ namespace Sinance.Controllers
         /// </summary>
         /// <param name="transactionId">Id of model to delete</param>
         /// <returns>Result of the delete action</returns>
-        public async Task<IActionResult> DeleteTransaction(int transactionId)
+        public async Task<IActionResult> DeleteTransaction(int transactionId, int bankAccountId)
         {
             ActionResult result;
 
             var currentUserId = await _sessionService.GetCurrentUserId();
 
-            using var unitOfWork = _unitOfWork();
-            var transaction = await unitOfWork.TransactionRepository.FindSingleTracked(item => item.Id == transactionId &&
-                                                                                item.UserId == currentUserId);
-
-            if (transaction != null)
+            try
             {
-                if (transaction.TransactionCategories != null)
-                {
-                    unitOfWork.TransactionCategoryRepository.DeleteRange(transaction.TransactionCategories);
-                }
-
-                unitOfWork.TransactionRepository.Delete(transaction);
-                await unitOfWork.SaveAsync();
-
-                await TransactionHandler.UpdateCurrentBalance(unitOfWork, transaction.BankAccountId, currentUserId);
+                await _transactionService.DeleteTransactionForUser(currentUserId, transactionId);
 
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.TransactionDeleted);
-                result = RedirectToAction("Index", new { @bankAccountId = transaction.BankAccountId });
+                result = RedirectToAction("Index", new { bankAccountId });
             }
-            else
+            catch (NotFoundException)
             {
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.TransactionNotFound);
                 result = RedirectToAction("Index", "Home");
@@ -114,18 +92,10 @@ namespace Sinance.Controllers
         {
             var currentUserId = await _sessionService.GetCurrentUserId();
 
-            using var unitOfWork = _unitOfWork();
-            var transaction = await unitOfWork.TransactionRepository.FindSingle(item => item.Id == transactionId &&
-                           item.UserId == currentUserId);
-            TransactionModel transactionModel = null;
-
-            if (transaction == null)
+            try
             {
-                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.TransactionNotFound);
-            }
-            else
-            {
-                var allCategories = await unitOfWork.CategoryRepository.FindAll(item => item.UserId == currentUserId);
+                var transaction = await _transactionService.GetTransactionByIdForUserId(currentUserId, transactionId);
+                var userCategories = await _categoryService.GetAllCategoriesForUser(currentUserId);
 
                 var availableCategories = new List<SelectListItem>{
                     new SelectListItem {
@@ -133,17 +103,26 @@ namespace Sinance.Controllers
                         Value = "0"
                     }
                 };
-                availableCategories.AddRange(allCategories.ConvertAll(item => new SelectListItem
+                availableCategories.AddRange(userCategories.Select(item => new SelectListItem
                 {
                     Text = item.Name,
                     Value = item.Id.ToString(CultureInfo.InvariantCulture)
                 }));
 
-                transactionModel = TransactionModel.CreateTransactionModel(transaction);
-                transactionModel.AvailableCategories = availableCategories;
+                var model = new EditTransactionModel
+                {
+                    AvailableCategories = availableCategories,
+                    Transaction = transaction
+                };
+
+                return PartialView("UpsertTransactionPartial", model);
+            }
+            catch (NotFoundException)
+            {
+                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.TransactionNotFound);
             }
 
-            return PartialView("UpsertTransactionPartial", transactionModel);
+            return View("Index");
         }
 
         /// <summary>
@@ -153,44 +132,28 @@ namespace Sinance.Controllers
         /// <returns>View containing the overview</returns>
         public async Task<IActionResult> Index(int bankAccountId)
         {
-            ActionResult result;
-            var bankAccounts = await _bankAccountService.GetActiveBankAccountsForCurrentUser();
-            var currentUserId = await _sessionService.GetCurrentUserId();
-
-            var bankAccount = bankAccounts.SingleOrDefault(item => item.Id == bankAccountId);
-
-            if (bankAccount != null)
+            try
             {
-                using var unitOfWork = _unitOfWork();
-                var transactions = await unitOfWork.TransactionRepository
-                    .FindTopDescending(item => item.BankAccount.Id == bankAccountId,
-                                        orderByDescending: x => x.Date,
-                                        count: 200,
-                                        includeProperties: new string[] {
-                                                nameof(Transaction.TransactionCategories),
-                                                $"{nameof(Transaction.TransactionCategories)}.{nameof(TransactionCategory.Category)}"
-                                        });
-                transactions = transactions.OrderByDescending(item => item.Date).ToList();
-
-                var categories = await unitOfWork.CategoryRepository.FindAll(item => item.UserId == currentUserId);
+                var currentUserId = await _sessionService.GetCurrentUserId();
+                var bankAccount = await _bankAccountService.GetBankAccountByIdForUser(currentUserId, bankAccountId);
+                var transactions = await _transactionService.GetTransactionsForBankAccount(currentUserId, bankAccountId, 200, skip: 0);
+                var availableCategories = await _categoryService.GetAllCategoriesForUser(currentUserId);
 
                 var model = new AccountOverviewModel
                 {
                     Account = bankAccount,
                     Transactions = transactions.Take(200).ToList(),
                     AccountBalance = bankAccount.CurrentBalance.GetValueOrDefault(),
-                    AvailableCategories = categories
+                    AvailableCategories = availableCategories
                 };
 
-                result = View("index", model);
+                return View("index", model);
             }
-            else
+            catch (NotFoundException)
             {
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.BankAccountNotFound);
-                result = View("index");
+                return View("index");
             }
-
-            return result;
         }
 
         /// <summary>
@@ -204,40 +167,20 @@ namespace Sinance.Controllers
         {
             var currentUserId = await _sessionService.GetCurrentUserId();
 
-            using var unitOfWork = _unitOfWork();
-            var transaction = await unitOfWork.TransactionRepository.FindSingleTracked(item => item.Id == transactionId &&
-                           item.UserId == currentUserId,
-                           includeProperties: nameof(Transaction.TransactionCategories));
-            var category = await unitOfWork.CategoryRepository.FindSingle(item => item.Id == categoryId &&
-                                                                        item.UserId == currentUserId);
-
-            ActionResult result;
-            if (transaction != null && category != null)
+            try
             {
-                // Remove any previous assigned categories
-                unitOfWork.TransactionCategoryRepository.DeleteRange(transaction.TransactionCategories);
+                var transaction = await _transactionService.OverwriteTransactionCategories(currentUserId, transactionId, categoryId);
 
-                // Insert the new link
-                unitOfWork.TransactionCategoryRepository.Insert(new TransactionCategory
-                {
-                    TransactionId = transaction.Id,
-                    CategoryId = category.Id
-                });
-
-                await unitOfWork.SaveAsync();
-
-                result = PartialView("TransactionEditRow", transaction);
+                return PartialView("TransactionEditRow", transaction);
             }
-            else
+            catch (NotFoundException)
             {
-                result = Json(new SinanceJsonResult
+                return Json(new SinanceJsonResult
                 {
                     Success = false,
                     ErrorMessage = Resources.CouldNotUpdateTransactionCategory
                 });
             }
-
-            return result;
         }
 
         /// <summary>
@@ -250,30 +193,20 @@ namespace Sinance.Controllers
         {
             var currentUserId = await _sessionService.GetCurrentUserId();
 
-            using var unitOfWork = _unitOfWork();
-
-            var transaction = await unitOfWork.TransactionRepository.FindSingleTracked(item => item.Id == transactionId &&
-                                   item.UserId == currentUserId,
-                                   includeProperties: nameof(Transaction.TransactionCategories));
-            ActionResult result;
-            if (transaction != null)
+            try
             {
-                // Remove any previous assigned categories
-                unitOfWork.TransactionCategoryRepository.DeleteRange(transaction.TransactionCategories);
-                await unitOfWork.SaveAsync();
+                var transaction = await _transactionService.ClearTransactionCategories(currentUserId, transactionId);
 
-                result = PartialView("TransactionEditRow", transaction);
+                return PartialView("TransactionEditRow", transaction);
             }
-            else
+            catch (NotFoundException)
             {
-                result = Json(new SinanceJsonResult
+                return Json(new SinanceJsonResult
                 {
                     Success = false,
                     ErrorMessage = Resources.CouldNotUpdateTransactionCategory
                 });
             }
-
-            return result;
         }
 
         /// <summary>
@@ -285,84 +218,42 @@ namespace Sinance.Controllers
         public async Task<IActionResult> UpsertTransaction(TransactionModel model)
         {
             if (model == null)
+            {
                 throw new ArgumentNullException(nameof(model));
+            }
 
-            ActionResult result;
             if (ModelState.IsValid)
             {
-                var currentUserId = await _sessionService.GetCurrentUserId();
-                var bankAccounts = await _bankAccountService.GetActiveBankAccountsForCurrentUser();
-
-                // Check if we have access to the bank account
-                var bankAccount = bankAccounts.SingleOrDefault(item => item.Id == model.BankAccountId);
-
-                using var unitOfWork = _unitOfWork();
-                if (bankAccount != null)
+                try
                 {
+                    var currentUserId = await _sessionService.GetCurrentUserId();
+
                     if (model.Id > 0)
                     {
-                        var updateTransaction = await unitOfWork.TransactionRepository.FindSingleTracked(item =>
-                            item.Id == model.Id && item.UserId == currentUserId);
+                        await _transactionService.UpdateTransaction(currentUserId, model);
 
-                        if (updateTransaction != null)
+                        return Json(new SinanceJsonResult
                         {
-                            updateTransaction.Update(name: model.Name,
-                                description: model.Description,
-                                destinationAccount: model.DestinationAccount,
-                                amount: model.Amount,
-                                date: model.Date,
-                                bankAccountId: model.BankAccountId);
-
-                            unitOfWork.TransactionRepository.Update(updateTransaction);
-                            await unitOfWork.SaveAsync();
-
-                            await TransactionHandler.UpdateCurrentBalance(unitOfWork, bankAccount.Id, currentUserId);
-
-                            result = Json(new SinanceJsonResult
-                            {
-                                Success = true
-                            });
-                        }
-                        else
-                        {
-                            TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.TransactionNotFound);
-                            result = PartialView("UpsertTransactionPartial", model);
-                        }
+                            Success = true
+                        });
                     }
                     else
                     {
-                        var insertTransaction = new Transaction();
-                        insertTransaction.Update(name: model.Name,
-                                description: model.Description,
-                                destinationAccount: model.DestinationAccount,
-                                amount: model.Amount,
-                                date: model.Date,
-                                bankAccountId: model.BankAccountId);
-                        insertTransaction.UserId = currentUserId;
+                        await _transactionService.CreateTransaction(currentUserId, model);
 
-                        unitOfWork.TransactionRepository.Insert(insertTransaction);
-                        await unitOfWork.SaveAsync();
-
-                        await TransactionHandler.UpdateCurrentBalance(unitOfWork, bankAccount.Id, currentUserId);
-
-                        result = Json(new SinanceJsonResult
+                        return Json(new SinanceJsonResult
                         {
                             Success = true
                         });
                     }
                 }
-                else
+                catch (NotFoundException)
                 {
                     TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.BankAccountNotFound);
-                    result = PartialView("UpsertTransactionPartial", model);
                 }
             }
-            else
-            {
-                result = PartialView("UpsertTransactionPartial", model);
-            }
 
-            return result;
+            return PartialView("UpsertTransactionPartial", model);
         }
     }
 }

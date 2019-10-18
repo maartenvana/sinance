@@ -1,33 +1,32 @@
-﻿using Sinance.Domain.Entities;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using System;
-using System.Linq;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Sinance.Storage.Entities;
 
 namespace Sinance.Storage
 {
     public class SinanceContext : DbContext
     {
-        public DbSet<BankAccount> BankAccounts { get; set; }
+        public DbSet<BankAccountEntity> BankAccounts { get; set; }
 
-        public DbSet<Category> Categories { get; set; }
+        public DbSet<CategoryEntity> Categories { get; set; }
 
-        public DbSet<CategoryMapping> CategoryMappings { get; set; }
+        public DbSet<CategoryMappingEntity> CategoryMappings { get; set; }
 
         public DbSet<CustomReportCategory> CustomReportCategories { get; set; }
 
-        public DbSet<CustomReport> CustomReports { get; set; }
+        public DbSet<CustomReportEntity> CustomReports { get; set; }
 
-        public DbSet<ImportBank> ImportBanks { get; set; }
+        public DbSet<ImportBankEntity> ImportBanks { get; set; }
 
         /// </summary>
-        public DbSet<ImportMapping> ImportMappings { get; set; }
+        public DbSet<ImportMappingEntity> ImportMappings { get; set; }
 
         public DbSet<TransactionCategory> TransactionCategories { get; set; }
 
-        public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<TransactionEntity> Transactions { get; set; }
 
-        public DbSet<SinanceUser> Users { get; set; }
+        public DbSet<SinanceUserEntity> Users { get; set; }
 
         /// <summary>
         /// Default constructors
@@ -49,17 +48,17 @@ namespace Sinance.Storage
                 throw new ArgumentNullException(nameof(modelBuilder));
             }
 
-            modelBuilder.Entity<BankAccount>().ToTable("BankAccount").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
+            modelBuilder.Entity<BankAccountEntity>().ToTable("BankAccount").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
 
-            modelBuilder.Entity<SinanceUser>().ToTable("Users").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
-            modelBuilder.Entity<Category>().ToTable("Category").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
+            modelBuilder.Entity<SinanceUserEntity>().ToTable("Users").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
+            modelBuilder.Entity<CategoryEntity>().ToTable("Category").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
 
-            modelBuilder.Entity<CategoryMapping>().ToTable("CategoryMapping").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
-            modelBuilder.Entity<Transaction>().ToTable("Transaction").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
+            modelBuilder.Entity<CategoryMappingEntity>().ToTable("CategoryMapping").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
+            modelBuilder.Entity<TransactionEntity>().ToTable("Transaction").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
             modelBuilder.Entity<TransactionCategory>().ToTable("TransactionCategory").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
-            modelBuilder.Entity<ImportBank>().ToTable("ImportBank").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
-            modelBuilder.Entity<ImportMapping>().ToTable("ImportMapping").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
-            modelBuilder.Entity<CustomReport>().ToTable("CustomReport").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
+            modelBuilder.Entity<ImportBankEntity>().ToTable("ImportBank").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
+            modelBuilder.Entity<ImportMappingEntity>().ToTable("ImportMapping").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
+            modelBuilder.Entity<CustomReportEntity>().ToTable("CustomReport").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
             modelBuilder.Entity<CustomReportCategory>().ToTable("CustomReportCategory").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
 
             base.OnModelCreating(modelBuilder);

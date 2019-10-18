@@ -1,4 +1,6 @@
-﻿using Sinance.Domain.Entities;
+﻿using Sinance.Communication.BankAccount;
+using Sinance.Communication.Model.Category;
+using Sinance.Communication.Model.Transaction;
 using System.Collections.Generic;
 
 namespace Sinance.Web.Model
@@ -11,7 +13,7 @@ namespace Sinance.Web.Model
         /// <summary>
         /// Bank account to display
         /// </summary>
-        public BankAccount Account { get; set; }
+        public BankAccountModel Account { get; set; }
 
         /// <summary>
         /// Total current balance of the account
@@ -21,12 +23,11 @@ namespace Sinance.Web.Model
         /// <summary>
         /// Available categories to choose from for quick editing a category of a transaction
         /// </summary>
-        public IEnumerable<Category> AvailableCategories { get; set; }
+        public IEnumerable<CategoryModel> AvailableCategories { get; set; }
 
         /// <summary>
         /// Transaction for this bank account
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public IList<Transaction> Transactions { get; set; }
+        public IEnumerable<TransactionModel> Transactions { get; set; }
     }
 }

@@ -1,6 +1,4 @@
 ﻿using Sinance.Business.Handlers;
-using Sinance.Business.Services;
-using Sinance.Domain.Entities;
 using Sinance.Web.Model;
 using Sinance.Web;
 using Microsoft.AspNetCore.Authorization;
@@ -9,8 +7,10 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Sinance.Web.Helper;
-using Sinance.Storage;
 using Sinance.Business.Services.Authentication;
+using Sinance.Business.Services.BankAccounts;
+using Sinance.Communication.BankAccount;
+using Sinance.Business.Exceptions;
 
 namespace Sinance.Controllers
 {
@@ -20,17 +20,14 @@ namespace Sinance.Controllers
     [Authorize]
     public class BankAccountController : Controller
     {
+        private readonly IAuthenticationService _authenticationService;
         private readonly IBankAccountService _bankAccountService;
-        private readonly IAuthenticationService _sessionService;
-        private readonly Func<IUnitOfWork> _unitOfWork;
 
         public BankAccountController(
-            Func<IUnitOfWork> unitOfWork,
-            IAuthenticationService sessionService,
+            IAuthenticationService authenticationService,
             IBankAccountService bankAccountService)
         {
-            _unitOfWork = unitOfWork;
-            _sessionService = sessionService;
+            _authenticationService = authenticationService;
             _bankAccountService = bankAccountService;
         }
 
@@ -53,26 +50,21 @@ namespace Sinance.Controllers
         public async Task<IActionResult> EditAccount(int accountId)
         {
             if (accountId <= 0)
+            {
                 throw new ArgumentOutOfRangeException(nameof(accountId));
+            }
 
-            ActionResult result;
-
-            var bankAccounts = await _bankAccountService.GetAllBankAccountsForCurrentUser();
-
-            var bankAccount = bankAccounts.SingleOrDefault(item => item.Id == accountId);
-
-            if (bankAccount == null)
+            try
+            {
+                var currentUserId = await _authenticationService.GetCurrentUserId();
+                var bankAccount = await _bankAccountService.GetBankAccountByIdForUser(currentUserId, accountId);
+                return View("UpsertAccount", bankAccount);
+            }
+            catch (NotFoundException)
             {
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.BankAccountNotFound);
-                result = RedirectToAction("Index");
+                return RedirectToAction("Index");
             }
-            else
-            {
-                var model = BankAccountModel.CreateBankAccountModel(bankAccount);
-                result = View("UpsertAccount", model);
-            }
-
-            return result;
         }
 
         /// <summary>
@@ -81,7 +73,8 @@ namespace Sinance.Controllers
         /// <returns>Default view</returns>
         public async Task<IActionResult> Index()
         {
-            var bankAccounts = await _bankAccountService.GetAllBankAccountsForCurrentUser();
+            var currentUserId = await _authenticationService.GetCurrentUserId();
+            var bankAccounts = await _bankAccountService.GetAllBankAccountsForUser(currentUserId);
 
             return View(bankAccounts);
         }
@@ -94,30 +87,22 @@ namespace Sinance.Controllers
         public async Task<IActionResult> RemoveAccount(int accountId)
         {
             if (accountId <= 0)
-                throw new ArgumentOutOfRangeException(nameof(accountId));
-
-            var currentUserId = await _sessionService.GetCurrentUserId();
-
-            using (var unitOfWork = _unitOfWork())
             {
-                var bankAccount =
-                    await unitOfWork.BankAccountRepository.FindSingleTracked(item => item.Id == accountId && item.UserId == currentUserId,
-                    includeProperties: nameof(BankAccount.Transactions));
+                throw new ArgumentOutOfRangeException(nameof(accountId));
+            }
 
-                if (bankAccount != null)
-                {
-                    unitOfWork.TransactionRepository.DeleteRange(bankAccount.Transactions);
-                    unitOfWork.BankAccountRepository.Delete(bankAccount);
+            try
+            {
+                var currentUserId = await _authenticationService.GetCurrentUserId();
+                await _bankAccountService.DeleteBankAccountByIdForUser(currentUserId, accountId);
 
-                    await unitOfWork.SaveAsync();
-                    TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success,
-                        ViewBag.Message = Resources.BankAccountRemoved);
-                }
-                else
-                {
-                    TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error,
-                        ViewBag.Message = Resources.BankAccountNotFound);
-                }
+                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success,
+                    ViewBag.Message = Resources.BankAccountRemoved);
+            }
+            catch (NotFoundException)
+            {
+                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error,
+                    ViewBag.Message = Resources.BankAccountNotFound);
             }
 
             return RedirectToAction("Index");
@@ -131,64 +116,43 @@ namespace Sinance.Controllers
         public async Task<IActionResult> UpsertAccount(BankAccountModel model)
         {
             if (model == null)
+            {
                 throw new ArgumentNullException(nameof(model));
+            }
 
             ActionResult result = View(model);
 
             if (ModelState.IsValid)
             {
-                var currentUserId = await _sessionService.GetCurrentUserId();
+                var currentUserId = await _authenticationService.GetCurrentUserId();
 
-                using (var unitOfWork = _unitOfWork())
+                try
                 {
-                    // If the account already exists update the current one
                     if (model.Id > 0)
                     {
-                        var bankAccounts = await _bankAccountService.GetAllBankAccountsForCurrentUser();
-
-                        var bankAccount = bankAccounts.SingleOrDefault(item => item.Id == model.Id);
-                        if (bankAccount != null)
-                        {
-                            bankAccount.Update(model.Name, model.StartBalance, model.Disabled, model.AccountType, model.IncludeInProfitLossGraph);
-
-                            unitOfWork.BankAccountRepository.Update(bankAccount);
-                            await unitOfWork.SaveAsync();
-                            await TransactionHandler.UpdateCurrentBalance(unitOfWork, bankAccount.Id, currentUserId);
-                            TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.BankAccountUpdated);
-                        }
-                        else
-                        {
-                            ModelState.AddModelError("Message", Resources.BankAccountNotFound);
-                        }
+                        await _bankAccountService.UpdateBankAccount(currentUserId, model);
+                        TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.BankAccountCreated);
                     }
                     else
                     {
-                        var bankAccounts = await unitOfWork.BankAccountRepository.FindAll(item => item.Name == model.Name);
-
-                        if (!bankAccounts.Any())
-                        {
-                            var insertBankAccount = new BankAccount();
-                            insertBankAccount.Update(model.Name, model.StartBalance, model.Disabled, model.AccountType, model.IncludeInProfitLossGraph);
-                            insertBankAccount.CurrentBalance = model.StartBalance;
-                            insertBankAccount.UserId = currentUserId;
-
-                            unitOfWork.BankAccountRepository.Insert(insertBankAccount);
-                            await unitOfWork.SaveAsync();
-
-                            TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.BankAccountCreated);
-                        }
-                        else
-                        {
-                            ModelState.AddModelError("Message", Resources.BankAccountAlreadyExists);
-                        }
+                        await _bankAccountService.CreateBankAccount(currentUserId, model);
+                        TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.BankAccountUpdated);
                     }
                 }
-
-                // If the model state is still valid, update the session and redirect to the index page
-                if (ModelState.IsValid)
+                catch (NotFoundException)
                 {
-                    result = RedirectToAction("Index");
+                    ModelState.AddModelError("Message", Resources.BankAccountNotFound);
                 }
+                catch (AlreadyExistsException)
+                {
+                    ModelState.AddModelError("Message", Resources.BankAccountNotFound);
+                }
+                catch (ArgumentException exc)
+                {
+                    ModelState.AddModelError("Message", exc.Message);
+                }
+
+                return RedirectToAction("Index");
             }
 
             return result;

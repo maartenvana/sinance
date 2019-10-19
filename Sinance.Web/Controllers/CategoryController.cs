@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Sinance.Business.Handlers;
+using Sinance.Business.Exceptions;
 using Sinance.Business.Services.Authentication;
 using Sinance.Business.Services.Categories;
 using Sinance.Communication.Model.Category;
@@ -40,9 +40,9 @@ namespace Sinance.Controllers
         /// <returns>Actionresult for adding a new category</returns>
         public async Task<IActionResult> AddCategory()
         {
-            var model = new AddCategoryModel
+            var model = new UpsertCategoryModel
             {
-                AvailableCategories = await AvailableParentCategoriesSelectList(new CategoryModel())
+                AvailableParentCategories = await CreateAvailableParentCategoriesSelectList(new CategoryModel())
             };
 
             return View("UpsertCategory", model);
@@ -55,35 +55,24 @@ namespace Sinance.Controllers
         /// <param name="includeTransactions">Include transactions or not for overview</param>
         /// <returns>Actionresult for editing a new category</returns>
         [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed", Justification = "Needed for optional parameter from outside")]
-        public async Task<IActionResult> EditCategory(int categoryId, bool includeTransactions = false)
+        public async Task<IActionResult> EditCategory(int categoryId)
         {
             var currentUserId = await _sessionService.GetCurrentUserId();
 
-            using var unitOfWork = _unitOfWork();
-
-            var category = await unitOfWork.CategoryRepository.FindSingle(item => item.Id == categoryId &&
-                   item.UserId == currentUserId,
-                   includeProperties: new string[] {
-                       nameof(Category.ParentCategory),
-                       nameof(Category.ChildCategories),
-                       nameof(Category.CategoryMappings)
-                   });
-
-            if (category != null)
+            try
             {
-                var availableCategories = await AvailableParentCategories(category);
+                var category = await _categoryService.GetCategoryByIdForUser(currentUserId, categoryId);
+                var availableParentCategories = await CreateAvailableParentCategoriesSelectList(category);
 
-                var model = CategoryModel.CreateCategoryModel(category);
-                model.AvailableCategories = availableCategories;
-
-                if (includeTransactions)
+                var model = new UpsertCategoryModel
                 {
-                    model.AutomaticMappings = (await CreateMappingPreview(category)).OrderByDescending(item => item.Key.Date).ToList();
-                }
+                    CategoryModel = category,
+                    AvailableParentCategories = availableParentCategories
+                };
 
                 return View("UpsertCategory", model);
             }
-            else
+            catch (NotFoundException)
             {
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryNotFound);
                 return RedirectToAction("Index");
@@ -98,18 +87,9 @@ namespace Sinance.Controllers
         {
             var currentUserId = await _sessionService.GetCurrentUserId();
 
-            using var unitOfWork = _unitOfWork();
+            var categories = await _categoryService.GetAllCategoriesForUser(currentUserId);
 
-            var categories = await unitOfWork.CategoryRepository.FindAll(item => item.UserId == currentUserId);
-
-            var regularCategories = categories.Where(x => x.IsRegular || x.ChildCategories.Any(y => y.IsRegular) || x.ParentCategory?.IsRegular == true).ToList();
-            var irregularCategories = categories.Where(x => (x.ParentCategory?.IsRegular != true && !x.IsRegular) || (!x.IsRegular && x.ChildCategories.Any(y => !y.IsRegular))).ToList();
-
-            return View("Index", new CategoriesOverviewModel
-            {
-                RegularCategories = regularCategories,
-                IrregularCategories = irregularCategories
-            });
+            return View("Index", categories);
         }
 
         /// <summary>
@@ -120,24 +100,18 @@ namespace Sinance.Controllers
         public async Task<IActionResult> RemoveCategory(int categoryId)
         {
             if (categoryId < 0)
+            {
                 throw new ArgumentOutOfRangeException(nameof(categoryId));
+            }
 
             var currentUserId = await _sessionService.GetCurrentUserId();
 
-            using var unitOfWork = _unitOfWork();
-
-            var category = await unitOfWork.CategoryRepository.FindSingleTracked(item => item.Id == categoryId && item.UserId == currentUserId);
-            var transactionCategories = await unitOfWork.TransactionCategoryRepository.FindAllTracked(x => x.CategoryId == categoryId);
-
-            if (category != null)
+            try
             {
-                unitOfWork.TransactionCategoryRepository.DeleteRange(transactionCategories);
-                unitOfWork.CategoryRepository.Delete(category);
-
-                await unitOfWork.SaveAsync();
+                await _categoryService.DeleteCategoryByIdForUser(currentUserId, categoryId);
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.CategoryRemoved);
             }
-            else
+            catch (NotFoundException)
             {
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error,
                     ViewBag.Message = Resources.CategoryNotFound);
@@ -151,31 +125,23 @@ namespace Sinance.Controllers
         /// </summary>
         /// <param name="categoryId">Id of the category to assign</param>
         /// <returns>Redirect to the edit category action</returns>
-        [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling", Justification = "Method is fine")]
-        public async Task<IActionResult> UpdateCategoryToMappedTransactions(int categoryId)
+        public async Task<IActionResult> UpdateCategoryToMappedTransactions(int categoryId, IEnumerable<int> transactionIds)
         {
             if (categoryId < 0)
+            {
                 throw new ArgumentOutOfRangeException(nameof(categoryId));
+            }
 
             var currentUserId = await _sessionService.GetCurrentUserId();
 
-            using var unitOfWork = _unitOfWork();
-
-            var category = await unitOfWork.CategoryRepository.FindSingle(item => item.Id == categoryId && item.UserId == currentUserId, nameof(Category.CategoryMappings));
-
-            if (category != null)
+            try
             {
-                var transactions = await unitOfWork.TransactionRepository.FindAllTracked(item => item.UserId == currentUserId);
-                var mappedTransactions = CategoryHandler.PreviewMapTransactions(category.CategoryMappings, transactions).ToList();
-
-                await CategoryHandler.MapCategoryToTransactions(unitOfWork, categoryId, mappedTransactions);
-
+                await _categoryService.MapCategoryToTransactions(currentUserId, categoryId, transactionIds);
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success,
                     ViewBag.Message = Resources.CategoryMappingsAppliedToTransactions);
-
                 return RedirectToAction("EditCategory", new { categoryId });
             }
-            else
+            catch (NotFoundException)
             {
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error,
                     ViewBag.Message = Resources.CategoryNotFound);
@@ -191,59 +157,39 @@ namespace Sinance.Controllers
         [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Multiple exceptions types all require the same handling")]
         public async Task<IActionResult> UpsertCategory(CategoryModel model)
         {
-            if (model == null)
-                throw new ArgumentNullException(nameof(model));
-
             if (ModelState.IsValid)
             {
                 var currentUserId = await _sessionService.GetCurrentUserId();
 
-                // Set the parent id to null if 0 (otherwise it does not pass client side validation
-                try
+                if (model.Id > 0)
                 {
-                    using var unitOfWork = _unitOfWork();
-                    if (model.Id > 0)
+                    try
                     {
-                        var existingCategory = await unitOfWork.CategoryRepository.FindSingleTracked(item => item.Id == model.Id && item.UserId == currentUserId);
-                        if (existingCategory != null)
-                        {
-                            existingCategory.Update(name: model.Name,
-                                colorCode: model.ColorCode,
-                                parentId: model.ParentId.GetValueOrDefault() == 0 ? null : model.ParentId,
-                                isRegular: model.IsRegular);
-
-                            unitOfWork.CategoryRepository.Update(existingCategory);
-                            TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.CategoryUpdated);
-                        }
-                        else
-                        {
-                            TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryNotFound);
-                        }
+                        await _categoryService.UpdateCategoryForUser(currentUserId, model);
+                        TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.CategoryUpdated);
+                        return RedirectToAction("Index");
                     }
-                    else
+                    catch (NotFoundException)
                     {
-                        var newCategory = new Category();
-                        newCategory.Update(name: model.Name,
-                            colorCode: model.ColorCode,
-                            parentId: model.ParentId.GetValueOrDefault() == 0 ? null : model.ParentId,
-                            isRegular: model.IsRegular);
-
-                        newCategory.UserId = currentUserId;
-
-                        unitOfWork.CategoryRepository.Insert(newCategory);
-                        TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.CategoryCreated);
+                        TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryNotFound);
+                        return View(model);
                     }
-
-                    await unitOfWork.SaveAsync();
-                    return RedirectToAction("Index");
                 }
-                catch (Exception)
+                else
                 {
-                    TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.Error);
-                    return View(model);
+                    try
+                    {
+                        await _categoryService.CreateCategoryForUser(currentUserId, model);
+                        TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.CategoryCreated);
+                        return RedirectToAction("Index");
+                    }
+                    catch (AlreadyExistsException)
+                    {
+                        TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, string.Format(Resources.CategoryAlreadyExists, model.Name));
+                        return View(model);
+                    }
                 }
             }
-
             return View(model);
         }
 
@@ -252,8 +198,9 @@ namespace Sinance.Controllers
         /// </summary>
         /// <param name="category">Current category to get possible parent categories for</param>
         /// <returns>List of available categories</returns>
-        internal async Task<List<SelectListItem>> AvailableParentCategoriesSelectList(CategoryModel category)
+        internal async Task<List<SelectListItem>> CreateAvailableParentCategoriesSelectList(CategoryModel category)
         {
+            // TODO: Remove SelectListItems, create them inside the view
             var currentUserId = await _sessionService.GetCurrentUserId();
 
             var categories = await _categoryService.GetPossibleParentCategoriesForUser(currentUserId, category.Id);
@@ -274,31 +221,6 @@ namespace Sinance.Controllers
             }));
 
             return availableCategories.ToList();
-        }
-
-        /// <summary>
-        /// Creates a mapping preview for categories
-        /// </summary>
-        /// <param name="category">Category to preview</param>
-        /// <returns>Collection of transactions</returns>
-        private async Task<IEnumerable<KeyValuePair<Transaction, bool>>> CreateMappingPreview(Category category)
-        {
-            var currentUserId = await _sessionService.GetCurrentUserId();
-
-            using var unitOfWork = _unitOfWork();
-
-            var allTransactions = await unitOfWork.TransactionRepository.FindAll(item => item.UserId == currentUserId);
-
-            var transactions =
-                CategoryHandler.PreviewMapTransactions(category.CategoryMappings, allTransactions).Select(item => new KeyValuePair<Transaction, bool>(item, true)).ToList();
-
-            foreach (var transaction in
-            allTransactions.Except(transactions.Select(item => item.Key))
-                .Where(item => item.TransactionCategories.Any(categoryItem => categoryItem.CategoryId == category.Id)))
-            {
-                transactions.Add(new KeyValuePair<Transaction, bool>(transaction, false));
-            }
-            return transactions;
         }
     }
 }

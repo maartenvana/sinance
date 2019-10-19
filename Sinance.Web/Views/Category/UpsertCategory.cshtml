@@ -77,148 +77,149 @@
 @using (Html.BeginForm("UpsertCategory", "Category", FormMethod.Post))
 {
 
-<div class="row">
-    <div class="col-lg-12">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                @if (Model.Id > 0)
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    @if (Model.Id > 0)
                     {
-                <span>Categorie aanpassen</span>
+                        <span>Categorie aanpassen</span>
                     }
                     else
                     {
-                <span>Categorie toevoegen</span>
+                        <span>Categorie toevoegen</span>
                     }
-            </div>
-            <div class="panel-body">
-                @Html.ValidationSummary(true)
+                </div>
+                <div class="panel-body">
+                    @Html.ValidationSummary(true)
 
-                @Html.HiddenFor(item => item.Id)
+                    @Html.HiddenFor(item => item.Id)
 
-                <table class="table">
-                    <tbody>
-                        <tr>
-                            <th>@Html.LabelFor(item => item.Name)</th>
-                            <td>
-                                @Html.TextBoxFor(item => item.Name, new { @class = "form-control" })
-                                @Html.ValidationMessageFor(item => item.Name)
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>@Html.LabelFor(item => item.ColorCode)</th>
-                            <td>
-                                @Html.HiddenFor(item => item.ColorCode, new { @class = "categoryColorCode" })
-                                <div id="ColorCodePicker"></div>
-                                @Html.ValidationMessageFor(item => item.ColorCode)
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>@Html.LabelFor(item => item.ParentId)</th>
-                            <td>
-                                @if (Model.HasChildren)
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <th>@Html.LabelFor(item => item.Name)</th>
+                                <td>
+                                    @Html.TextBoxFor(item => item.Name, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(item => item.Name)
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>@Html.LabelFor(item => item.ColorCode)</th>
+                                <td>
+                                    @Html.HiddenFor(item => item.ColorCode, new { @class = "categoryColorCode" })
+                                    <div id="ColorCodePicker"></div>
+                                    @Html.ValidationMessageFor(item => item.ColorCode)
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>@Html.LabelFor(item => item.ParentId)</th>
+                                <td>
+                                    @if (Model.HasChildren)
                                     {
-                                <span>Categorie is al zelf een hoofdcategorie</span>
+                                        <span>Categorie is al zelf een hoofdcategorie</span>
                                     }
                                     else
                                     {
-                                @Html.DropDownListFor(item => item.ParentId, Model.AvailableCategories)
-                                @Html.ValidationMessageFor(item => item.ParentId)
+                                        @Html.DropDownListFor(item => item.ParentId, Model.AvailableCategories)
+                                        @Html.ValidationMessageFor(item => item.ParentId)
                                     }
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>@Html.LabelFor(item => item.IsRegular)</th>
-                            <td>
-                                @if (Model.ParentCategoryIsRegular)
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>@Html.LabelFor(item => item.IsRegular)</th>
+                                <td>
+                                    @if (Model.ParentCategoryIsRegular)
                                     {
-                                @Html.CheckBoxFor(item => item.ParentCategoryIsRegular, new { @class = "form-control", @disabled = "disabled" })
+                                        @Html.CheckBoxFor(item => item.ParentCategoryIsRegular, new { @class = "form-control", @disabled = "disabled" })
                                     }
                                     else
                                     {
-                                @Html.CheckBoxFor(item => item.IsRegular, new { @class = "form-control" })
-                                @Html.ValidationMessageFor(item => item.IsRegular)
+                                        @Html.CheckBoxFor(item => item.IsRegular, new { @class = "form-control" })
+                                        @Html.ValidationMessageFor(item => item.IsRegular)
                                     }
-                            </td>
-                        </tr>
-                        @if (Model.Id > 0)
+                                </td>
+                            </tr>
+                            @if (Model.Id > 0)
                             {
-                        <tr>
-                            <th>
-                                Mappings
-                            </th>
-                            <td>
-                                <table class="table">
-                                    <thead>
-                                        <tr>
-                                            <th>
-                                                Kolom
-                                            </th>
-                                            <th>
-                                                Vergelijking
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        @foreach (CategoryMapping mapping in Model.CategoryMappings)
+                                <tr>
+                                    <th>
+                                        Mappings
+                                    </th>
+                                    <td>
+                                        <table class="table">
+                                            <thead>
+                                                <tr>
+                                                    <th>
+                                                        Kolom
+                                                    </th>
+                                                    <th>
+                                                        Vergelijking
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (CategoryMapping mapping in Model.CategoryMappings)
                                                 {
-                                        <tr>
-                                            <td>
-                                                @Html.DisplayFor(model => mapping.ColumnTypeId)
-                                            </td>
-                                            <td>
-                                                @(mapping.MatchValue.Length < 50 ? mapping.MatchValue : mapping.MatchValue.Substring(0, 47) + "...")
-                                            </td>
-                                            <td>
-                                                <button type="button" class="btn btn-default" data-toggle="modal" data-target="#mappingModal" onclick="selectedAction = 'Edit';selectedMapping = @mapping.Id;">Aanpassen</button>
-                                                <button type="button" class="btn btn-danger" onclick="RemoveCategoryMapping(@mapping.Id, '@mapping.MatchValue')">Verwijderen</button>
-                                            </td>
-                                        </tr>
+                                                    <tr>
+                                                        <td>
+                                                            @Html.DisplayFor(model => mapping.ColumnTypeId)
+                                                        </td>
+                                                        <td>
+                                                            @(mapping.MatchValue.Length < 50 ? mapping.MatchValue : mapping.MatchValue.Substring(0, 47) + "...")
+                                                        </td>
+                                                        <td>
+                                                            <button type="button" class="btn btn-default" data-toggle="modal" data-target="#mappingModal" onclick="selectedAction = 'Edit';selectedMapping = @mapping.Id;">Aanpassen</button>
+                                                            <button type="button" class="btn btn-danger" onclick="RemoveCategoryMapping(@mapping.Id, '@mapping.MatchValue')">Verwijderen</button>
+                                                        </td>
+                                                    </tr>
                                                 }
-                                    </tbody>
-                                </table>
-                                <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#mappingModal" onclick="selectedMapping = null">Toevoegen</button>
-                            </td>
-                        </tr>
+                                            </tbody>
+                                        </table>
+                                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#mappingModal" onclick="selectedMapping = null">Toevoegen</button>
+                                    </td>
+                                </tr>
                             }
-                    </tbody>
-                </table>
-            </div>
-            <div class="panel-footer">
-                <button type="submit" class="btn btn-success" value="Save">Opslaan</button>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="panel-footer">
+                    <button type="submit" class="btn btn-success" value="Save">Opslaan</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
     if (Model.Id > 0)
     {
-<div class="row">
-    <div class="col-lg-12">
-        <div class="panel panel-default">
-            @if (Model.AutomaticMappings != null && Model.AutomaticMappings.Any())
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="panel panel-default">
+                    @if (Model.AutomaticMappings != null && Model.AutomaticMappings.Any())
                     {
-            <div class="panel-heading">
-                Automatische toekenning
-            </div>
-            <div class="panel-body">
-                @await Html.PartialAsync("MappingTablePartial", Model.AutomaticMappings)
-            </div>
-            <div class="panel-footer">
-                @Html.ActionLink("Categorie toekennen aan transacties", "UpdateCategoryToMappedTransactions", new { @categoryId = Model.Id }, new { @class = "btn btn-primary" })
-            </div>
+                        <div class="panel-heading">
+                            Automatische toekenning
+                        </div>
+                        <div class="panel-body">
+                            @await Html.PartialAsync("MappingTablePartial", Model.AutomaticMappings)
+                        </div>
+                        <div class="panel-footer">
+                            @Html.ActionLink("Categorie toekennen aan transacties", "UpdateCategoryToMappedTransactions", new { @categoryId = Model.Id }, new { @class = "btn btn-primary" })
+                        </div>
                     }
                     else
                     {
-            <div class="panel-heading">
-                Automatische toekenning
-            </div>
-            <div class="panel-body">
-                @Html.ActionLink("Transacties ophalen", "EditCategory", new { @categoryId = Model.Id, @includeTransactions = true }, new { @class = "btn btn-primary" })
-            </div>
+                        <div class="panel-heading">
+                            Automatische toekenning
+                        </div>
+                        <div class="panel-body">
+                            @* TODO: @includeTransactions to partialview/component *@
+                            @Html.ActionLink("Transacties ophalen", "EditCategory", new { @categoryId = Model.Id, @includeTransactions = true }, new { @class = "btn btn-primary" })
+                        </div>
                     }
+                </div>
+            </div>
         </div>
-    </div>
-</div>
     }
 }
 <!-- Modal -->

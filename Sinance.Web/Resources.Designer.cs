@@ -133,6 +133,15 @@ namespace Sinance.Web {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Category with name {0} already exists.
+        /// </summary>
+        public static string CategoryAlreadyExists {
+            get {
+                return ResourceManager.GetString("CategoryAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Categorie aangemaakt.
         /// </summary>
         public static string CategoryCreated {

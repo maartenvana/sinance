@@ -46,44 +46,6 @@ namespace Sinance.Business.Handlers
         /// <param name="categoryMappings">CategoryMappings to use</param>
         /// <param name="transactions">Transactions to map to</param>
         /// <returns>List of transactions that can map</returns>
-        public static IList<Transaction> PreviewMapTransactions(IEnumerable<CategoryMapping> categoryMappings, IEnumerable<Transaction> transactions)
-        {
-            var mappedTransactions = new List<Transaction>();
-
-            foreach (var transaction in transactions)
-            {
-                foreach (var mapping in categoryMappings)
-                {
-                    var isMatch = false;
-
-                    switch (mapping.ColumnTypeId)
-                    {
-                        case ColumnType.Description:
-                            isMatch = MatchString(transaction.Description, mapping.MatchValue);
-                            break;
-
-                        case ColumnType.Name:
-                            isMatch = MatchString(transaction.Name, mapping.MatchValue); ;
-                            break;
-
-                        case ColumnType.DestinationAccount:
-                            isMatch = MatchString(transaction.DestinationAccount, mapping.MatchValue); ;
-                            break;
-
-                        default:
-                            break;
-                    }
-
-                    if (isMatch)
-                    {
-                        mappedTransactions.Add(transaction);
-                        break;
-                    }
-                }
-            }
-
-            return mappedTransactions;
-        }
 
         /// <summary>
         /// Unmaps the category from the given transactions

@@ -1,8 +1,9 @@
 ﻿using Serilog;
 using Sinance.Business.Handlers;
 using Sinance.Business.Services.Authentication;
-using Sinance.Domain.Entities;
+using Sinance.Communication.BankAccount;
 using Sinance.Storage;
+using Sinance.Storage.Entities;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -64,7 +65,7 @@ namespace Sinance.Business.DataSeeding
             _logger.Information("Data seed completed, login with DemoUser/DemoUser");
         }
 
-        private async Task DeleteCategoriesAndTransactions(IUnitOfWork unitOfWork, SinanceUser user)
+        private async Task DeleteCategoriesAndTransactions(IUnitOfWork unitOfWork, SinanceUserEntity user)
         {
             _logger.Information("Deleting existing demo categories and transactions");
             var existingCategories = await unitOfWork.CategoryRepository.FindAll(x => x.UserId == user.Id);
@@ -75,7 +76,7 @@ namespace Sinance.Business.DataSeeding
             await unitOfWork.SaveAsync();
         }
 
-        private async Task DeleteExistingBankAccounts(IUnitOfWork unitOfWork, SinanceUser user)
+        private async Task DeleteExistingBankAccounts(IUnitOfWork unitOfWork, SinanceUserEntity user)
         {
             _logger.Information("Deleting existing demo bank accounts");
 
@@ -84,9 +85,9 @@ namespace Sinance.Business.DataSeeding
             await unitOfWork.SaveAsync();
         }
 
-        private BankAccount InsertBankAccount(IUnitOfWork unitOfWork, SinanceUser user, string name, BankAccountType bankAccountType)
+        private BankAccountEntity InsertBankAccount(IUnitOfWork unitOfWork, SinanceUserEntity user, string name, BankAccountType bankAccountType)
         {
-            var bankAccount = new BankAccount
+            var bankAccount = new BankAccountEntity
             {
                 AccountType = bankAccountType,
                 IncludeInProfitLossGraph = true,
@@ -100,7 +101,7 @@ namespace Sinance.Business.DataSeeding
             return bankAccount;
         }
 
-        private void InsertCategoriesAndTransactions(IUnitOfWork unitOfWork, SinanceUser user, BankAccount primaryChecking, BankAccount savingsAccount)
+        private void InsertCategoriesAndTransactions(IUnitOfWork unitOfWork, SinanceUserEntity user, BankAccountEntity primaryChecking, BankAccountEntity savingsAccount)
         {
             _logger.Information("Creating demo categories and transactions");
 
@@ -148,9 +149,9 @@ namespace Sinance.Business.DataSeeding
             InsertMonthlySavingTransaction(unitOfWork, primaryChecking, savingsAccount, internalCashflowCategory, 26, 100);
         }
 
-        private Category InsertCategory(IUnitOfWork unitOfWork, SinanceUser demoUser, string categoryName, bool isRegular, Category parentCategory = null)
+        private CategoryEntity InsertCategory(IUnitOfWork unitOfWork, SinanceUserEntity demoUser, string categoryName, bool isRegular, CategoryEntity parentCategory = null)
         {
-            var category = new Category
+            var category = new CategoryEntity
             {
                 Name = categoryName,
                 User = demoUser,
@@ -164,8 +165,8 @@ namespace Sinance.Business.DataSeeding
             return category;
         }
 
-        private void InsertMonthlySavingTransaction(IUnitOfWork unitOfWork, BankAccount primaryChecking, BankAccount savingsAccount,
-            Category internalCashflowCategory, int dayOfMonth, int amount)
+        private void InsertMonthlySavingTransaction(IUnitOfWork unitOfWork, BankAccountEntity primaryChecking, BankAccountEntity savingsAccount,
+            CategoryEntity internalCashflowCategory, int dayOfMonth, int amount)
         {
             var today = DateTime.Now.Date;
 
@@ -176,11 +177,11 @@ namespace Sinance.Business.DataSeeding
                 startDate = startDate.AddMonths(-1);
             }
 
-            var transactions = new List<Transaction>();
+            var transactions = new List<TransactionEntity>();
             // Insert 2 years of monthly transactions
             for (var i = 0; i < 24; i++)
             {
-                transactions.Add(new Transaction
+                transactions.Add(new TransactionEntity
                 {
                     AccountNumber = "NL02ABNA9450889198",
                     Amount = -amount,
@@ -201,7 +202,7 @@ namespace Sinance.Business.DataSeeding
                     User = primaryChecking.User
                 });
 
-                transactions.Add(new Transaction
+                transactions.Add(new TransactionEntity
                 {
                     AccountNumber = "NL83RABO2338418883",
                     Amount = amount,
@@ -225,7 +226,7 @@ namespace Sinance.Business.DataSeeding
             unitOfWork.TransactionRepository.InsertRange(transactions);
         }
 
-        private List<Transaction> InsertMonthlyTransactionsForCategory(IUnitOfWork unitOfWork, BankAccount bankAccount, Category category, int dayInMonth,
+        private List<TransactionEntity> InsertMonthlyTransactionsForCategory(IUnitOfWork unitOfWork, BankAccountEntity bankAccount, CategoryEntity category, int dayInMonth,
                     string transactionName, string transactionDescription, int amountMinValue, int amountMaxValue)
         {
             var today = DateTime.Now.Date;
@@ -237,14 +238,14 @@ namespace Sinance.Business.DataSeeding
                 startDate = startDate.AddMonths(-1);
             }
 
-            var transactions = new List<Transaction>();
+            var transactions = new List<TransactionEntity>();
 
             // Insert 2 years of monthly transactions
             for (var i = 0; i < 24; i++)
             {
                 var amount = (decimal)_random.Next(amountMinValue * 100, amountMaxValue * 100) / 100;
 
-                transactions.Add(new Transaction
+                transactions.Add(new TransactionEntity
                 {
                     AccountNumber = "NL02ABNA9450889198",
                     Amount = amount,
@@ -270,7 +271,8 @@ namespace Sinance.Business.DataSeeding
             return transactions;
         }
 
-        private List<Transaction> InsertRandomMonthlyTransactionsForCategory(IUnitOfWork unitOfWork, BankAccount bankAccount, Category category, string transactionName, string transactionDescription, int amountMinValue, int amountMaxValue)
+        private List<TransactionEntity> InsertRandomMonthlyTransactionsForCategory(IUnitOfWork unitOfWork,
+            BankAccountEntity bankAccount, CategoryEntity category, string transactionName, string transactionDescription, int amountMinValue, int amountMaxValue)
         {
             var today = DateTime.Now.Date;
 
@@ -283,7 +285,7 @@ namespace Sinance.Business.DataSeeding
                 transactionDate = transactionDate.AddMonths(-1);
             }
 
-            var transactions = new List<Transaction>();
+            var transactions = new List<TransactionEntity>();
 
             // Insert 2 years of monthly transactions
             for (var i = 0; i < 24; i++)
@@ -293,7 +295,7 @@ namespace Sinance.Business.DataSeeding
                 dayInMonth = _random.Next(-7, 7);
                 transactionDate = transactionDate.AddDays(dayInMonth);
 
-                transactions.Add(new Transaction
+                transactions.Add(new TransactionEntity
                 {
                     AccountNumber = "NL02ABNA9450889198",
                     Amount = amount,
@@ -322,7 +324,7 @@ namespace Sinance.Business.DataSeeding
             return transactions;
         }
 
-        private List<Transaction> InsertWeeklyTransactionsForCategory(IUnitOfWork unitOfWork, BankAccount bankAccount, Category category, DayOfWeek transactionDayOfWeek,
+        private List<TransactionEntity> InsertWeeklyTransactionsForCategory(IUnitOfWork unitOfWork, BankAccountEntity bankAccount, CategoryEntity category, DayOfWeek transactionDayOfWeek,
             string transactionName, string transactionDescription, int amountMinValue, int amountMaxValue)
         {
             var today = DateTime.Now.Date;
@@ -332,14 +334,14 @@ namespace Sinance.Business.DataSeeding
             var dayDifference = todayDayOfWeek > transactionDayOfWeek ? transactionDayOfWeek - todayDayOfWeek : transactionDayOfWeek - todayDayOfWeek - 7;
             var startDate = today.AddDays(dayDifference);
 
-            var transactions = new List<Transaction>();
+            var transactions = new List<TransactionEntity>();
 
             // Insert 2 years of weekly transactions
             for (var i = 0; i < 104; i++)
             {
                 var amount = (decimal)_random.Next(amountMinValue * 100, amountMaxValue * 100) / 100;
 
-                transactions.Add(new Transaction
+                transactions.Add(new TransactionEntity
                 {
                     AccountNumber = "NL02ABNA9450889198",
                     Amount = amount,

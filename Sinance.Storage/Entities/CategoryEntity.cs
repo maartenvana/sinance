@@ -61,34 +61,13 @@ namespace Sinance.Storage.Entities
         /// <summary>
         /// Default constructor
         /// </summary>
+        /// TODO: Check if it still is necesary
         [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "EF needs virtual collections for lazy loading")]
         public CategoryEntity()
         {
             ChildCategories = new HashSet<CategoryEntity>();
             TransactionCategories = new HashSet<TransactionCategory>();
             CategoryMappings = new HashSet<CategoryMappingEntity>();
-        }
-
-        /// <summary>
-        /// Updates the current entity with the given info
-        /// </summary>
-        /// <param name="name">Name of the category</param>
-        /// <param name="colorCode">color code</param>
-        /// <param name="parentId">parent id</param>
-        /// <param name="isRegular">Regular expense</param>
-        /// <exception cref="ArgumentNullException"></exception>
-        public void Update(string name, string colorCode, int? parentId, bool isRegular)
-        {
-            if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentNullException(nameof(name));
-
-            if (string.IsNullOrWhiteSpace(colorCode))
-                throw new ArgumentNullException(nameof(colorCode));
-
-            Name = name;
-            ColorCode = colorCode;
-            ParentId = parentId;
-            IsRegular = isRegular;
         }
     }
 }

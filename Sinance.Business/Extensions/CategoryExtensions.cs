@@ -25,5 +25,28 @@ namespace Sinance.Business.Extensions
                 ParentId = categoryEntity.ParentId
             };
         }
+
+        public static CategoryEntity ToNewEntity(this CategoryModel model, int userId)
+        {
+            return new CategoryEntity
+            {
+                Id = model.Id,
+                ColorCode = model.ColorCode,
+                ParentId = model.ParentId,
+                IsRegular = model.IsRegular,
+                Name = model.Name,
+                UserId = userId
+            };
+        }
+
+        public static CategoryEntity UpdateEntity(this CategoryEntity entity, CategoryModel model)
+        {
+            entity.ColorCode = model.ColorCode;
+            entity.ParentId = model.ParentId;
+            entity.IsRegular = model.IsRegular;
+            entity.Name = model.Name;
+
+            return entity;
+        }
     }
 }

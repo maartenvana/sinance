@@ -2,7 +2,11 @@
 using Microsoft.AspNetCore.Identity;
 using Sinance.Business.DataSeeding;
 using Sinance.Business.Services;
-using Sinance.Domain.Entities;
+using Sinance.Business.Services.BankAccounts;
+using Sinance.Business.Services.Categories;
+using Sinance.Business.Services.Transactions;
+using Sinance.Storage;
+using Sinance.Storage.Entities;
 
 namespace Sinance.Business
 {
@@ -10,12 +14,17 @@ namespace Sinance.Business
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<PasswordHasher<SinanceUser>>().As<IPasswordHasher<SinanceUser>>();
+            builder.RegisterType<PasswordHasher<SinanceUserEntity>>().As<IPasswordHasher<SinanceUserEntity>>();
 
             builder.RegisterType<BankAccountService>().As<IBankAccountService>();
+            builder.RegisterType<CategoryService>().As<ICategoryService>();
+            builder.RegisterType<CustomReportService>().As<ICustomReportService>();
+            builder.RegisterType<TransactionService>().As<ITransactionService>();
             builder.RegisterType<CustomReportService>().As<ICustomReportService>();
 
             builder.RegisterType<DataSeedService>().AsSelf();
+
+            builder.RegisterModule<StorageModule>();
         }
     }
 }

@@ -20,7 +20,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sinance.Business\Sinance.Business.csproj" />
-    <ProjectReference Include="..\Sinance.Storage\Sinance.Storage.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -40,10 +39,10 @@
     <Watch Remove="Components\SideNavigation.cs" />
     <Watch Remove="Components\SimpleMonthSelector.cs" />
     <Watch Remove="Extensions\IApplicationBuilderStorageExtensions.cs" />
-    <Watch Remove="Model\AddCategoryModel.cs" />
     <Watch Remove="Model\CategoriesOverviewModel.cs" />
     <Watch Remove="Model\EditTransactionModel.cs" />
     <Watch Remove="Model\MonthYearSelectionModel.cs" />
+    <Watch Remove="Model\UpsertCategoryModel.cs" />
     <Watch Remove="Services\AuthenticationService.cs" />
   </ItemGroup>
 

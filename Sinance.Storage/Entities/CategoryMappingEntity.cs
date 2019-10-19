@@ -1,4 +1,4 @@
-using Sinance.Domain.Import;
+using Sinance.Communication.Import;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;

@@ -135,7 +135,7 @@ namespace Sinance.Controllers
                     }
                     else
                     {
-                        await _bankAccountService.CreateBankAccount(currentUserId, model);
+                        await _bankAccountService.CreateBankAccountForCurrentUser(currentUserId, model);
                         TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.BankAccountUpdated);
                     }
                 }

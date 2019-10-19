@@ -1,4 +1,4 @@
-﻿using Sinance.Domain.Entities;
+﻿using Sinance.Storage.Entities;
 
 namespace Sinance.Business.Classes
 {
@@ -25,6 +25,6 @@ namespace Sinance.Business.Classes
         /// <summary>
         /// The transaction that is going to be inserted
         /// </summary>
-        public Transaction Transaction { get; set; }
+        public TransactionEntity Transaction { get; set; }
     }
 }

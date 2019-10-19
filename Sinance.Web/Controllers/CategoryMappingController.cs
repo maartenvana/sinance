@@ -67,7 +67,7 @@ namespace Sinance.Controllers
 
             try
             {
-                var model = _categoryMappingService.GetCategoryMappingByIdForUser(currentUserId, categoryMappingId);
+                var model = _categoryMappingService.GetCategoryMappingByIdForCurrentUser(currentUserId, categoryMappingId);
                 return PartialView("UpsertCategoryMapping", model);
             }
             catch (NotFoundException)
@@ -88,7 +88,7 @@ namespace Sinance.Controllers
 
             try
             {
-                await _categoryMappingService.DeleteCategoryMappingByIdForUser(currentUserId, categoryMappingId);
+                await _categoryMappingService.DeleteCategoryMappingByIdForCurrentUser(currentUserId, categoryMappingId);
 
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.CategoryMappingDeleted);
                 return RedirectToAction("EditCategory", "Category", new { categoryId });
@@ -124,7 +124,7 @@ namespace Sinance.Controllers
                 {
                     try
                     {
-                        var updatedModel = await _categoryMappingService.UpdateCategoryMapping(currentUserId, model);
+                        var updatedModel = await _categoryMappingService.UpdateCategoryMappingForCurrentUser(currentUserId, model);
 
                         return Json(new SinanceJsonResult
                         {
@@ -141,7 +141,7 @@ namespace Sinance.Controllers
                 {
                     try
                     {
-                        var createdModel = await _categoryMappingService.CreateCategoryMapping(currentUserId, model);
+                        var createdModel = await _categoryMappingService.CreateCategoryMappingForCurrentUser(currentUserId, model);
 
                         return Json(new SinanceJsonResult
                         {

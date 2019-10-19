@@ -14,14 +14,18 @@ namespace Sinance.Business.Services.BankAccounts
 {
     public class BankAccountService : IBankAccountService
     {
+        private readonly IAuthenticationService _authenticationService;
         private readonly Func<IUnitOfWork> _unitOfWork;
 
-        public BankAccountService(Func<IUnitOfWork> unitOfWork)
+        public BankAccountService(
+            Func<IUnitOfWork> unitOfWork,
+            IAuthenticationService authenticationService)
         {
             _unitOfWork = unitOfWork;
+            _authenticationService = authenticationService;
         }
 
-        public async Task<BankAccountModel> CreateBankAccount(int userId, BankAccountModel model)
+        public async Task<BankAccountModel> CreateBankAccountForCurrentUser(int userId, BankAccountModel model)
         {
             using var unitOfWork = _unitOfWork();
 

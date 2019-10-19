@@ -1,4 +1,4 @@
-﻿using Sinance.Domain.Entities;
+﻿using Sinance.Storage.Entities;
 using Sinance.Storage;
 using System;
 using System.Collections.Generic;
@@ -22,7 +22,7 @@ namespace Sinance.Business.Services
         /// <summary>
         /// Custom reports active in this session
         /// </summary>
-        public async Task<IList<CustomReport>> GetCustomReportsForCurrentUser()
+        public async Task<IList<CustomReportEntity>> GetCustomReportsForCurrentUser()
         {
             var userId = await _sessionService.GetCurrentUserId();
 

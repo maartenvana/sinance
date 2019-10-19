@@ -26,7 +26,6 @@ namespace Sinance.Controllers
         private readonly IBankAccountService _bankAccountService;
 
         private readonly IAuthenticationService _sessionService;
-        private readonly Func<IUnitOfWork> _unitOfWork;
 
         /// <summary>
         /// UTC start date for calculations
@@ -35,7 +34,6 @@ namespace Sinance.Controllers
 
         public GraphController(
             Func<IUnitOfWork> unitOfWork,
-            IBankAccountService bankAccountService,
             IAuthenticationService sessionService)
         {
             _unitOfWork = unitOfWork;

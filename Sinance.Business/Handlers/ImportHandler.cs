@@ -1,7 +1,7 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
 using Sinance.Business.Classes;
-using Sinance.Domain.Entities;
+using Sinance.Storage.Entities;
 using Sinance.Storage;
 using System;
 using System.Collections.Generic;
@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Sinance.Communication.Import;
 
 namespace Sinance.Business.Handlers
 {
@@ -32,7 +33,7 @@ namespace Sinance.Business.Handlers
         /// <returns>Created list of import rows</returns>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
         public static async Task<IList<ImportRow>> ProcessImport(IUnitOfWork unitOfWork, Stream fileInputStream, int userId,
-            IList<ImportMapping> importMappings, ImportBank importBank, int bankAccountId)
+            IList<ImportMappingEntity> importMappings, ImportBankEntity importBank, int bankAccountId)
         {
             IList<ImportRow> importRows;
             using (var reader = new StreamReader(fileInputStream))
@@ -61,7 +62,7 @@ namespace Sinance.Business.Handlers
                     importRow.Import = !transactionExists;
                 }
 
-                IList<CategoryMapping> categoryMappings = await unitOfWork.CategoryMappingRepository.FindAll(item => item.Category.UserId == userId, "Category");
+                var categoryMappings = await unitOfWork.CategoryMappingRepository.FindAll(item => item.Category.UserId == userId, "Category");
 
                 CategoryHandler.SetTransactionCategories(transactions: importRows.Select(item => item.Transaction), categoryMappings: categoryMappings);
             }
@@ -114,7 +115,7 @@ namespace Sinance.Business.Handlers
         /// <param name="importBank">Import bank entity with settings</param>
         /// <param name="importMappings">Import column mappings to use for mapping values</param>
         /// <returns>A created import row list</returns>
-        private static IList<ImportRow> ConvertFileToImportRows(Stream fileStream, ImportBank importBank, IList<ImportMapping> importMappings)
+        private static IList<ImportRow> ConvertFileToImportRows(Stream fileStream, ImportBankEntity importBank, IList<ImportMappingEntity> importMappings)
         {
             IList<ImportRow> importRows = new List<ImportRow>();
 
@@ -136,7 +137,7 @@ namespace Sinance.Business.Handlers
                 while (csv.Read())
                 {
                     // Create a new import row
-                    var importRow = new ImportRow { Transaction = new Transaction() };
+                    var importRow = new ImportRow { Transaction = new TransactionEntity() };
 
                     // Loop through fields
                     for (var i = 0; csv.TryGetField<string>(i, out var rawValue); i++)
@@ -166,7 +167,7 @@ namespace Sinance.Business.Handlers
         /// <param name="transaction">Transaction to set property of</param>
         /// <param name="importMapping">Specifies which property to map to</param>
         /// <param name="rawValue">The raw string value</param>
-        private static void ConvertRawColumn(string rawValue, ImportMapping importMapping, Transaction transaction)
+        private static void ConvertRawColumn(string rawValue, ImportMappingEntity importMapping, TransactionEntity transaction)
         {
             if (importMapping == null)
                 throw new ArgumentNullException(nameof(importMapping));

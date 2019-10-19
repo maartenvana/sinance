@@ -10,7 +10,7 @@ namespace Sinance.Business.Handlers
     public static class FinanceCacheHandler
     {
         // Memory cache for all cache operations
-        private static readonly MemoryCache memoryCache = new MemoryCache(new MemoryCacheOptions());
+        private static readonly MemoryCache _memoryCache = new MemoryCache(new MemoryCacheOptions());
 
         /// <summary>
         /// Places the result of the action if not present in cache
@@ -26,7 +26,7 @@ namespace Sinance.Business.Handlers
             if (contentAction == null)
                 throw new ArgumentNullException(nameof(contentAction));
 
-            var cacheObject = await memoryCache.GetOrCreateAsync(key, async (entry) =>
+            var cacheObject = await _memoryCache.GetOrCreateAsync(key, async (entry) =>
             {
                 if (slidingExpiration)
                 {
@@ -57,7 +57,7 @@ namespace Sinance.Business.Handlers
             if (contentAction == null)
                 throw new ArgumentNullException(nameof(contentAction));
 
-            var cacheObject = (T)memoryCache.GetOrCreate(key, (entry) =>
+            var cacheObject = (T)_memoryCache.GetOrCreate(key, (entry) =>
            {
                if (slidingExpiration)
                {
@@ -80,7 +80,7 @@ namespace Sinance.Business.Handlers
         /// <param name="key">Key to clear from cache</param>
         public static void ClearCache(string key)
         {
-            memoryCache.Remove(key);
+            _memoryCache.Remove(key);
         }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace Sinance.Business.Handlers
         /// <returns>Cacheobject if found</returns>
         public static T RetrieveCache<T>(string key)
         {
-            memoryCache.TryGetValue(key, out var cacheObject);
+            _memoryCache.TryGetValue(key, out var cacheObject);
 
             return (T)cacheObject;
         }

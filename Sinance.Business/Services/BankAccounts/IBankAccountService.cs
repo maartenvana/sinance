@@ -6,7 +6,7 @@ namespace Sinance.Business.Services.BankAccounts
 {
     public interface IBankAccountService
     {
-        Task<BankAccountModel> CreateBankAccount(int userId, BankAccountModel model);
+        Task<BankAccountModel> CreateBankAccountForCurrentUser(int userId, BankAccountModel model);
 
         Task DeleteBankAccountByIdForUser(int userId, int accountId);
 

@@ -1,5 +1,6 @@
-﻿using Sinance.Domain.Entities;
+﻿using Sinance.Communication.Import;
 using Sinance.Storage;
+using Sinance.Storage.Entities;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ namespace Sinance.Business.Handlers
         /// <param name="genericRepository">Generic repository to use</param>
         /// <param name="categoryId">Category Id to map</param>
         /// <param name="transactions">Transactions to map</param>
-        public static async Task MapCategoryToTransactions(IUnitOfWork unitOfWork, int categoryId, IEnumerable<Transaction> transactions)
+        public static async Task MapCategoryToTransactions(IUnitOfWork unitOfWork, int categoryId, IEnumerable<TransactionEntity> transactions)
         {
             foreach (var transaction in transactions)
             {
@@ -53,7 +54,7 @@ namespace Sinance.Business.Handlers
         /// <param name="genericRepository">Generic repository to use</param>
         /// <param name="categoryId">Category Id to unmap</param>
         /// <param name="transactions">Transactions to unmap</param>
-        public static async Task RemoveTransactionMappingFromCategory(IUnitOfWork unitOfWork, int categoryId, IEnumerable<Transaction> transactions)
+        public static async Task RemoveTransactionMappingFromCategory(IUnitOfWork unitOfWork, int categoryId, IEnumerable<TransactionEntity> transactions)
         {
             foreach (var transaction in transactions)
             {
@@ -68,7 +69,7 @@ namespace Sinance.Business.Handlers
         /// </summary>
         /// <param name="transactions">Transaction to set category for</param>
         /// <param name="categoryMappings">Mappings to use</param>
-        public static void SetTransactionCategories(IEnumerable<Transaction> transactions, IList<CategoryMapping> categoryMappings)
+        public static void SetTransactionCategories(IEnumerable<TransactionEntity> transactions, IList<CategoryMappingEntity> categoryMappings)
         {
             foreach (var transaction in transactions)
             {

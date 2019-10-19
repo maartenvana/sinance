@@ -6,12 +6,12 @@ namespace Sinance.Business.Services.CategoryMappings
 {
     public interface ICategoryMappingService
     {
-        Task<CategoryMappingModel> CreateCategoryMapping(int userId, CategoryMappingModel model);
+        Task<CategoryMappingModel> CreateCategoryMappingForCurrentUser(int userId, CategoryMappingModel model);
 
-        Task DeleteCategoryMappingByIdForUser(int userId, int categoryMappingId);
+        Task DeleteCategoryMappingByIdForCurrentUser(int userId, int categoryMappingId);
 
-        Task<CategoryMappingModel> GetCategoryMappingByIdForUser(int userId, int categoryMappingId);
+        Task<CategoryMappingModel> GetCategoryMappingByIdForCurrentUser(int userId, int categoryMappingId);
 
-        Task<CategoryMappingModel> UpdateCategoryMapping(int currentUserId, CategoryMappingModel model);
+        Task<CategoryMappingModel> UpdateCategoryMappingForCurrentUser(int currentUserId, CategoryMappingModel model);
     }
 }

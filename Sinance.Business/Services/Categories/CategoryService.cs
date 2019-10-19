@@ -1,5 +1,6 @@
 ﻿using Sinance.Business.Exceptions;
 using Sinance.Business.Extensions;
+using Sinance.Business.Services.Authentication;
 using Sinance.Communication.Import;
 using Sinance.Communication.Model.Category;
 using Sinance.Communication.Model.Transaction;
@@ -14,16 +15,33 @@ namespace Sinance.Business.Services.Categories
 {
     public class CategoryService : ICategoryService
     {
+        private readonly IAuthenticationService _authenticationService;
         private readonly Func<IUnitOfWork> _unitOfWork;
 
-        public CategoryService(Func<IUnitOfWork> unitOfWork)
+        public CategoryService(
+            Func<IUnitOfWork> unitOfWork,
+            IAuthenticationService authenticationService)
         {
             _unitOfWork = unitOfWork;
+            _authenticationService = authenticationService;
         }
 
         public async Task<CategoryModel> CreateCategoryForUser(int userId, CategoryModel categoryModel)
         {
-            throw new NotImplementedException();
+            using var unitOfWork = _unitOfWork();
+            var category = await unitOfWork.CategoryRepository.FindSingleTracked(item => item.Name == categoryModel.Name && item.UserId == userId);
+
+            if (category != null)
+            {
+                throw new AlreadyExistsException(nameof(CategoryEntity));
+            }
+
+            var newCategory = categoryModel.ToNewEntity(userId);
+
+            unitOfWork.CategoryRepository.Insert(newCategory);
+            await unitOfWork.SaveAsync();
+
+            return newCategory.ToDto();
         }
 
         public async Task<IEnumerable<KeyValuePair<TransactionModel, bool>>> CreateCategoryMappingToTransactionsForUser(int userId, CategoryModel category)

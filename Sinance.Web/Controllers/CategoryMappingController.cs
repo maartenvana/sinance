@@ -22,16 +22,13 @@ namespace Sinance.Controllers
     {
         private readonly ICategoryMappingService _categoryMappingService;
         private readonly ICategoryService _categoryService;
-        private readonly IAuthenticationService _sessionService;
 
         public CategoryMappingController(
             ICategoryService categoryService,
-            ICategoryMappingService categoryMappingService,
-            IAuthenticationService sessionService)
+            ICategoryMappingService categoryMappingService)
         {
             _categoryService = categoryService;
             _categoryMappingService = categoryMappingService;
-            _sessionService = sessionService;
         }
 
         /// <summary>
@@ -41,11 +38,9 @@ namespace Sinance.Controllers
         /// <returns>Partial view for adding the mapping</returns>
         public async Task<IActionResult> AddCategoryMapping(int categoryId)
         {
-            var currentUserId = await _sessionService.GetCurrentUserId();
-
             try
             {
-                var categoryModel = _categoryService.GetCategoryByIdForUser(currentUserId, categoryId);
+                var categoryModel = _categoryService.GetCategoryByIdForCurrentUser(categoryId);
 
                 return PartialView("UpsertCategoryMapping", categoryModel);
             }
@@ -63,11 +58,9 @@ namespace Sinance.Controllers
         /// <returns>Partial view to edit the mapping</returns>
         public async Task<IActionResult> EditCategoryMapping(int categoryMappingId)
         {
-            var currentUserId = await _sessionService.GetCurrentUserId();
-
             try
             {
-                var model = _categoryMappingService.GetCategoryMappingByIdForCurrentUser(currentUserId, categoryMappingId);
+                var model = await _categoryMappingService.GetCategoryMappingByIdForCurrentUser(categoryMappingId);
                 return PartialView("UpsertCategoryMapping", model);
             }
             catch (NotFoundException)
@@ -84,11 +77,9 @@ namespace Sinance.Controllers
         /// <returns>Redirect to the edit category view</returns>
         public async Task<IActionResult> RemoveCategoryMapping(int categoryMappingId, int categoryId)
         {
-            var currentUserId = await _sessionService.GetCurrentUserId();
-
             try
             {
-                await _categoryMappingService.DeleteCategoryMappingByIdForCurrentUser(currentUserId, categoryMappingId);
+                await _categoryMappingService.DeleteCategoryMappingByIdForCurrentUser(categoryMappingId);
 
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.CategoryMappingDeleted);
                 return RedirectToAction("EditCategory", "Category", new { categoryId });
@@ -109,8 +100,6 @@ namespace Sinance.Controllers
         {
             if (ModelState.IsValid)
             {
-                var currentUserId = await _sessionService.GetCurrentUserId();
-
                 // Placeholder extra validation, in the future all mappings should be possible
                 if (model.ColumnTypeId != ColumnType.Description &&
                     model.ColumnTypeId != ColumnType.Name &&
@@ -124,7 +113,7 @@ namespace Sinance.Controllers
                 {
                     try
                     {
-                        var updatedModel = await _categoryMappingService.UpdateCategoryMappingForCurrentUser(currentUserId, model);
+                        var updatedModel = await _categoryMappingService.UpdateCategoryMappingForCurrentUser(model);
 
                         return Json(new SinanceJsonResult
                         {
@@ -141,7 +130,7 @@ namespace Sinance.Controllers
                 {
                     try
                     {
-                        var createdModel = await _categoryMappingService.CreateCategoryMappingForCurrentUser(currentUserId, model);
+                        var createdModel = await _categoryMappingService.CreateCategoryMappingForCurrentUser(model);
 
                         return Json(new SinanceJsonResult
                         {

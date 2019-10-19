@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using Microsoft.AspNetCore.Identity;
+using Sinance.Business.Calculations;
 using Sinance.Business.DataSeeding;
 using Sinance.Business.Services;
 using Sinance.Business.Services.BankAccounts;
@@ -21,6 +22,10 @@ namespace Sinance.Business
             builder.RegisterType<CustomReportService>().As<ICustomReportService>();
             builder.RegisterType<TransactionService>().As<ITransactionService>();
             builder.RegisterType<CustomReportService>().As<ICustomReportService>();
+
+            builder.RegisterType<BalanceHistoryCalculation>().As<IBalanceHistoryCalculation>();
+            builder.RegisterType<ExpensePercentageCalculation>().As<IExpensePercentageCalculation>();
+            builder.RegisterType<ProfitLossCalculation>().As<IProfitLossCalculation>();
 
             builder.RegisterType<DataSeedService>().AsSelf();
 

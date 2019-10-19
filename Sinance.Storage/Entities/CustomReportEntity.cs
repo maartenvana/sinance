@@ -19,14 +19,14 @@ namespace Sinance.Storage.Entities
         /// Collection of categories to use in the report
         /// </summary>
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public ICollection<CustomReportCategory> ReportCategories { get; set; }
+        public ICollection<CustomReportCategoryEntity> ReportCategories { get; set; }
 
         /// <summary>
         /// Default constructor
         /// </summary>
         public CustomReportEntity()
         {
-            ReportCategories = new HashSet<CustomReportCategory>();
+            ReportCategories = new HashSet<CustomReportCategoryEntity>();
         }
     }
 }

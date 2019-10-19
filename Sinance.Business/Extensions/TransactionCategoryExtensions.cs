@@ -8,12 +8,9 @@ namespace Sinance.Business.Extensions
 {
     public static class TransactionCategoryExtensions
     {
-        public static IEnumerable<TransactionCategoryModel> ToDto(this IEnumerable<TransactionCategory> transactionCategory)
-        {
-            return transactionCategory.Select(x => x.ToDto());
-        }
+        public static IEnumerable<TransactionCategoryModel> ToDto(this IEnumerable<TransactionCategoryEntity> transactionCategory) => transactionCategory.Select(x => x.ToDto());
 
-        public static TransactionCategoryModel ToDto(this TransactionCategory transactionCategory)
+        public static TransactionCategoryModel ToDto(this TransactionCategoryEntity transactionCategory)
         {
             if (transactionCategory.Category == null)
             {

@@ -6,7 +6,7 @@ namespace Sinance.Storage.Entities
     /// <summary>
     /// CustomReportCategory entity class
     /// </summary>
-    public class CustomReportCategory : EntityBase
+    public class CustomReportCategoryEntity : EntityBase
     {
         /// <summary>
         /// Category reference

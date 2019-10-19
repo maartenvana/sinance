@@ -33,8 +33,7 @@ namespace Sinance.Controllers
         [HttpPost]
         public async Task<IActionResult> LoadMoreEditTransactionsPartial(int bankAccountId, int skipTransactions, int takeTransactions)
         {
-            var currentUserId = await _sessionService.GetCurrentUserId();
-            var transactions = await _transactionService.GetTransactionsForBankAccount(currentUserId, bankAccountId, takeTransactions, skip: skipTransactions);
+            var transactions = await _transactionService.GetTransactionsForBankAccountForCurrentUser(bankAccountId, takeTransactions, skip: skipTransactions);
 
             return PartialView(transactions);
         }

@@ -22,8 +22,10 @@ namespace Sinance.Business.Services.CategoryMappings
             _authenticationService = authenticationService;
         }
 
-        public async Task<CategoryMappingModel> CreateCategoryMappingForCurrentUser(int userId, CategoryMappingModel model)
+        public async Task<CategoryMappingModel> CreateCategoryMappingForCurrentUser(CategoryMappingModel model)
         {
+            var userId = await _authenticationService.GetCurrentUserId();
+
             using var unitOfWork = _unitOfWork();
 
             var existingCategoryMapping = await unitOfWork.CategoryMappingRepository.FindSingle(findQuery: x =>
@@ -45,8 +47,10 @@ namespace Sinance.Business.Services.CategoryMappings
             return entity.ToDto();
         }
 
-        public async Task DeleteCategoryMappingByIdForCurrentUser(int userId, int categoryMappingId)
+        public async Task DeleteCategoryMappingByIdForCurrentUser(int categoryMappingId)
         {
+            var userId = await _authenticationService.GetCurrentUserId();
+
             using var unitOfWork = _unitOfWork();
 
             var mapping = await unitOfWork.CategoryMappingRepository.FindSingleTracked(item => item.Id == categoryMappingId &&
@@ -61,8 +65,10 @@ namespace Sinance.Business.Services.CategoryMappings
             await unitOfWork.SaveAsync();
         }
 
-        public async Task<CategoryMappingModel> GetCategoryMappingByIdForCurrentUser(int userId, int categoryMappingId)
+        public async Task<CategoryMappingModel> GetCategoryMappingByIdForCurrentUser(int categoryMappingId)
         {
+            var userId = await _authenticationService.GetCurrentUserId();
+
             using var unitOfWork = _unitOfWork();
 
             var entity = await unitOfWork.CategoryMappingRepository.FindSingle(item =>
@@ -76,12 +82,14 @@ namespace Sinance.Business.Services.CategoryMappings
             return entity.ToDto();
         }
 
-        public async Task<CategoryMappingModel> UpdateCategoryMappingForCurrentUser(int currentUserId, CategoryMappingModel model)
+        public async Task<CategoryMappingModel> UpdateCategoryMappingForCurrentUser(CategoryMappingModel model)
         {
+            var userId = await _authenticationService.GetCurrentUserId();
+
             using var unitOfWork = _unitOfWork();
 
             var existingCategoryMapping = await unitOfWork.CategoryMappingRepository.FindSingleTracked(item => item.Id == model.Id &&
-                                                                                                                item.Category.UserId == currentUserId);
+                                                                                                                item.Category.UserId == userId);
             if (existingCategoryMapping == null)
             {
                 throw new NotFoundException(nameof(CategoryMappingEntity));

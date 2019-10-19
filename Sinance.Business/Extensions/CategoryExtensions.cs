@@ -9,10 +9,7 @@ namespace Sinance.Business.Extensions
 {
     public static class CategoryExtensions
     {
-        public static IEnumerable<CategoryModel> ToDto(this IEnumerable<CategoryEntity> categoryEntity)
-        {
-            return categoryEntity.Select(x => x.ToDto());
-        }
+        public static IEnumerable<CategoryModel> ToDto(this IEnumerable<CategoryEntity> categoryEntity) => categoryEntity.Select(x => x.ToDto());
 
         public static CategoryModel ToDto(this CategoryEntity categoryEntity)
         {

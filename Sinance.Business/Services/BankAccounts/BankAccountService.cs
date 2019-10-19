@@ -25,10 +25,11 @@ namespace Sinance.Business.Services.BankAccounts
             _authenticationService = authenticationService;
         }
 
-        public async Task<BankAccountModel> CreateBankAccountForCurrentUser(int userId, BankAccountModel model)
+        public async Task<BankAccountModel> CreateBankAccountForCurrentUser(BankAccountModel model)
         {
-            using var unitOfWork = _unitOfWork();
+            var userId = await _authenticationService.GetCurrentUserId();
 
+            using var unitOfWork = _unitOfWork();
             var bankAccounts = await unitOfWork.BankAccountRepository.FindAll(x => x.Name == model.Name && x.UserId == userId);
 
             if (!bankAccounts.Any())
@@ -45,8 +46,10 @@ namespace Sinance.Business.Services.BankAccounts
             }
         }
 
-        public async Task DeleteBankAccountByIdForUser(int userId, int accountId)
+        public async Task DeleteBankAccountByIdForCurrentUser(int accountId)
         {
+            var userId = await _authenticationService.GetCurrentUserId();
+
             using var unitOfWork = _unitOfWork();
 
             var bankAccount = await unitOfWork.BankAccountRepository.FindSingleTracked(x => x.Id == accountId && x.UserId == userId);
@@ -61,8 +64,10 @@ namespace Sinance.Business.Services.BankAccounts
             await unitOfWork.SaveAsync();
         }
 
-        public async Task<IList<BankAccountModel>> GetActiveBankAccountsForUser(int userId)
+        public async Task<IList<BankAccountModel>> GetActiveBankAccountsForCurrentUser()
         {
+            var userId = await _authenticationService.GetCurrentUserId();
+
             using var unitOfWork = _unitOfWork();
 
             var bankAccounts = (await unitOfWork.BankAccountRepository
@@ -74,8 +79,10 @@ namespace Sinance.Business.Services.BankAccounts
             return bankAccounts;
         }
 
-        public async Task<IList<BankAccountModel>> GetAllBankAccountsForUser(int userId)
+        public async Task<IList<BankAccountModel>> GetAllBankAccountsForCurrentUser()
         {
+            var userId = await _authenticationService.GetCurrentUserId();
+
             using var unitOfWork = _unitOfWork();
             var bankAccounts = (await unitOfWork.BankAccountRepository
                 .FindAll(x => x.UserId == userId))
@@ -86,8 +93,10 @@ namespace Sinance.Business.Services.BankAccounts
             return bankAccounts;
         }
 
-        public async Task<BankAccountModel> GetBankAccountByIdForUser(int userId, int bankAccountId)
+        public async Task<BankAccountModel> GetBankAccountByIdForCurrentUser(int bankAccountId)
         {
+            var userId = await _authenticationService.GetCurrentUserId();
+
             using var unitOfWork = _unitOfWork();
 
             var bankAccount = await unitOfWork.BankAccountRepository.FindSingle(x => x.UserId == userId && x.Id == bankAccountId);
@@ -100,8 +109,10 @@ namespace Sinance.Business.Services.BankAccounts
             return bankAccount.ToDto();
         }
 
-        public async Task<BankAccountModel> UpdateBankAccount(int userId, BankAccountModel model)
+        public async Task<BankAccountModel> UpdateBankAccountForCurrentUser(BankAccountModel model)
         {
+            var userId = await _authenticationService.GetCurrentUserId();
+
             using var unitOfWork = _unitOfWork();
 
             var bankAccount = await unitOfWork.BankAccountRepository.FindSingle(x => x.UserId == userId && x.Id == model.Id);

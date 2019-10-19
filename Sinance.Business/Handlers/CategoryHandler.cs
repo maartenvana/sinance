@@ -29,7 +29,7 @@ namespace Sinance.Business.Handlers
 
                 if (transaction.TransactionCategories.All(item => item.CategoryId != categoryId))
                 {
-                    unitOfWork.TransactionCategoryRepository.Insert(new TransactionCategory
+                    unitOfWork.TransactionCategoryRepository.Insert(new TransactionCategoryEntity
                     {
                         TransactionId = transaction.Id,
                         Amount = null,
@@ -97,9 +97,9 @@ namespace Sinance.Business.Handlers
 
                     if (isMatch)
                     {
-                        transaction.TransactionCategories = new List<TransactionCategory>
+                        transaction.TransactionCategories = new List<TransactionCategoryEntity>
                         {
-                            new TransactionCategory
+                            new TransactionCategoryEntity
                             {
                                 CategoryId = mapping.CategoryId,
                                 TransactionId = transaction.Id,

@@ -6,20 +6,20 @@ namespace Sinance.Business.Services.Transactions
 {
     public interface ITransactionService
     {
-        Task<TransactionModel> ClearTransactionCategories(int userId, int transactionId);
+        Task<TransactionModel> ClearTransactionCategoriesForCurrentUser(int transactionId);
 
-        Task<TransactionModel> CreateTransaction(int userId, TransactionModel transactionModel);
+        Task<TransactionModel> CreateTransactionForCurrentUser(TransactionModel transactionModel);
 
-        Task DeleteTransactionForUser(int userId, int transactionId);
+        Task DeleteTransactionForCurrentUser(int transactionId);
 
-        Task<TransactionModel> GetTransactionByIdForUserId(int userId, int transactionId);
+        Task<TransactionModel> GetTransactionByIdForCurrentUser(int transactionId);
 
-        Task<IEnumerable<TransactionModel>> GetTransactionsForBankAccount(int currentUserId, int bankAccountId, int count, int skip);
+        Task<IEnumerable<TransactionModel>> GetTransactionsForBankAccountForCurrentUser(int bankAccountId, int count, int skip);
 
-        Task<IEnumerable<TransactionModel>> GetTransactionsForUserForMonth(int userId, int year, int month);
+        Task<IEnumerable<TransactionModel>> GetTransactionsForMonthForCurrentUser(int year, int month);
 
-        Task<TransactionModel> OverwriteTransactionCategories(int userId, int transactionId, int categoryId);
+        Task<TransactionModel> OverwriteTransactionCategoriesForCurrentUser(int transactionId, int categoryId);
 
-        Task<TransactionModel> UpdateTransaction(int userId, TransactionModel transactionModel);
+        Task<TransactionModel> UpdateTransactionForCurrentUser(TransactionModel transactionModel);
     }
 }

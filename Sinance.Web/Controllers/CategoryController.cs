@@ -24,14 +24,10 @@ namespace Sinance.Controllers
     public class CategoryController : Controller
     {
         private readonly ICategoryService _categoryService;
-        private readonly IAuthenticationService _sessionService;
 
-        public CategoryController(
-            ICategoryService categoryService,
-            IAuthenticationService sessionService)
+        public CategoryController(ICategoryService categoryService)
         {
             _categoryService = categoryService;
-            _sessionService = sessionService;
         }
 
         /// <summary>
@@ -57,11 +53,9 @@ namespace Sinance.Controllers
         [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed", Justification = "Needed for optional parameter from outside")]
         public async Task<IActionResult> EditCategory(int categoryId)
         {
-            var currentUserId = await _sessionService.GetCurrentUserId();
-
             try
             {
-                var category = await _categoryService.GetCategoryByIdForUser(currentUserId, categoryId);
+                var category = await _categoryService.GetCategoryByIdForCurrentUser(categoryId);
                 var availableParentCategories = await CreateAvailableParentCategoriesSelectList(category);
 
                 var model = new UpsertCategoryModel
@@ -85,9 +79,7 @@ namespace Sinance.Controllers
         /// <returns>Index view</returns>
         public async Task<IActionResult> Index()
         {
-            var currentUserId = await _sessionService.GetCurrentUserId();
-
-            var categories = await _categoryService.GetAllCategoriesForUser(currentUserId);
+            var categories = await _categoryService.GetAllCategoriesForCurrentUser();
 
             return View("Index", categories);
         }
@@ -104,11 +96,9 @@ namespace Sinance.Controllers
                 throw new ArgumentOutOfRangeException(nameof(categoryId));
             }
 
-            var currentUserId = await _sessionService.GetCurrentUserId();
-
             try
             {
-                await _categoryService.DeleteCategoryByIdForUser(currentUserId, categoryId);
+                await _categoryService.DeleteCategoryByIdForCurrentUser(categoryId);
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.CategoryRemoved);
             }
             catch (NotFoundException)
@@ -132,13 +122,13 @@ namespace Sinance.Controllers
                 throw new ArgumentOutOfRangeException(nameof(categoryId));
             }
 
-            var currentUserId = await _sessionService.GetCurrentUserId();
-
             try
             {
-                await _categoryService.MapCategoryToTransactions(currentUserId, categoryId, transactionIds);
+                await _categoryService.MapCategoryToTransactionsForCurrentUser(categoryId, transactionIds);
+
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success,
                     ViewBag.Message = Resources.CategoryMappingsAppliedToTransactions);
+
                 return RedirectToAction("EditCategory", new { categoryId });
             }
             catch (NotFoundException)
@@ -159,13 +149,11 @@ namespace Sinance.Controllers
         {
             if (ModelState.IsValid)
             {
-                var currentUserId = await _sessionService.GetCurrentUserId();
-
                 if (model.Id > 0)
                 {
                     try
                     {
-                        await _categoryService.UpdateCategoryForUser(currentUserId, model);
+                        await _categoryService.UpdateCategoryForCurrentUser(model);
                         TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.CategoryUpdated);
                         return RedirectToAction("Index");
                     }
@@ -179,7 +167,7 @@ namespace Sinance.Controllers
                 {
                     try
                     {
-                        await _categoryService.CreateCategoryForUser(currentUserId, model);
+                        await _categoryService.CreateCategoryForCurrentUser(model);
                         TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.CategoryCreated);
                         return RedirectToAction("Index");
                     }
@@ -201,9 +189,7 @@ namespace Sinance.Controllers
         internal async Task<List<SelectListItem>> CreateAvailableParentCategoriesSelectList(CategoryModel category)
         {
             // TODO: Remove SelectListItems, create them inside the view
-            var currentUserId = await _sessionService.GetCurrentUserId();
-
-            var categories = await _categoryService.GetPossibleParentCategoriesForUser(currentUserId, category.Id);
+            var categories = await _categoryService.GetPossibleParentCategoriesForCurrentUser(category.Id);
 
             var availableCategories = new List<SelectListItem>{
                     new SelectListItem {

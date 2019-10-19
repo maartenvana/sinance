@@ -27,16 +27,13 @@ namespace Sinance.Controllers
     {
         private readonly IBankAccountService _bankAccountService;
         private readonly ICategoryService _categoryService;
-        private readonly IAuthenticationService _sessionService;
         private readonly ITransactionService _transactionService;
 
         public AccountOverviewController(
-            IAuthenticationService sessionService,
             ICategoryService categoryService,
             IBankAccountService bankAccountService,
             ITransactionService transactionService)
         {
-            _sessionService = sessionService;
             _categoryService = categoryService;
             _bankAccountService = bankAccountService;
             _transactionService = transactionService;
@@ -65,11 +62,9 @@ namespace Sinance.Controllers
         {
             ActionResult result;
 
-            var currentUserId = await _sessionService.GetCurrentUserId();
-
             try
             {
-                await _transactionService.DeleteTransactionForUser(currentUserId, transactionId);
+                await _transactionService.DeleteTransactionForCurrentUser(transactionId);
 
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.TransactionDeleted);
                 result = RedirectToAction("Index", new { bankAccountId });
@@ -90,12 +85,10 @@ namespace Sinance.Controllers
         /// <returns>Partial view for editing the model</returns>
         public async Task<IActionResult> EditTransaction(int transactionId)
         {
-            var currentUserId = await _sessionService.GetCurrentUserId();
-
             try
             {
-                var transaction = await _transactionService.GetTransactionByIdForUserId(currentUserId, transactionId);
-                var userCategories = await _categoryService.GetAllCategoriesForUser(currentUserId);
+                var transaction = await _transactionService.GetTransactionByIdForCurrentUser(transactionId);
+                var userCategories = await _categoryService.GetAllCategoriesForCurrentUser();
 
                 var availableCategories = new List<SelectListItem>{
                     new SelectListItem {
@@ -134,10 +127,9 @@ namespace Sinance.Controllers
         {
             try
             {
-                var currentUserId = await _sessionService.GetCurrentUserId();
-                var bankAccount = await _bankAccountService.GetBankAccountByIdForUser(currentUserId, bankAccountId);
-                var transactions = await _transactionService.GetTransactionsForBankAccount(currentUserId, bankAccountId, 200, skip: 0);
-                var availableCategories = await _categoryService.GetAllCategoriesForUser(currentUserId);
+                var bankAccount = await _bankAccountService.GetBankAccountByIdForCurrentUser(bankAccountId);
+                var transactions = await _transactionService.GetTransactionsForBankAccountForCurrentUser(bankAccountId, 200, skip: 0);
+                var availableCategories = await _categoryService.GetAllCategoriesForCurrentUser();
 
                 var model = new AccountOverviewModel
                 {
@@ -165,11 +157,9 @@ namespace Sinance.Controllers
         [HttpPost]
         public async Task<IActionResult> QuickChangeTransactionCategory(int transactionId, int categoryId)
         {
-            var currentUserId = await _sessionService.GetCurrentUserId();
-
             try
             {
-                var transaction = await _transactionService.OverwriteTransactionCategories(currentUserId, transactionId, categoryId);
+                var transaction = await _transactionService.OverwriteTransactionCategoriesForCurrentUser(transactionId, categoryId);
 
                 return PartialView("TransactionEditRow", transaction);
             }
@@ -191,11 +181,9 @@ namespace Sinance.Controllers
         [HttpPost]
         public async Task<IActionResult> QuickRemoveTransactionCategory(int transactionId)
         {
-            var currentUserId = await _sessionService.GetCurrentUserId();
-
             try
             {
-                var transaction = await _transactionService.ClearTransactionCategories(currentUserId, transactionId);
+                var transaction = await _transactionService.ClearTransactionCategoriesForCurrentUser(transactionId);
 
                 return PartialView("TransactionEditRow", transaction);
             }
@@ -226,11 +214,9 @@ namespace Sinance.Controllers
             {
                 try
                 {
-                    var currentUserId = await _sessionService.GetCurrentUserId();
-
                     if (model.Id > 0)
                     {
-                        await _transactionService.UpdateTransaction(currentUserId, model);
+                        await _transactionService.UpdateTransactionForCurrentUser(model);
 
                         return Json(new SinanceJsonResult
                         {
@@ -239,7 +225,7 @@ namespace Sinance.Controllers
                     }
                     else
                     {
-                        await _transactionService.CreateTransaction(currentUserId, model);
+                        await _transactionService.CreateTransactionForCurrentUser(model);
 
                         return Json(new SinanceJsonResult
                         {

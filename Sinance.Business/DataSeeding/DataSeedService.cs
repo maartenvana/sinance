@@ -189,9 +189,9 @@ namespace Sinance.Business.DataSeeding
                     BankAccount = primaryChecking,
                     Description = "Savings deposit",
                     Date = startDate.AddMonths(-i),
-                    TransactionCategories = new List<TransactionCategory>
+                    TransactionCategories = new List<TransactionCategoryEntity>
                     {
-                        new TransactionCategory
+                        new TransactionCategoryEntity
                         {
                             Amount = amount,
                             Category = internalCashflowCategory
@@ -210,9 +210,9 @@ namespace Sinance.Business.DataSeeding
                     BankAccount = savingsAccount,
                     Description = "Savings deposit",
                     Date = startDate.AddMonths(-i),
-                    TransactionCategories = new List<TransactionCategory>
+                    TransactionCategories = new List<TransactionCategoryEntity>
                     {
-                        new TransactionCategory
+                        new TransactionCategoryEntity
                         {
                             Amount = amount,
                             Category = internalCashflowCategory
@@ -253,9 +253,9 @@ namespace Sinance.Business.DataSeeding
                     BankAccount = bankAccount,
                     Description = transactionDescription,
                     Date = startDate.AddMonths(-i),
-                    TransactionCategories = new List<TransactionCategory>
+                    TransactionCategories = new List<TransactionCategoryEntity>
                     {
-                        new TransactionCategory
+                        new TransactionCategoryEntity
                         {
                             Amount = amount,
                             Category = category
@@ -303,9 +303,9 @@ namespace Sinance.Business.DataSeeding
                     BankAccount = bankAccount,
                     Description = transactionDescription,
                     Date = transactionDate,
-                    TransactionCategories = new List<TransactionCategory>
+                    TransactionCategories = new List<TransactionCategoryEntity>
                     {
-                        new TransactionCategory
+                        new TransactionCategoryEntity
                         {
                             Amount = amount,
                             Category = category
@@ -349,9 +349,9 @@ namespace Sinance.Business.DataSeeding
                     BankAccount = bankAccount,
                     Description = transactionDescription,
                     Date = startDate.AddDays(-7 * i),
-                    TransactionCategories = new List<TransactionCategory>
+                    TransactionCategories = new List<TransactionCategoryEntity>
                     {
-                        new TransactionCategory
+                        new TransactionCategoryEntity
                         {
                             Amount = amount,
                             Category = category

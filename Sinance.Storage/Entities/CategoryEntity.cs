@@ -56,7 +56,7 @@ namespace Sinance.Storage.Entities
         /// Transaction categories
         /// </summary>
         [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<TransactionCategory> TransactionCategories { get; set; }
+        public virtual ICollection<TransactionCategoryEntity> TransactionCategories { get; set; }
 
         /// <summary>
         /// Default constructor
@@ -66,7 +66,7 @@ namespace Sinance.Storage.Entities
         public CategoryEntity()
         {
             ChildCategories = new HashSet<CategoryEntity>();
-            TransactionCategories = new HashSet<TransactionCategory>();
+            TransactionCategories = new HashSet<TransactionCategoryEntity>();
             CategoryMappings = new HashSet<CategoryMappingEntity>();
         }
     }

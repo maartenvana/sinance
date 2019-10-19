@@ -1,18 +1,17 @@
-﻿using Sinance.Business.Handlers;
-using Sinance.Business.Services;
-using Sinance.Domain.Entities;
-using Sinance.Web.Model;
-using Sinance.Web;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Sinance.Business.Handlers;
+using Sinance.Business.Services.Authentication;
+using Sinance.Business.Services.BankAccounts;
+using Sinance.Communication.BankAccount;
+using Sinance.Web;
+using Sinance.Web.Helper;
+using Sinance.Web.Model;
 using System;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
-using Sinance.Web.Helper;
-using Sinance.Storage;
-using Sinance.Business.Services.Authentication;
 
 namespace Sinance.Controllers
 {
@@ -23,19 +22,10 @@ namespace Sinance.Controllers
     public class ImportController : Controller
     {
         private readonly IBankAccountService _bankAccountService;
-        private readonly SelectListHelper _selectListHelper;
-        private readonly IAuthenticationService _sessionService;
-        private readonly Func<IUnitOfWork> _unitOfWork;
 
         public ImportController(
-            Func<IUnitOfWork> unitOfWork,
-            SelectListHelper selectListHelper,
-            IAuthenticationService sessionService,
             IBankAccountService bankAccountService)
         {
-            _unitOfWork = unitOfWork;
-            _selectListHelper = selectListHelper;
-            _sessionService = sessionService;
             _bankAccountService = bankAccountService;
         }
 
@@ -49,10 +39,9 @@ namespace Sinance.Controllers
         public async Task<IActionResult> Import(IFormFile file, ImportModel model)
         {
             if (file == null)
+            {
                 throw new ArgumentNullException(nameof(file));
-
-            if (model == null)
-                throw new ArgumentNullException(nameof(model));
+            }
 
             // Clear the previous cache (if it exists)
             FinanceCacheHandler.ClearCache(await ConstructImportModelCacheKey());
@@ -190,7 +179,8 @@ namespace Sinance.Controllers
             if (model == null)
                 throw new ArgumentNullException(nameof(model));
 
-            model.AvailableAccounts = await _selectListHelper.CreateActiveBankAccountSelectList(BankAccountType.Checking);
+            var bankAccounts = await _bankAccountService.GetActiveBankAccountsForCurrentUser();
+            model.AvailableAccounts = SelectListHelper.CreateActiveBankAccountSelectList(bankAccounts, BankAccountType.Checking).ToList();
 
             return View("StartImport", model);
         }

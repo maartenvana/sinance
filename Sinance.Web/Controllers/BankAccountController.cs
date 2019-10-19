@@ -20,14 +20,10 @@ namespace Sinance.Controllers
     [Authorize]
     public class BankAccountController : Controller
     {
-        private readonly IAuthenticationService _authenticationService;
         private readonly IBankAccountService _bankAccountService;
 
-        public BankAccountController(
-            IAuthenticationService authenticationService,
-            IBankAccountService bankAccountService)
+        public BankAccountController(IBankAccountService bankAccountService)
         {
-            _authenticationService = authenticationService;
             _bankAccountService = bankAccountService;
         }
 
@@ -56,8 +52,7 @@ namespace Sinance.Controllers
 
             try
             {
-                var currentUserId = await _authenticationService.GetCurrentUserId();
-                var bankAccount = await _bankAccountService.GetBankAccountByIdForUser(currentUserId, accountId);
+                var bankAccount = await _bankAccountService.GetBankAccountByIdForCurrentUser(accountId);
                 return View("UpsertAccount", bankAccount);
             }
             catch (NotFoundException)
@@ -73,8 +68,7 @@ namespace Sinance.Controllers
         /// <returns>Default view</returns>
         public async Task<IActionResult> Index()
         {
-            var currentUserId = await _authenticationService.GetCurrentUserId();
-            var bankAccounts = await _bankAccountService.GetAllBankAccountsForUser(currentUserId);
+            var bankAccounts = await _bankAccountService.GetAllBankAccountsForCurrentUser();
 
             return View(bankAccounts);
         }
@@ -93,8 +87,7 @@ namespace Sinance.Controllers
 
             try
             {
-                var currentUserId = await _authenticationService.GetCurrentUserId();
-                await _bankAccountService.DeleteBankAccountByIdForUser(currentUserId, accountId);
+                await _bankAccountService.DeleteBankAccountByIdForCurrentUser(accountId);
 
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success,
                     ViewBag.Message = Resources.BankAccountRemoved);
@@ -124,18 +117,16 @@ namespace Sinance.Controllers
 
             if (ModelState.IsValid)
             {
-                var currentUserId = await _authenticationService.GetCurrentUserId();
-
                 try
                 {
                     if (model.Id > 0)
                     {
-                        await _bankAccountService.UpdateBankAccount(currentUserId, model);
+                        await _bankAccountService.UpdateBankAccountForCurrentUser(model);
                         TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.BankAccountCreated);
                     }
                     else
                     {
-                        await _bankAccountService.CreateBankAccountForCurrentUser(currentUserId, model);
+                        await _bankAccountService.CreateBankAccountForCurrentUser(model);
                         TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.BankAccountUpdated);
                     }
                 }

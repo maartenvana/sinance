@@ -39,7 +39,7 @@
                             }
                         },
                         xAxis: {
-                            categories: response.objectData.graphCategories
+                            categories: response.objectData.GraphCategories
                         },
                         credits: {
                             enabled: false
@@ -51,7 +51,7 @@
                             headerFormat: '',
                             pointFormat: '<span style="color:{point.color}">\u25CF</span> {series.name}: <b>€ {point.y:.2f}</b><br />'
                         },
-                        series: response.objectData.graphData
+                        series: response.objectData.GraphData
                     });
                 }
             });
@@ -61,7 +61,7 @@
 
 <div class="row">
     <div class="col-lg-12">
-        <h1 class="page-header">@Model.Name @Html.ActionLink("Edit", "EditCustomGraphReport", "Report", new { @reportId = Model.Id }, new { @class = "pull-right btn btn-default"})</h1>
+        <h1 class="page-header">@Model.Name @Html.ActionLink("Edit", "EditCustomGraphReport", "Report", new { @reportId = Model.Id }, new { @class = "pull-right btn btn-default" })</h1>
     </div>
 </div>
 

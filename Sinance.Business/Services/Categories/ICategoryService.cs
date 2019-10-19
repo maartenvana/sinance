@@ -6,18 +6,18 @@ namespace Sinance.Business.Services.Categories
 {
     public interface ICategoryService
     {
-        Task<CategoryModel> CreateCategoryForUser(int userId, CategoryModel categoryModel);
+        Task<CategoryModel> CreateCategoryForCurrentUser(CategoryModel categoryModel);
 
-        Task DeleteCategoryByIdForUser(int userId, int categoryId);
+        Task DeleteCategoryByIdForCurrentUser(int categoryId);
 
-        Task<IEnumerable<CategoryModel>> GetAllCategoriesForUser(int userId);
+        Task<IEnumerable<CategoryModel>> GetAllCategoriesForCurrentUser();
 
-        Task<CategoryModel> GetCategoryByIdForUser(int userId, int categoryId);
+        Task<CategoryModel> GetCategoryByIdForCurrentUser(int categoryId);
 
-        Task<IEnumerable<CategoryModel>> GetPossibleParentCategoriesForUser(int userId, int categoryId);
+        Task<IEnumerable<CategoryModel>> GetPossibleParentCategoriesForCurrentUser(int categoryId);
 
-        Task MapCategoryToTransactions(int userId, int categoryId, IEnumerable<int> transactionIds);
+        Task MapCategoryToTransactionsForCurrentUser(int categoryId, IEnumerable<int> transactionIds);
 
-        Task<CategoryModel> UpdateCategoryForUser(int userId, CategoryModel categoryModel);
+        Task<CategoryModel> UpdateCategoryForCurrentUser(CategoryModel categoryModel);
     }
 }

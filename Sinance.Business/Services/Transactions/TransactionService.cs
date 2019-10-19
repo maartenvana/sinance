@@ -1,6 +1,7 @@
 ﻿using Sinance.Business.Exceptions;
 using Sinance.Business.Extensions;
 using Sinance.Business.Handlers;
+using Sinance.Business.Services.Authentication;
 using Sinance.Communication.Model.Transaction;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
@@ -12,15 +13,21 @@ namespace Sinance.Business.Services.Transactions
 {
     public class TransactionService : ITransactionService
     {
+        private readonly IAuthenticationService _authenticationService;
         private readonly Func<IUnitOfWork> _unitOfWork;
 
-        public TransactionService(Func<IUnitOfWork> unitOfWork)
+        public TransactionService(
+            Func<IUnitOfWork> unitOfWork,
+            IAuthenticationService authenticationService)
         {
             _unitOfWork = unitOfWork;
+            _authenticationService = authenticationService;
         }
 
-        public async Task<TransactionModel> ClearTransactionCategories(int userId, int transactionId)
+        public async Task<TransactionModel> ClearTransactionCategoriesForCurrentUser(int transactionId)
         {
+            var userId = await _authenticationService.GetCurrentUserId();
+
             using var unitOfWork = _unitOfWork();
 
             var transaction = await unitOfWork.TransactionRepository.FindSingleTracked(item => item.Id == transactionId &&
@@ -40,8 +47,10 @@ namespace Sinance.Business.Services.Transactions
             return transaction.ToDto();
         }
 
-        public async Task<TransactionModel> CreateTransaction(int userId, TransactionModel transactionModel)
+        public async Task<TransactionModel> CreateTransactionForCurrentUser(TransactionModel transactionModel)
         {
+            var userId = await _authenticationService.GetCurrentUserId();
+
             using var unitOfWork = _unitOfWork();
 
             var bankAccount = unitOfWork.BankAccountRepository.FindSingle(x => x.UserId == userId && x.Id == transactionModel.BankAccountId);
@@ -61,8 +70,10 @@ namespace Sinance.Business.Services.Transactions
             return transactionEntity.ToDto();
         }
 
-        public async Task DeleteTransactionForUser(int userId, int transactionId)
+        public async Task DeleteTransactionForCurrentUser(int transactionId)
         {
+            var userId = await _authenticationService.GetCurrentUserId();
+
             using var unitOfWork = _unitOfWork();
             var transaction = await unitOfWork.TransactionRepository.FindSingleTracked(item => item.Id == transactionId && item.UserId == userId);
 
@@ -82,8 +93,10 @@ namespace Sinance.Business.Services.Transactions
             await TransactionHandler.UpdateCurrentBalance(unitOfWork, transaction.BankAccountId, userId);
         }
 
-        public async Task<TransactionModel> GetTransactionByIdForUserId(int userId, int transactionId)
+        public async Task<TransactionModel> GetTransactionByIdForCurrentUser(int transactionId)
         {
+            var userId = await _authenticationService.GetCurrentUserId();
+
             using var unitOfWork = _unitOfWork();
 
             var transaction = await unitOfWork.TransactionRepository.FindSingle(item => item.Id == transactionId && item.UserId == userId);
@@ -96,25 +109,29 @@ namespace Sinance.Business.Services.Transactions
             return transaction.ToDto();
         }
 
-        public async Task<IEnumerable<TransactionModel>> GetTransactionsForBankAccount(int currentUserId, int bankAccountId, int count, int skip)
+        public async Task<IEnumerable<TransactionModel>> GetTransactionsForBankAccountForCurrentUser(int bankAccountId, int count, int skip)
         {
+            var userId = await _authenticationService.GetCurrentUserId();
+
             using var unitOfWork = _unitOfWork();
 
             var transactions = await unitOfWork.TransactionRepository
-                .FindTopDescending(item => item.BankAccount.Id == bankAccountId && item.UserId == currentUserId,
+                .FindTopDescending(item => item.BankAccount.Id == bankAccountId && item.UserId == userId,
                                     orderByDescending: x => x.Date,
                                     count: count,
                                     skip: skip,
                                     includeProperties: new string[] {
                                         nameof(TransactionEntity.TransactionCategories),
-                                        $"{nameof(TransactionEntity.TransactionCategories)}.{nameof(TransactionCategory.Category)}"
+                                        $"{nameof(TransactionEntity.TransactionCategories)}.{nameof(TransactionCategoryEntity.Category)}"
                                     });
 
             return transactions.ToDto();
         }
 
-        public async Task<IEnumerable<TransactionModel>> GetTransactionsForUserForMonth(int userId, int year, int month)
+        public async Task<IEnumerable<TransactionModel>> GetTransactionsForMonthForCurrentUser(int year, int month)
         {
+            var userId = await _authenticationService.GetCurrentUserId();
+
             using var unitOfWork = _unitOfWork();
 
             var transactions = await unitOfWork.TransactionRepository.FindAll(findQuery: x =>
@@ -129,8 +146,10 @@ namespace Sinance.Business.Services.Transactions
             return transactions.ToDto();
         }
 
-        public async Task<TransactionModel> OverwriteTransactionCategories(int userId, int transactionId, int categoryId)
+        public async Task<TransactionModel> OverwriteTransactionCategoriesForCurrentUser(int transactionId, int categoryId)
         {
+            var userId = await _authenticationService.GetCurrentUserId();
+
             using var unitOfWork = _unitOfWork();
 
             var transaction = await unitOfWork.TransactionRepository.FindSingleTracked(item => item.Id == transactionId &&
@@ -154,7 +173,7 @@ namespace Sinance.Business.Services.Transactions
             unitOfWork.TransactionCategoryRepository.DeleteRange(transaction.TransactionCategories);
 
             // Insert the new link
-            unitOfWork.TransactionCategoryRepository.Insert(new TransactionCategory
+            unitOfWork.TransactionCategoryRepository.Insert(new TransactionCategoryEntity
             {
                 TransactionId = transaction.Id,
                 CategoryId = category.Id
@@ -165,8 +184,10 @@ namespace Sinance.Business.Services.Transactions
             return transaction.ToDto();
         }
 
-        public async Task<TransactionModel> UpdateTransaction(int userId, TransactionModel transactionModel)
+        public async Task<TransactionModel> UpdateTransactionForCurrentUser(TransactionModel transactionModel)
         {
+            var userId = await _authenticationService.GetCurrentUserId();
+
             using var unitOfWork = _unitOfWork();
 
             var existingTransaction = await unitOfWork.TransactionRepository.FindSingleTracked(item =>

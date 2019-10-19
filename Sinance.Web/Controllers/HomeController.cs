@@ -40,12 +40,11 @@ namespace Sinance.Controllers
         /// <returns>View containing the overview</returns>
         public async Task<IActionResult> Index()
         {
-            var currentUserId = await _sessionService.GetCurrentUserId();
-            var bankAccounts = await _bankAccountService.GetActiveBankAccountsForUser(currentUserId);
+            var bankAccounts = await _bankAccountService.GetActiveBankAccountsForCurrentUser();
 
             var monthYearDate = DateTime.Now.AddMonths(-1);
 
-            var transactions = await _transactionService.GetTransactionsForUserForMonth(currentUserId, monthYearDate.Year, monthYearDate.Month);
+            var transactions = await _transactionService.GetTransactionsForMonthForCurrentUser(monthYearDate.Year, monthYearDate.Month);
 
             // No need to sort this list, we loop through it by month numbers
             var totalProfitLossLastMonth = transactions.Where(x => bankAccounts.Single(y => y.Id == x.BankAccountId).IncludeInProfitLossGraph == true).Sum(x => x.Amount);

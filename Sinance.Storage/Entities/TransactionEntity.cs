@@ -74,7 +74,7 @@ namespace Sinance.Storage.Entities
         /// Transaction categories
         /// </summary>
         [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<TransactionCategory> TransactionCategories { get; set; }
+        public virtual ICollection<TransactionCategoryEntity> TransactionCategories { get; set; }
 
         /// <summary>
         /// Default constructors
@@ -82,7 +82,7 @@ namespace Sinance.Storage.Entities
         [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "EF needs virtual collections for lazy loading")]
         public TransactionEntity()
         {
-            TransactionCategories = new HashSet<TransactionCategory>();
+            TransactionCategories = new HashSet<TransactionCategoryEntity>();
         }
 
         /// <summary>

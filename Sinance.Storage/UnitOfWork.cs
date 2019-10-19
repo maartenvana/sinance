@@ -15,7 +15,7 @@ namespace Sinance.Storage
 
         public SinanceContext Context { get; }
 
-        public IGenericRepository<CustomReportCategory> CustomReportCategoryRepository { get; }
+        public IGenericRepository<CustomReportCategoryEntity> CustomReportCategoryRepository { get; }
 
         public IGenericRepository<CustomReportEntity> CustomReportRepository { get; }
 
@@ -23,7 +23,7 @@ namespace Sinance.Storage
 
         public IGenericRepository<ImportMappingEntity> ImportMappingRepository { get; }
 
-        public IGenericRepository<TransactionCategory> TransactionCategoryRepository { get; }
+        public IGenericRepository<TransactionCategoryEntity> TransactionCategoryRepository { get; }
 
         public IGenericRepository<TransactionEntity> TransactionRepository { get; }
 
@@ -35,11 +35,11 @@ namespace Sinance.Storage
             IGenericRepository<BankAccountEntity> bankAccountRepository,
             IGenericRepository<CategoryEntity> categorieRepository,
             IGenericRepository<CategoryMappingEntity> categoryMappingRepository,
-            IGenericRepository<CustomReportCategory> customReportCategorieRepository,
+            IGenericRepository<CustomReportCategoryEntity> customReportCategorieRepository,
             IGenericRepository<CustomReportEntity> customReportRepository,
             IGenericRepository<ImportBankEntity> importBankRepository,
             IGenericRepository<ImportMappingEntity> importMappingRepository,
-            IGenericRepository<TransactionCategory> transactionCategorieRepository,
+            IGenericRepository<TransactionCategoryEntity> transactionCategorieRepository,
             IGenericRepository<TransactionEntity> transactionRepository)
         {
             Context = context;

@@ -8,25 +8,5 @@ Simple finances
 # Please Note
 This was a private project from 2014 and was started because of my discontent with existing "Home finance" solutions. This project runs fine and suits my needs but is in no way to be called "good software". It has recently been ported to .NET Core to be run inside of a container but there still is alot to do.
 
-# To-do
-A general list of things that really need doing, in order of necessity:
-
-Version 2.0:
-- Reorganize backend code in logical sections
-  - Refactor code from controllers to services
-- (re)Add unit tests
-- Incorporate default (ING/ABN AMRO) import rules in the software
-- Translate all dutch texts to english
-- Create instructions to run the software
-
-Version 3.0:
-- Rebuild/update front-end
-  - Update the javascript libraries
-  - Split up big pages/sections to components?
-- Add predictions/planning
-
-Other If I ever run out of things to do:
-- Multilanguage support
-- Add support to import any kind of CSV/TXT file for transactions
-
-All the details will be in the issue tracker
+# Road to V2.0
+I'm planning to work on some additional features such as: Planning/Budgeting/Forecasting and upgrading the Front-end to be more mobile friendly (and more friendly in general). But first The codebase needs to be updated and improved, this is more of a learning project for myself to do more MVC/Razor (Pages) type of things instead of slapping a SPA framework on top of it.

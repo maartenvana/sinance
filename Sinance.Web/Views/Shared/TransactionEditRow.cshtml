@@ -1,8 +1,8 @@
 ﻿@using System
 @using System.Linq
-@using Sinance.Domain.Entities;
+@using Sinance.Communication.Model.Transaction
 
-@model Transaction
+@model TransactionModel
 
 <tr id="TransactionRow@(Model.Id)">
     <td class="dateColumn">
@@ -12,14 +12,14 @@
         @Model.Name
     </td>
     <td class="categoryColumn">
-        <a id="transactionCategory@(Model.Id)" tabindex="0" class="transactionCategoryBox" onclick="SetSelectedTransaction(@Model.Id, [@string.Join(",", Model.TransactionCategories.Select(item => item.CategoryId))])">
-            @foreach (TransactionCategory transactionCategory in Model.TransactionCategories)
+        <a id="transactionCategory@(Model.Id)" tabindex="0" class="transactionCategoryBox" onclick="SetSelectedTransaction(@Model.Id, [@string.Join(",", Model.Categories.Select(item => item.CategoryId))])">
+            @foreach (var transactionCategory in Model.Categories)
             {
                 int width = 50;
 
-                if (Model.TransactionCategories.Count() > 1)
+                if (Model.Categories.Count() > 1)
                 {
-                    width = (int) Math.Round(((transactionCategory.Amount ?? 1) / Model.Amount * 50));
+                    width = (int)Math.Round(((transactionCategory.Amount ?? 1) / Model.Amount * 50));
                     if (width < 0)
                     {
                         // Invert if this was a negative width
@@ -27,8 +27,8 @@
                     }
                 }
 
-                string style = string.Format("width:{0}px;background-color:{1};", width, transactionCategory.Category.ColorCode);
-            <div class="transactionCategoryFillBox" style="@style"></div>
+                string style = string.Format("width:{0}px;background-color:{1};", width, transactionCategory.ColorCode);
+                <div class="transactionCategoryFillBox" style="@style"></div>
             }
         </a>
     </td>

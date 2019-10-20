@@ -1,4 +1,6 @@
-﻿@model Sinance.Web.Model.BankAccountModel
+﻿@using Sinance.Communication.Model.BankAccount
+
+@model BankAccountModel
 @{
     ViewBag.Title = "AddAccount";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -40,7 +42,7 @@
                     @Html.ValidationMessageFor(item => item.StartBalance)
                     <br />
                     @Html.LabelFor(item => item.AccountType):
-                    <select asp-for="AccountType" asp-items="@Html.GetEnumSelectList<Sinance.Domain.Entities.BankAccountType>()" class="form-control">
+                    <select asp-for="AccountType" asp-items="@Html.GetEnumSelectList<BankAccountType>()" class="form-control">
                         <option>Selecteer een type</option>
                     </select>
                     @Html.ValidationMessageFor(item => item.AccountType)

@@ -1,4 +1,6 @@
 ﻿@using Sinance.Web.Model
+@using Sinance.Communication.Model.Import
+@using Sinance.Communication.Model.CategoryMapping
 
 @model CategoryMappingModel
 
@@ -18,50 +20,50 @@
 @if (Model != null)
 {
 
-<form asp-controller="CategoryMapping" asp-action="UpsertCategoryMapping" data-ajax="true" data-ajax-complete="SaveCompleted" data-ajax-method="POST">
-    <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-        <h4 class="modal-title" id="myModalLabel">Transactie</h4>
-    </div>
-    <div class="modal-body">
-        @Html.HiddenFor(item => item.Id)
-        @Html.HiddenFor(item => item.CategoryId)
-        @Html.HiddenFor(item => item.CategoryName)
+    <form asp-controller="CategoryMapping" asp-action="UpsertCategoryMapping" data-ajax="true" data-ajax-complete="SaveCompleted" data-ajax-method="POST">
+        <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <h4 class="modal-title" id="myModalLabel">Transactie</h4>
+        </div>
+        <div class="modal-body">
+            @Html.HiddenFor(item => item.Id)
+            @Html.HiddenFor(item => item.CategoryId)
+            @Html.HiddenFor(item => item.CategoryName)
 
-        @Html.ValidationSummary(true)
+            @Html.ValidationSummary(true)
 
-        <table class="table">
-            <tbody>
-                <tr>
-                    <th>@Html.LabelFor(item => item.CategoryName)</th>
-                    <td>
-                        @Html.DisplayTextFor(item => item.CategoryName)
-                    </td>
-                </tr>
-                <tr>
-                    <th>
-                        Kolom
-                    </th>
-                    <td>
-                        @Html.DropDownListFor(item => item.ColumnTypeId, Html.GetEnumSelectList(typeof(Sinance.Domain.Entities.ColumnType)))
-                        @Html.ValidationMessageFor(item => item.ColumnTypeId)
-                    </td>
-                </tr>
-                <tr>
-                    <th>
-                        Controleer op
-                    </th>
-                    <td>
-                        @Html.TextBoxFor(item => item.MatchValue)
-                        @Html.ValidationMessageFor(item => item.MatchValue)
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-    <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Annuleren</button>
-        <button type="submit" class="btn btn-primary">Opslaan</button>
-    </div>
-</form>
+            <table class="table">
+                <tbody>
+                    <tr>
+                        <th>@Html.LabelFor(item => item.CategoryName)</th>
+                        <td>
+                            @Html.DisplayTextFor(item => item.CategoryName)
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Kolom
+                        </th>
+                        <td>
+                            @Html.DropDownListFor(item => item.ColumnTypeId, Html.GetEnumSelectList(typeof(ColumnType)))
+                            @Html.ValidationMessageFor(item => item.ColumnTypeId)
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Controleer op
+                        </th>
+                        <td>
+                            @Html.TextBoxFor(item => item.MatchValue)
+                            @Html.ValidationMessageFor(item => item.MatchValue)
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Annuleren</button>
+            <button type="submit" class="btn btn-primary">Opslaan</button>
+        </div>
+    </form>
 }

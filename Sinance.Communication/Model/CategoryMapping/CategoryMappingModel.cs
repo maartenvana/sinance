@@ -14,6 +14,11 @@ namespace Sinance.Communication.Model.CategoryMapping
         public int CategoryId { get; set; }
 
         /// <summary>
+        /// Category id
+        /// </summary>
+        public string CategoryName { get; set; }
+
+        /// <summary>
         /// Column type id
         /// </summary>
         [Display(Name = "Kolom")]

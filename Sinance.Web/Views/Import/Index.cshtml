@@ -1,5 +1,6 @@
-﻿@using Sinance.Domain.Entities
-@model Sinance.Web.Model.ImportModel
+﻿@using Sinance.Communication.Model.Import
+
+@model ImportModel
 
 <h2>Bestand importeren</h2>
 
@@ -13,17 +14,17 @@
 
 @using (Html.BeginForm("StartImport", "Import", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
-<div class="panel panel-default">
-    <div class="panel-heading">Kies uw bank</div>
-    <div class="panel-body">
-        @Html.HiddenFor(item => item.ImportBankId)
+    <div class="panel panel-default">
+        <div class="panel-heading">Kies uw bank</div>
+        <div class="panel-body">
+            @Html.HiddenFor(item => item.ImportBankId)
 
-        @foreach (ImportBank importBank in Model.AvailableImportBanks)
+            @foreach (var importBank in Model.AvailableImportBanks)
             {
-        <p>
-            <button class="btn btn-primary" onclick="SetImportBank('@(importBank.Id)') ">@importBank.Name</button>
-        </p>
+                <p>
+                    <button class="btn btn-primary" onclick="SetImportBank('@(importBank.Id)') ">@importBank.Name</button>
+                </p>
             }
+        </div>
     </div>
-</div>
 }

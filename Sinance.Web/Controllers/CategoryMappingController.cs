@@ -39,7 +39,7 @@ namespace Sinance.Controllers
         {
             try
             {
-                var categoryModel = _categoryService.GetCategoryByIdForCurrentUser(categoryId);
+                var categoryModel = await _categoryService.GetCategoryByIdForCurrentUser(categoryId);
 
                 return PartialView("UpsertCategoryMapping", categoryModel);
             }

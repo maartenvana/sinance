@@ -1,16 +1,21 @@
 ﻿using Sinance.Communication.Model.CategoryMapping;
 using Sinance.Storage.Entities;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Sinance.Business.Extensions
 {
     public static class CategoryMappingExtensions
     {
+        public static List<CategoryMappingModel> ToDto(this List<CategoryMappingEntity> entities) => entities.Select(x => x.ToDto()).ToList();
+
         public static CategoryMappingModel ToDto(this CategoryMappingEntity entity)
         {
             return new CategoryMappingModel
             {
                 Id = entity.Id,
                 CategoryId = entity.CategoryId,
+                CategoryName = entity.Category.Name,
                 MatchValue = entity.MatchValue,
                 ColumnTypeId = entity.ColumnTypeId
             };

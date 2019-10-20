@@ -65,7 +65,7 @@ namespace Sinance.Business.Calculations
             var uncategorizedTransactionsThisMonth = transactions.Where(item =>
                 item.TransactionCategories.Count == 0 &&
                 item.Date < nextMonthStart &&
-                item.Date >= startMonth).ToDto().ToList();
+                item.Date >= startMonth).ToList().ToDto();
 
             return new BiMonthlyIncomeReportModel
             {

@@ -1,10 +1,8 @@
 ﻿@using System
 @using System.Globalization
 @using System.Linq
-@using Sinance.Domain.Entities
-@using Sinance.Web.Model
 
-@model DashboardModel
+@model DashboardViewModel
 
 @section scripts
     {
@@ -310,7 +308,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach (Transaction transaction in Model.BiggestExpenses)
+                        @foreach (var transaction in Model.BiggestExpenses)
                         {
                             <tr>
                                 <td style="text-wrap:none;white-space:nowrap;">@transaction.Date.ToString("dd-MM-yyyy")</td>

@@ -1,4 +1,6 @@
-﻿@model Sinance.Web.Model.ExpensesModel
+﻿@using Sinance.Communication.Model.StandardReport.Expense
+
+@model BiMonthlyExpenseReportModel
 @{
     ViewBag.Title = "ExpensesPerCategory";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -40,7 +42,7 @@
     <div class="col-lg-12">
         <div class="panel panel-default">
             <div class="panel-heading">
-                Uitgaven zonder categorie voor <strong>@Html.DisplayFor(item => item.RegularBimonthlyExpenseReport.ThisMonthDate)</strong>
+                Uitgaven zonder categorie voor <strong>@Html.DisplayFor(item => item.RegularBimonthlyExpenseReport.SecondMonthDate)</strong>
             </div>
             <div class="panel-body">
                 @await Html.PartialAsync("TransactionsSimpleTable", Model.UncategorizedTransactionsThisMonth)

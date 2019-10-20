@@ -7,7 +7,7 @@ namespace Sinance.Business.Extensions
 {
     public static class CustomReportExtensions
     {
-        public static IEnumerable<CustomReportModel> ToDto(this IEnumerable<CustomReportEntity> entities) => entities.Select(x => x.ToDto());
+        public static List<CustomReportModel> ToDto(this List<CustomReportEntity> entities) => entities.Select(x => x.ToDto()).ToList();
 
         public static CustomReportModel ToDto(this CustomReportEntity entity)
         {

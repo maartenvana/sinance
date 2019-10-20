@@ -7,18 +7,27 @@ namespace Sinance.Business.Extensions
 {
     public static class CategoryExtensions
     {
-        public static IEnumerable<CategoryModel> ToDto(this IEnumerable<CategoryEntity> categoryEntity) => categoryEntity.Select(x => x.ToDto());
+        public static List<CategoryModel> ToDto(this List<CategoryEntity> categoryEntity) => categoryEntity.Select(x => x.ToDto()).ToList();
 
         public static CategoryModel ToDto(this CategoryEntity categoryEntity)
         {
-            return new CategoryModel
+            var model = new CategoryModel
             {
                 ColorCode = categoryEntity.ColorCode,
                 Id = categoryEntity.Id,
                 IsRegular = categoryEntity.IsRegular,
                 Name = categoryEntity.Name,
-                ParentId = categoryEntity.ParentId
+                ParentId = categoryEntity.ParentId,
+                HasChildren = categoryEntity.ChildCategories?.Any() == true,
+                ParentCategoryIsRegular = categoryEntity.ParentCategory?.IsRegular == true
             };
+
+            if (categoryEntity.CategoryMappings?.Any() == true)
+            {
+                model.Mappings = categoryEntity.CategoryMappings.ToDto();
+            }
+
+            return model;
         }
 
         public static CategoryEntity ToNewEntity(this CategoryModel model, int userId)

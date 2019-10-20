@@ -44,6 +44,8 @@ namespace Sinance.Business.Services.CategoryMappings
 
             await unitOfWork.SaveAsync();
 
+            var insertedCategoryMapping = await FindCategoryMapping(entity.Id, userId, unitOfWork);
+
             return entity.ToDto();
         }
 
@@ -71,8 +73,7 @@ namespace Sinance.Business.Services.CategoryMappings
 
             using var unitOfWork = _unitOfWork();
 
-            var entity = await unitOfWork.CategoryMappingRepository.FindSingle(item =>
-                item.Id == categoryMappingId && item.Category.UserId == userId);
+            var entity = await FindCategoryMapping(categoryMappingId, userId, unitOfWork);
 
             if (entity == null)
             {
@@ -88,8 +89,8 @@ namespace Sinance.Business.Services.CategoryMappings
 
             using var unitOfWork = _unitOfWork();
 
-            var existingCategoryMapping = await unitOfWork.CategoryMappingRepository.FindSingleTracked(item => item.Id == model.Id &&
-                                                                                                                item.Category.UserId == userId);
+            var existingCategoryMapping = await FindCategoryMapping(model.Id, userId, unitOfWork);
+
             if (existingCategoryMapping == null)
             {
                 throw new NotFoundException(nameof(CategoryMappingEntity));
@@ -99,6 +100,17 @@ namespace Sinance.Business.Services.CategoryMappings
             await unitOfWork.SaveAsync();
 
             return existingCategoryMapping.ToDto();
+        }
+
+        private static async Task<CategoryMappingEntity> FindCategoryMapping(int categoryMappingId, int userId, IUnitOfWork unitOfWork)
+        {
+            return await unitOfWork.CategoryMappingRepository.FindSingleTracked(
+                findQuery: item =>
+                    item.Id == categoryMappingId &&
+                    item.Category.UserId == userId,
+                includeProperties: new string[] {
+                    nameof(CategoryMappingEntity.Category)
+                });
         }
     }
 }

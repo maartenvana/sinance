@@ -1,4 +1,6 @@
-﻿@model Sinance.Web.Model.IncomeModel
+﻿@using Sinance.Communication.Model.StandardReport.Income
+
+@model BiMonthlyIncomeReportModel
 
 @{
     ViewBag.Title = "IncomesPerCategory";
@@ -28,7 +30,7 @@
     <div class="col-lg-12">
         <div class="panel panel-default">
             <div class="panel-heading">
-                Inkomsten zonder categorie voor <strong>@Html.DisplayFor(item => item.BimonthlyIncomeReport.ThisMonthDate)</strong>
+                Inkomsten zonder categorie voor <strong>@Html.DisplayFor(item => item.BimonthlyIncomeReport.SecondMonth)</strong>
             </div>
             <div class="panel-body">
                 @await Html.PartialAsync("TransactionsSimpleTable", Model.UncategorizedTransactionsThisMonth)

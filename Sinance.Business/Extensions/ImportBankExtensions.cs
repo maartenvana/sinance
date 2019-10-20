@@ -7,7 +7,7 @@ namespace Sinance.Business.Extensions
 {
     public static class ImportBankExtensions
     {
-        public static IEnumerable<ImportBankModel> ToDto(this IEnumerable<ImportBankEntity> entity) => entity.Select(x => x.ToDto());
+        public static List<ImportBankModel> ToDto(this List<ImportBankEntity> entity) => entity.Select(x => x.ToDto()).ToList();
 
         public static ImportBankModel ToDto(this ImportBankEntity entity)
         {

@@ -73,8 +73,8 @@ namespace Sinance.Business.Services
                         $"{nameof(CustomReportEntity.ReportCategories)}.{nameof(CustomReportCategoryEntity.Category)}"
                     }))
                 .OrderBy(item => item.Name)
-                .ToDto()
-                .ToList();
+                .ToList()
+                .ToDto();
 
             return customReports;
         }

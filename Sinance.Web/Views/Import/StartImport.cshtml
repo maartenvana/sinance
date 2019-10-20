@@ -1,4 +1,6 @@
-﻿@model Sinance.Web.Model.ImportModel
+﻿@using Sinance.Communication.Model.Import
+
+@model ImportModel
 
 @{
     ViewBag.Title = "StartImport";
@@ -8,24 +10,24 @@
 <h2>StartImport</h2>
 @using (Html.BeginForm("Import", "Import", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
-<div class="panel panel-default">
-    <div class="panel-heading">Kies uw bank</div>
-    <div class="panel-body">
-        @Html.HiddenFor(item => item.ImportBankId)
+    <div class="panel panel-default">
+        <div class="panel-heading">Kies uw bank</div>
+        <div class="panel-body">
+            @Html.HiddenFor(item => item.ImportBankId)
 
-        <div class="form-group">
-            @Html.LabelFor(item => item.BankAccountId)
-            <br />
-            @Html.DropDownListFor(item => item.BankAccountId, Model.AvailableAccounts)
-            @Html.ValidationMessageFor(item => item.BankAccountId)
-        </div>
-        <div class="form-group">
-            <label for="file">Bestand ingeven</label>
-            <input type="File" name="file" id="file" value="Bestand kiezen" />
-            <br />
-            <button type="submit" class="btn btn-default">Upload</button>
+            <div class="form-group">
+                @Html.LabelFor(item => item.BankAccountId)
+                <br />
+                @Html.DropDownListFor(item => item.BankAccountId, Model.AvailableAccounts.Select(x => new SelectListItem(x.Name, x.Id.ToString())))
+                @Html.ValidationMessageFor(item => item.BankAccountId)
+            </div>
+            <div class="form-group">
+                <label for="file">Bestand ingeven</label>
+                <input type="File" name="file" id="file" value="Bestand kiezen" />
+                <br />
+                <button type="submit" class="btn btn-default">Upload</button>
+            </div>
         </div>
     </div>
-</div>
 
 }

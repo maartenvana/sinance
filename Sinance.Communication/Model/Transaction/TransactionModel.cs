@@ -23,7 +23,7 @@ namespace Sinance.Communication.Model.Transaction
         /// <summary>
         /// Categories applied to the transaction
         /// </summary>
-        public List<TransactionCategoryModel> Categories { get; set; }
+        public List<TransactionCategoryModel> Categories { get; set; } = new List<TransactionCategoryModel>();
 
         /// <summary>
         /// Date

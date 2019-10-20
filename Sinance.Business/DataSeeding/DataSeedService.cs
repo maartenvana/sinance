@@ -63,6 +63,9 @@ namespace Sinance.Business.DataSeeding
             await DeleteCategoriesAndTransactions(unitOfWork, user);
             InsertCategoriesAndTransactions(unitOfWork, user, mainBankAccount, savingsAccount);
 
+            await DeleteINGImportBank(unitOfWork);
+            InsertINGImportBank(unitOfWork);
+
             await unitOfWork.SaveAsync();
 
             await TransactionHandler.UpdateCurrentBalance(unitOfWork, mainBankAccount.Id, user.Id);
@@ -90,6 +93,13 @@ namespace Sinance.Business.DataSeeding
 
             var existingBankAccounts = await unitOfWork.BankAccountRepository.FindAll(x => x.UserId == user.Id);
             unitOfWork.BankAccountRepository.DeleteRange(existingBankAccounts);
+            await unitOfWork.SaveAsync();
+        }
+
+        private async Task DeleteINGImportBank(IUnitOfWork unitOfWork)
+        {
+            var existingImportBanks = await unitOfWork.ImportBankRepository.FindAll(x => x.Name == "ING");
+            unitOfWork.ImportBankRepository.DeleteRange(existingImportBanks);
             await unitOfWork.SaveAsync();
         }
 
@@ -171,6 +181,69 @@ namespace Sinance.Business.DataSeeding
             unitOfWork.CategoryRepository.Insert(category);
 
             return category;
+        }
+
+        private void InsertINGImportBank(IUnitOfWork unitOfWork)
+        {
+            var importBank = new ImportBankEntity
+            {
+                Delimiter = ",",
+                ImportContainsHeader = true,
+                Name = "ING",
+                ImportMappings = new List<ImportMappingEntity>
+                {
+                    new ImportMappingEntity
+                    {
+                        ColumnIndex = 0,
+                        ColumnName = "Datum",
+                        ColumnTypeId = Communication.Model.Import.ColumnType.Date,
+                        FormatValue = "yyyyMMdd"
+                    },
+                    new ImportMappingEntity
+                    {
+                        ColumnIndex = 1,
+                        ColumnName = "Naam / Omschrijving",
+                        ColumnTypeId = Communication.Model.Import.ColumnType.Name,
+                        FormatValue = null
+                    },
+                    new ImportMappingEntity
+                    {
+                        ColumnIndex = 2,
+                        ColumnName = "Rekening",
+                        ColumnTypeId = Communication.Model.Import.ColumnType.BankAccountFrom,
+                        FormatValue = null
+                    },
+                    new ImportMappingEntity
+                    {
+                        ColumnIndex = 3,
+                        ColumnName = "Tegenrekening",
+                        ColumnTypeId = Communication.Model.Import.ColumnType.DestinationAccount,
+                        FormatValue = null
+                    },
+                    new ImportMappingEntity
+                    {
+                        ColumnIndex = 5,
+                        ColumnName = "Af Bij",
+                        ColumnTypeId = Communication.Model.Import.ColumnType.AddSubtract,
+                        FormatValue = "Af"
+                    },
+                    new ImportMappingEntity
+                    {
+                        ColumnIndex = 6,
+                        ColumnName = "Bedrag",
+                        ColumnTypeId = Communication.Model.Import.ColumnType.Amount,
+                        FormatValue = null
+                    },
+                    new ImportMappingEntity
+                    {
+                        ColumnIndex = 8,
+                        ColumnName = "Mededelingen",
+                        ColumnTypeId = Communication.Model.Import.ColumnType.Description,
+                        FormatValue = null
+                    }
+                }
+            };
+            unitOfWork.ImportBankRepository.Insert(importBank);
         }
 
         private void InsertMonthlySavingTransaction(IUnitOfWork unitOfWork, BankAccountEntity primaryChecking, BankAccountEntity savingsAccount,

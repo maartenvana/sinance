@@ -59,7 +59,7 @@ namespace Sinance.Business.Calculations
             foreach (var parentCategory in allCategories.Where(category =>
                 category.ParentId == null))
             {
-                AddCategoryToBimonthlyIncome(transactions, parentCategory, bimonthlyIncomeReport, startMonth, nextMonthStart, nextMonthStart);
+                AddCategoryToBimonthlyIncome(transactions, parentCategory, bimonthlyIncomeReport, startMonth, nextMonthStart);
             }
 
             var uncategorizedTransactionsThisMonth = transactions.Where(item =>
@@ -75,10 +75,10 @@ namespace Sinance.Business.Calculations
         }
 
         private static void AddCategoryToBimonthlyIncome(IList<TransactionEntity> transactions, CategoryEntity category,
-            BimonthlyIncomeReportItem bimonthlyExpenseReport, DateTime previousMonthStart, DateTime thisMonthStart, DateTime nextMonthStart)
+            BimonthlyIncomeReportItem bimonthlyExpenseReport, DateTime firstMonthStart, DateTime secondMonthStart)
         {
-            var lastMonthParentTransactions = TransactionsForMonth(transactions, category, previousMonthStart, thisMonthStart);
-            var thisMonthParentTransactions = TransactionsForMonth(transactions, category, thisMonthStart, nextMonthStart);
+            var lastMonthParentTransactions = TransactionsForMonth(transactions, category, firstMonthStart.Year, firstMonthStart.Month);
+            var thisMonthParentTransactions = TransactionsForMonth(transactions, category, secondMonthStart.Year, secondMonthStart.Month);
 
             var bimonthlyParentIncome = new BimonthlyIncome
             {
@@ -96,8 +96,8 @@ namespace Sinance.Business.Calculations
             {
                 foreach (var childCategory in category.ChildCategories)
                 {
-                    var lastMonthChildTransactions = TransactionsForMonth(transactions, childCategory, previousMonthStart, thisMonthStart);
-                    var thisMonthChildTransactions = TransactionsForMonth(transactions, childCategory, thisMonthStart, nextMonthStart);
+                    var lastMonthChildTransactions = TransactionsForMonth(transactions, childCategory, firstMonthStart.Year, firstMonthStart.Month);
+                    var thisMonthChildTransactions = TransactionsForMonth(transactions, childCategory, secondMonthStart.Year, secondMonthStart.Month);
 
                     var bimonthlyChildIncome = new BimonthlyIncome
                     {
@@ -142,12 +142,12 @@ namespace Sinance.Business.Calculations
         /// <param name="monthStart">Transactions need to occur after this date</param>
         /// <param name="nextMonthStart">Transactions need to occur before this date</param>
         /// <returns>List of matching transactions</returns>
-        private static IList<TransactionEntity> TransactionsForMonth(IList<TransactionEntity> transactions, CategoryEntity category, DateTime monthStart, DateTime nextMonthStart)
+        private static IList<TransactionEntity> TransactionsForMonth(IList<TransactionEntity> transactions, CategoryEntity category, int year, int month)
         {
             var lastMonthParentTransactions = transactions.Where(
                     item =>
-                        item.Date >= monthStart &&
-                        item.Date < nextMonthStart &&
+                        item.Date.Year == year &&
+                        item.Date.Month == month &&
                         item.TransactionCategories.Any(transactionCategory =>
                             transactionCategory.CategoryId == category.Id)).ToList();
             return lastMonthParentTransactions;

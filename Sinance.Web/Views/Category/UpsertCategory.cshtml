@@ -59,12 +59,12 @@
             colorCodeInput.val("#" + hexColor);
         }
 
-        function RemoveCategoryMapping(categoryMappingId, matchValue) {
+        function RemoveCategoryMapping(categoryMappingId, matchValue, categoryId) {
             bootbox.confirm("Weet u zeker dat u de automatische mapping \"" + matchValue + "\" wilt verwijderen?" +
                 "<br /><br />" +
                 "Alle bijbehorende transacties blijven aan de huidige category verbonden", function (result) {
                     if (result === true) {
-                        window.location.href = "@Url.Action("RemoveCategoryMapping", "CategoryMapping")?categoryMappingId=" + categoryMappingId;
+                        window.location.href = "@Url.Action("RemoveCategoryMapping", "CategoryMapping")?categoryMappingId=" + categoryMappingId + "&categoryId=" + categoryId;
                     }
                 }
             );
@@ -168,7 +168,7 @@
                                                         </td>
                                                         <td>
                                                             <button type="button" class="btn btn-default" data-toggle="modal" data-target="#mappingModal" onclick="selectedAction = 'Edit';selectedMapping = @mapping.Id;">Aanpassen</button>
-                                                            <button type="button" class="btn btn-danger" onclick="RemoveCategoryMapping(@mapping.Id, '@mapping.MatchValue')">Verwijderen</button>
+                                                            <button type="button" class="btn btn-danger" onclick="RemoveCategoryMapping(@mapping.Id, '@mapping.MatchValue', @Model.CategoryModel.Id)">Verwijderen</button>
                                                         </td>
                                                     </tr>
                                                 }
@@ -188,37 +188,36 @@
         </div>
     </div>
 
-    if (Model.CategoryModel.Id > 0)
-    {
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="panel panel-default">
-                    @if (Model.CategoryModel.Mappings.Any())
-                    {
-                        <div class="panel-heading">
-                            Automatische toekenning
-                        </div>
-                        <div class="panel-body">
-                            @await Html.PartialAsync("MappingTablePartial", Model.CategoryModel.Mappings)
-                        </div>
-                        <div class="panel-footer">
-                            @Html.ActionLink("Categorie toekennen aan transacties", "UpdateCategoryToMappedTransactions", new { @categoryId = Model.CategoryModel.Id }, new { @class = "btn btn-primary" })
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="panel-heading">
-                            Automatische toekenning
-                        </div>
-                        <div class="panel-body">
-                            @* TODO: @includeTransactions to partialview/component *@
-                            @Html.ActionLink("Transacties ophalen", "EditCategory", new { @categoryId = Model.CategoryModel.Id, @includeTransactions = true }, new { @class = "btn btn-primary" })
-                        </div>
-                    }
+    @*if (Model.CategoryModel.Id > 0)
+        {
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-default">
+                        @if (Model.CategoryModel.Mappings.Any())
+                        {
+                            <div class="panel-heading">
+                                Automatische toekenning
+                            </div>
+                            <div class="panel-body">
+                                @await Html.PartialAsync("MappingTablePartial", Model.CategoryModel.Mappings)
+                            </div>
+                            <div class="panel-footer">
+                                @Html.ActionLink("Categorie toekennen aan transacties", "UpdateCategoryToMappedTransactions", new { @categoryId = Model.CategoryModel.Id }, new { @class = "btn btn-primary" })
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="panel-heading">
+                                Automatische toekenning
+                            </div>
+                            <div class="panel-body">
+                                @Html.ActionLink("Transacties ophalen", "EditCategory", new { @categoryId = Model.CategoryModel.Id, @includeTransactions = true }, new { @class = "btn btn-primary" })
+                            </div>
+                        }
+                    </div>
                 </div>
             </div>
-        </div>
-    }
+        }*@
 }
 <!-- Modal -->
 <div class="modal fade" id="mappingModal" tabindex="-1" role="dialog" aria-labelledby="mappingModalLabel" aria-hidden="true">

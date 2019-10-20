@@ -1,12 +1,12 @@
-﻿@model CustomGraphReportUpsertModel
+﻿@model UpsertCustomReportModel
 @{
-    ViewBag.Title = "AddCustomGraphReport";
+    ViewBag.Title = "AddCustomReport";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="row">
     <div class="col-lg-12">
-        @if (Model.Id > 0)
+        @if (Model.CustomReport.Id > 0)
         {
             <h1 class="page-header">Grafiek rapportage aanpassen</h1>
         }
@@ -26,11 +26,11 @@
                     Naam rapportage
                 </div>
                 <div class="panel-body">
-                    @Html.HiddenFor(item => item.Id)
+                    @Html.HiddenFor(item => item.CustomReport.Id)
 
-                    @Html.DisplayNameFor(item => item.Name)
+                    @Html.DisplayNameFor(item => item.CustomReport.Name)
 
-                    @Html.EditorFor(item => item.Name)
+                    @Html.EditorFor(item => item.CustomReport.Name)
                 </div>
             </div>
         </div>

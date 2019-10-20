@@ -43,12 +43,19 @@ namespace Sinance.Controllers
         /// </summary>
         /// <param name="bankAccountId">Id of the bank account to add the model to</param>
         /// <returns>Partial view for creating the model</returns>
-        public IActionResult AddTransaction(int bankAccountId)
+        public async Task<IActionResult> AddTransaction(int bankAccountId)
         {
-            return PartialView("UpsertTransactionPartial", new TransactionModel
+            var userCategories = await _categoryService.GetAllCategoriesForCurrentUser();
+            var availableCategories = CreateAvailableCategoriesSelectList(userCategories);
+
+            return PartialView("UpsertTransactionPartial", new UpsertTransactionViewModel
             {
-                BankAccountId = bankAccountId,
-                Date = DateTime.Now
+                Transaction = new TransactionModel
+                {
+                    BankAccountId = bankAccountId,
+                    Date = DateTime.Now
+                },
+                AvailableCategories = availableCategories
             });
         }
 
@@ -59,22 +66,18 @@ namespace Sinance.Controllers
         /// <returns>Result of the delete action</returns>
         public async Task<IActionResult> DeleteTransaction(int transactionId, int bankAccountId)
         {
-            ActionResult result;
-
             try
             {
                 await _transactionService.DeleteTransactionForCurrentUser(transactionId);
 
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.TransactionDeleted);
-                result = RedirectToAction("Index", new { bankAccountId });
+                return RedirectToAction("Index", new { bankAccountId });
             }
             catch (NotFoundException)
             {
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.TransactionNotFound);
-                result = RedirectToAction("Index", "Home");
+                return RedirectToAction("Index", "Home");
             }
-
-            return result;
         }
 
         /// <summary>
@@ -88,20 +91,9 @@ namespace Sinance.Controllers
             {
                 var transaction = await _transactionService.GetTransactionByIdForCurrentUser(transactionId);
                 var userCategories = await _categoryService.GetAllCategoriesForCurrentUser();
+                var availableCategories = CreateAvailableCategoriesSelectList(userCategories);
 
-                var availableCategories = new List<SelectListItem>{
-                    new SelectListItem {
-                        Text =  Resources.NoCategory,
-                        Value = "0"
-                    }
-                };
-                availableCategories.AddRange(userCategories.Select(item => new SelectListItem
-                {
-                    Text = item.Name,
-                    Value = item.Id.ToString(CultureInfo.InvariantCulture)
-                }));
-
-                var model = new EditTransactionViewModel
+                var model = new UpsertTransactionViewModel
                 {
                     AvailableCategories = availableCategories,
                     Transaction = transaction
@@ -143,7 +135,7 @@ namespace Sinance.Controllers
             catch (NotFoundException)
             {
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.BankAccountNotFound);
-                return View("index");
+                return RedirectToAction(actionName: "Index", controllerName: "Home");
             }
         }
 
@@ -202,7 +194,7 @@ namespace Sinance.Controllers
         /// <param name="model">Transaction to upsert</param>
         /// <returns>Result of the model</returns>
         [HttpPost]
-        public async Task<IActionResult> UpsertTransaction(TransactionModel model)
+        public async Task<IActionResult> UpsertTransaction(UpsertTransactionViewModel model)
         {
             if (model == null)
             {
@@ -213,9 +205,9 @@ namespace Sinance.Controllers
             {
                 try
                 {
-                    if (model.Id > 0)
+                    if (model.Transaction.Id > 0)
                     {
-                        await _transactionService.UpdateTransactionForCurrentUser(model);
+                        await _transactionService.UpdateTransactionForCurrentUser(model.Transaction);
 
                         return Json(new SinanceJsonResult
                         {
@@ -224,7 +216,7 @@ namespace Sinance.Controllers
                     }
                     else
                     {
-                        await _transactionService.CreateTransactionForCurrentUser(model);
+                        await _transactionService.CreateTransactionForCurrentUser(model.Transaction);
 
                         return Json(new SinanceJsonResult
                         {
@@ -239,6 +231,22 @@ namespace Sinance.Controllers
             }
 
             return PartialView("UpsertTransactionPartial", model);
+        }
+
+        private static List<SelectListItem> CreateAvailableCategoriesSelectList(List<Communication.Model.Category.CategoryModel> userCategories)
+        {
+            var availableCategories = new List<SelectListItem>{
+                    new SelectListItem {
+                        Text =  Resources.NoCategory,
+                        Value = "0"
+                    }
+                };
+            availableCategories.AddRange(userCategories.Select(item => new SelectListItem
+            {
+                Text = item.Name,
+                Value = item.Id.ToString(CultureInfo.InvariantCulture)
+            }));
+            return availableCategories;
         }
     }
 }

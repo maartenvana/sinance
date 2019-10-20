@@ -46,7 +46,7 @@ namespace Sinance.Business.Extensions
         public static CategoryEntity UpdateEntity(this CategoryEntity entity, CategoryModel model)
         {
             entity.ColorCode = model.ColorCode;
-            entity.ParentId = model.ParentId;
+            entity.ParentId = model.ParentId == 0 ? null : model.ParentId;
             entity.IsRegular = model.IsRegular;
             entity.Name = model.Name;
 

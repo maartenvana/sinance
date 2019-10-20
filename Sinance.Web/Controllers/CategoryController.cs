@@ -36,7 +36,8 @@ namespace Sinance.Controllers
         {
             var model = new UpsertCategoryModel
             {
-                AvailableParentCategories = await CreateAvailableParentCategoriesSelectList(new CategoryModel())
+                AvailableParentCategories = await CreateAvailableParentCategoriesSelectList(new CategoryModel()),
+                CategoryModel = new CategoryModel()
             };
 
             return View("UpsertCategory", model);
@@ -141,40 +142,44 @@ namespace Sinance.Controllers
         /// </summary>
         /// <param name="model">Model to upsert</param>
         /// <returns>Index page and message if success</returns>
-        public async Task<IActionResult> UpsertCategory(CategoryModel model)
+        public async Task<IActionResult> UpsertCategory(UpsertCategoryModel model)
         {
-            if (ModelState.IsValid)
+            if (model.CategoryModel.Id > 0)
             {
-                if (model.Id > 0)
+                if (!ModelState.IsValid)
                 {
-                    try
-                    {
-                        await _categoryService.UpdateCategoryForCurrentUser(model);
-                        TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.CategoryUpdated);
-                        return RedirectToAction("Index");
-                    }
-                    catch (NotFoundException)
-                    {
-                        TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryNotFound);
-                        return View(model);
-                    }
+                    return RedirectToAction("EditCategory", new { model.CategoryModel.Id });
                 }
-                else
+
+                try
                 {
-                    try
-                    {
-                        await _categoryService.CreateCategoryForCurrentUser(model);
-                        TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.CategoryCreated);
-                        return RedirectToAction("Index");
-                    }
-                    catch (AlreadyExistsException)
-                    {
-                        TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, string.Format(Resources.CategoryAlreadyExists, model.Name));
-                        return View(model);
-                    }
+                    await _categoryService.UpdateCategoryForCurrentUser(model.CategoryModel);
+                    TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.CategoryUpdated);
+                }
+                catch (NotFoundException)
+                {
+                    TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryNotFound);
                 }
             }
-            return View(model);
+            else
+            {
+                if (!ModelState.IsValid)
+                {
+                    return RedirectToAction("AddCategory");
+                }
+
+                try
+                {
+                    await _categoryService.CreateCategoryForCurrentUser(model.CategoryModel);
+                    TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.CategoryCreated);
+                }
+                catch (AlreadyExistsException)
+                {
+                    TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, string.Format(Resources.CategoryAlreadyExists, model.CategoryModel.Name));
+                }
+            }
+
+            return RedirectToAction("Index");
         }
 
         /// <summary>

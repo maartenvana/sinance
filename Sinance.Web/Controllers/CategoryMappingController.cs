@@ -41,7 +41,11 @@ namespace Sinance.Controllers
             {
                 var categoryModel = await _categoryService.GetCategoryByIdForCurrentUser(categoryId);
 
-                return PartialView("UpsertCategoryMapping", categoryModel);
+                return PartialView("UpsertCategoryMapping", new CategoryMappingModel
+                {
+                    CategoryName = categoryModel.Name,
+                    CategoryId = categoryModel.Id
+                });
             }
             catch (NotFoundException)
             {

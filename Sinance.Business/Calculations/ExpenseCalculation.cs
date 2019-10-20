@@ -65,7 +65,7 @@ namespace Sinance.Business.Calculations
                 category.ParentId == null &&
                 (category.IsRegular || category.ChildCategories.Any(childCategory => childCategory.IsRegular))))
             {
-                AddCategoryToBimonthlyExpense(transactions, parentCategory, regularBimonthlyExpenseReport, startMonth, nextMonthStart, nextMonthStart, true);
+                AddCategoryToBimonthlyExpense(transactions, parentCategory, regularBimonthlyExpenseReport, startMonth, nextMonthStart, true);
             }
 
             // loop through all the volatile top categories
@@ -75,7 +75,7 @@ namespace Sinance.Business.Calculations
                     !childCategory.IsRegular &&
                     (childCategory.ParentCategory != null && !childCategory.ParentCategory.IsRegular)))))
             {
-                AddCategoryToBimonthlyExpense(transactions, parentCategory, volatileMonthlyExpenseReport, startMonth, nextMonthStart, nextMonthStart, false);
+                AddCategoryToBimonthlyExpense(transactions, parentCategory, volatileMonthlyExpenseReport, startMonth, nextMonthStart, false);
             }
 
             var uncategorizedTransactionsThisMonth = transactions.Where(item =>
@@ -109,11 +109,17 @@ namespace Sinance.Business.Calculations
                             categoryIds.Any(reportCategory =>
                                 reportCategory == transactionCategory.CategoryId)),
                     includeProperties: new string[] {
-                        nameof(TransactionEntity.TransactionCategories),
-                        $"{nameof(TransactionEntity.TransactionCategories)}.{nameof(TransactionCategoryEntity.Category)}"
+                        nameof(TransactionEntity.TransactionCategories)
                     });
 
+            var categories = await unitOfWork.CategoryRepository.FindAll(x => categoryIds.Any(y => y == x.Id));
+
             var reportDictionary = new Dictionary<string, IDictionary<int, decimal>>();
+
+            foreach (var category in categories)
+            {
+                reportDictionary.Add(category.Name, CreateMonthlyDictionary());
+            }
 
             foreach (var transaction in transactions)
             {
@@ -121,12 +127,7 @@ namespace Sinance.Business.Calculations
                 {
                     foreach (var transactionCategory in transaction.TransactionCategories.Where(transactionCategory => categoryIds.Any(reportCategory => reportCategory == transactionCategory.CategoryId)))
                     {
-                        var category = transactionCategory.Category;
-
-                        if (!reportDictionary.ContainsKey(category.Name))
-                        {
-                            reportDictionary.Add(category.Name, CreateMonthlyDictionary());
-                        }
+                        var category = categories.Single(x => x.Id == transactionCategory.CategoryId);
 
                         var amount = transactionCategory.Amount ?? transaction.Amount;
                         amount = amount < 0 ? amount * -1 : amount;
@@ -151,20 +152,20 @@ namespace Sinance.Business.Calculations
         }
 
         private static void AddCategoryToBimonthlyExpense(IList<TransactionEntity> transactions, CategoryEntity category,
-                            BimonthlyExpenseReportItem bimonthlyExpenseReport, DateTime previousMonthStart, DateTime thisMonthStart, DateTime nextMonthStart, bool regularExpense)
+                            BimonthlyExpenseReportItem bimonthlyExpenseReport, DateTime firstMonthStart, DateTime nextMonthStart, bool regularExpense)
         {
-            var lastMonthParentTransactions = TransactionsForMonth(transactions, category, previousMonthStart, thisMonthStart);
-            var thisMonthParentTransactions = TransactionsForMonth(transactions, category, thisMonthStart, nextMonthStart);
+            var firstMonthParentTransactions = TransactionsForMonth(transactions, category, firstMonthStart.Year, firstMonthStart.Month);
+            var secondMonthParentTransactions = TransactionsForMonth(transactions, category, nextMonthStart.Year, nextMonthStart.Month);
 
             var bimonthlyParentExpense = new BimonthlyExpense
             {
                 Name = category.Name,
-                AmountPrevious = CalculateSumCategoryTransactions(category, lastMonthParentTransactions),
-                AmountNow = CalculateSumCategoryTransactions(category, thisMonthParentTransactions)
+                AmountPrevious = CalculateSumCategoryTransactions(category, firstMonthParentTransactions),
+                AmountNow = CalculateSumCategoryTransactions(category, secondMonthParentTransactions)
             };
 
             if (bimonthlyParentExpense.AmountNow != bimonthlyParentExpense.AmountPrevious &&
-                thisMonthParentTransactions.Count() < lastMonthParentTransactions.Count())
+                secondMonthParentTransactions.Count() < firstMonthParentTransactions.Count())
             {
                 bimonthlyExpenseReport.RemainingAmount -= bimonthlyParentExpense.AmountNow - bimonthlyParentExpense.AmountPrevious;
             }
@@ -178,8 +179,8 @@ namespace Sinance.Business.Calculations
             {
                 foreach (var childCategory in category.ChildCategories.Where(item => item.IsRegular == regularExpense || category.IsRegular == regularExpense))
                 {
-                    var lastMonthChildTransactions = TransactionsForMonth(transactions, childCategory, previousMonthStart, thisMonthStart);
-                    var thisMonthChildTransactions = TransactionsForMonth(transactions, childCategory, thisMonthStart, nextMonthStart);
+                    var lastMonthChildTransactions = TransactionsForMonth(transactions, childCategory, firstMonthStart.Year, firstMonthStart.Month);
+                    var thisMonthChildTransactions = TransactionsForMonth(transactions, childCategory, nextMonthStart.Year, nextMonthStart.Month);
 
                     var bimonthlyChildExpense = new BimonthlyExpense
                     {
@@ -247,12 +248,12 @@ namespace Sinance.Business.Calculations
         /// <param name="monthStart">Transactions need to occur after this date</param>
         /// <param name="nextMonthStart">Transactions need to occur before this date</param>
         /// <returns>List of matching transactions</returns>
-        private static IList<TransactionEntity> TransactionsForMonth(IList<TransactionEntity> transactions, CategoryEntity category, DateTime monthStart, DateTime nextMonthStart)
+        private static IList<TransactionEntity> TransactionsForMonth(IList<TransactionEntity> transactions, CategoryEntity category, int year, int month)
         {
             IList<TransactionEntity> lastMonthParentTransactions = transactions.Where(
                     item =>
-                        item.Date >= monthStart &&
-                        item.Date < nextMonthStart &&
+                        item.Date.Year == year &&
+                        item.Date.Month == month &&
                         item.TransactionCategories.Any(transactionCategory =>
                             transactionCategory.CategoryId == category.Id)).ToList();
             return lastMonthParentTransactions;

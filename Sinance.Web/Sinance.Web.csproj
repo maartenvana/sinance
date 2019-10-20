@@ -40,16 +40,15 @@
     <Watch Remove="Components\SimpleMonthSelector.cs" />
     <Watch Remove="Extensions\IApplicationBuilderStorageExtensions.cs" />
     <Watch Remove="Model\AccountOverviewViewModel.cs" />
-    <Watch Remove="Model\CategoriesOverviewViewModel.cs" />
     <Watch Remove="Model\CustomGraphReportUpsertModel.cs" />
     <Watch Remove="Model\DashboardViewModel.cs" />
-    <Watch Remove="Model\EditTransactionViewModel.cs" />
     <Watch Remove="Model\LoginViewModel.cs" />
     <Watch Remove="Model\ManageUserViewModel.cs" />
     <Watch Remove="Model\MonthYearSelectionModel.cs" />
     <Watch Remove="Model\NavigationViewModel.cs" />
     <Watch Remove="Model\RegisterViewModel.cs" />
     <Watch Remove="Model\UpsertCategoryModel.cs" />
+    <Watch Remove="Model\UpsertTransactionViewModel.cs" />
     <Watch Remove="Services\AuthenticationService.cs" />
   </ItemGroup>
 

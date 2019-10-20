@@ -23,7 +23,7 @@ namespace Sinance.Web.Extensions
 
                 Task.Run(async () =>
                     {
-                        await dataSeeder.SeedData();
+                        await dataSeeder.SeedData(appSettings.Database.OverrideSeedDemoData);
                     }).Wait();
             }
             else
@@ -38,6 +38,7 @@ namespace Sinance.Web.Extensions
         {
             var unitOfWorkFunc = appBuilder.ApplicationServices.GetRequiredService<Func<IUnitOfWork>>();
             using var unitOfWork = unitOfWorkFunc();
+
             unitOfWork.Context.Migrate();
 
             return appBuilder;

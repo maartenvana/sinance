@@ -54,7 +54,7 @@ namespace Sinance.Business.Services.Transactions
 
             using var unitOfWork = _unitOfWork();
 
-            var bankAccount = unitOfWork.BankAccountRepository.FindSingle(x => x.UserId == userId && x.Id == transactionModel.BankAccountId);
+            var bankAccount = await unitOfWork.BankAccountRepository.FindSingle(x => x.UserId == userId && x.Id == transactionModel.BankAccountId);
 
             if (bankAccount == null)
             {
@@ -100,7 +100,7 @@ namespace Sinance.Business.Services.Transactions
 
             using var unitOfWork = _unitOfWork();
 
-            var transaction = await unitOfWork.TransactionRepository.FindSingle(item => item.Id == transactionId && item.UserId == userId);
+            var transaction = await FindTransaction(transactionId, userId, unitOfWork);
 
             if (transaction == null)
             {
@@ -141,7 +141,7 @@ namespace Sinance.Business.Services.Transactions
                         x.UserId == userId,
                         includeProperties: new string[] {
                             nameof(TransactionEntity.TransactionCategories),
-                            $"{nameof(TransactionEntity.TransactionCategories)}.{nameof(CategoryEntity.ParentCategory)}"
+                            $"{nameof(TransactionEntity.TransactionCategories)}.{nameof(TransactionCategoryEntity.Category)}"
                             });
 
             return transactions.ToDto().ToList();
@@ -153,9 +153,7 @@ namespace Sinance.Business.Services.Transactions
 
             using var unitOfWork = _unitOfWork();
 
-            var transaction = await unitOfWork.TransactionRepository.FindSingleTracked(item => item.Id == transactionId &&
-                           item.UserId == userId,
-                           includeProperties: nameof(TransactionEntity.TransactionCategories));
+            var transaction = await FindTransaction(transactionId, userId, unitOfWork);
 
             if (transaction == null)
             {
@@ -182,6 +180,8 @@ namespace Sinance.Business.Services.Transactions
 
             await unitOfWork.SaveAsync();
 
+            transaction = await FindTransaction(transactionId, userId, unitOfWork);
+
             return transaction.ToDto();
         }
 
@@ -191,8 +191,7 @@ namespace Sinance.Business.Services.Transactions
 
             using var unitOfWork = _unitOfWork();
 
-            var existingTransaction = await unitOfWork.TransactionRepository.FindSingleTracked(item =>
-                item.Id == transactionModel.Id && item.UserId == userId);
+            var existingTransaction = await FindTransaction(transactionModel.Id, userId, unitOfWork);
 
             if (existingTransaction == null)
             {
@@ -207,6 +206,16 @@ namespace Sinance.Business.Services.Transactions
             await TransactionHandler.UpdateCurrentBalance(unitOfWork, existingTransaction.BankAccountId, userId);
 
             return existingTransaction.ToDto();
+        }
+
+        private static async Task<TransactionEntity> FindTransaction(int transactionId, int userId, IUnitOfWork unitOfWork)
+        {
+            return await unitOfWork.TransactionRepository.FindSingleTracked(
+                findQuery: item => item.Id == transactionId && item.UserId == userId,
+                includeProperties: new string[] {
+                    nameof(TransactionEntity.TransactionCategories),
+                    $"{nameof(TransactionEntity.TransactionCategories)}.{nameof(TransactionCategoryEntity.Category)}"
+                });
         }
     }
 }

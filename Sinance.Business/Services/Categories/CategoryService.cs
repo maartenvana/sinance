@@ -177,6 +177,8 @@ namespace Sinance.Business.Services.Categories
 
             category.UpdateEntity(categoryModel);
 
+            await unitOfWork.SaveAsync();
+
             return category.ToDto();
         }
 

@@ -2,7 +2,7 @@
 
 @model CustomReportModel
 @{
-    ViewBag.Title = "CustomGraphReport";
+    ViewBag.Title = "CustomReport";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
@@ -11,13 +11,10 @@
     <script type="text/javascript">
         $(function () {
             var date = new Date();
-            CreateGraph(date.year);
+            CreateGraph(date.getFullYear());
         });
 
         function CreateGraph(year) {
-            //profitGraphCurrentYear = year;
-            //$("#profitGraphYearSpan").text(year);
-
             $.ajax({
                 type: "POST",
                 url: "@Url.Action("CustomReportMonthlyGraph", "Graph")",
@@ -41,7 +38,7 @@
                             }
                         },
                         xAxis: {
-                            categories: response.objectData.GraphCategories
+                            categories: response.objectData.graphCategories
                         },
                         credits: {
                             enabled: false
@@ -53,7 +50,7 @@
                             headerFormat: '',
                             pointFormat: '<span style="color:{point.color}">\u25CF</span> {series.name}: <b>€ {point.y:.2f}</b><br />'
                         },
-                        series: response.objectData.GraphData
+                        series: response.objectData.graphData
                     });
                 }
             });
@@ -63,7 +60,7 @@
 
 <div class="row">
     <div class="col-lg-12">
-        <h1 class="page-header">@Model.Name @Html.ActionLink("Edit", "EditCustomGraphReport", "Report", new { @reportId = Model.Id }, new { @class = "pull-right btn btn-default" })</h1>
+        <h1 class="page-header">@Model.Name @Html.ActionLink("Edit", "EditCustomReport", "Report", new { @reportId = Model.Id }, new { @class = "pull-right btn btn-default" })</h1>
     </div>
 </div>
 

@@ -27,7 +27,7 @@ namespace Sinance.Business.DataSeeding
             _unitOfWork = unitOfWork;
         }
 
-        public async Task SeedData()
+        public async Task SeedData(bool overwrite)
         {
             using var unitOfWork = _unitOfWork();
 
@@ -35,7 +35,15 @@ namespace Sinance.Business.DataSeeding
             var user = await unitOfWork.UserRepository.FindSingleTracked(x => x.Username == demoUserName);
             if (user != null)
             {
-                _logger.Information("DemoUser already exists, will delete all existing data for demo user");
+                if (overwrite)
+                {
+                    _logger.Information("DemoUser already exists, will delete all existing data for demo user");
+                }
+                else
+                {
+                    _logger.Information("DemoUser already exists, overwrite is disabled. Not seeding new data");
+                    return;
+                }
             }
             else
             {

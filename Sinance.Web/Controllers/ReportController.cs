@@ -41,7 +41,7 @@ namespace Sinance.Controllers
         /// Action for displaying the add page for a custom graph report
         /// </summary>
         /// <returns>Add page for a custom graph report</returns>
-        public async Task<IActionResult> AddCustomGraphReport()
+        public async Task<IActionResult> AddCustomReport()
         {
             var allCategories = await _categoryService.GetAllCategoriesForCurrentUser();
 
@@ -51,9 +51,10 @@ namespace Sinance.Controllers
                 Name = item.Name,
             }).ToList();
 
-            return View("UpsertCustomGraphReport", new CustomGraphReportUpsertModel
+            return View("UpsertCustomReport", new UpsertCustomReportModel
             {
-                AvailableCategories = availableCategories
+                AvailableCategories = availableCategories,
+                CustomReport = new CustomReportModel()
             });
         }
 
@@ -74,7 +75,7 @@ namespace Sinance.Controllers
         /// </summary>
         /// <param name="reportId">Identifier of the report to edit</param>
         /// <returns>View with the custom report to edit</returns>
-        public async Task<IActionResult> EditCustomGraphReport(int reportId)
+        public async Task<IActionResult> EditCustomReport(int reportId)
         {
             var allCategories = await _categoryService.GetAllCategoriesForCurrentUser();
 
@@ -89,11 +90,10 @@ namespace Sinance.Controllers
                     Checked = report.Categories.Any(reportCategory => reportCategory.CategoryId == category.Id)
                 }).ToList();
 
-                return View("UpsertCustomGraphReport", new CustomGraphReportUpsertModel
+                return View("UpsertCustomReport", new UpsertCustomReportModel
                 {
                     AvailableCategories = availableCategories,
-                    Id = reportId,
-                    Name = report.Name
+                    CustomReport = report
                 });
             }
             catch (NotFoundException)
@@ -109,9 +109,9 @@ namespace Sinance.Controllers
         /// <returns></returns>
         public async Task<IActionResult> ExpenseOverview()
         {
-            var thisMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+            var startMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(-1);
 
-            var model = await _expenseCalculation.BiMonthlyExpensePerCategoryReport(thisMonth);
+            var model = await _expenseCalculation.BiMonthlyExpensePerCategoryReport(startMonth);
 
             return View("ExpenseOverview", model);
         }
@@ -122,9 +122,9 @@ namespace Sinance.Controllers
         /// <returns></returns>
         public async Task<IActionResult> IncomeOverview()
         {
-            var thisMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
+            var startMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1).AddMonths(-1);
 
-            var model = await _incomeCalculation.BiMonthlyIncomePerCategoryReport(thisMonth);
+            var model = await _incomeCalculation.BiMonthlyIncomePerCategoryReport(startMonth);
 
             return View("IncomeOverview", model);
         }
@@ -134,18 +134,23 @@ namespace Sinance.Controllers
         /// </summary>
         /// <param name="model">Model to upsert</param>
         /// <returns>Redirect to the upserted custom report</returns>
-        public async Task<IActionResult> UpsertCustomGraphReport(CustomReportModel model)
+        public async Task<IActionResult> UpsertCustomReport(UpsertCustomReportModel model)
         {
             if (!ModelState.IsValid)
             {
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.Error);
             }
 
-            if (model.Id > 0)
+            if (model.CustomReport.Id > 0)
             {
                 try
                 {
-                    await _customReportService.UpdateCustomReport(model);
+                    model.CustomReport.Categories = model.AvailableCategories.Where(x => x.Checked == true).Select(x => new CustomReportCategoryModel
+                    {
+                        CategoryId = x.Id
+                    }).ToList();
+
+                    await _customReportService.UpdateCustomReport(model.CustomReport);
                 }
                 catch (NotFoundException)
                 {
@@ -155,10 +160,15 @@ namespace Sinance.Controllers
             }
             else
             {
-                await _customReportService.CreateCustomReport(model);
+                model.CustomReport.Categories = model.AvailableCategories.Where(x => x.Checked == true).Select(x => new CustomReportCategoryModel
+                {
+                    CategoryId = x.Id
+                }).ToList();
+
+                await _customReportService.CreateCustomReport(model.CustomReport);
             }
 
-            return RedirectToAction("CustomReport", new { reportId = model.Id });
+            return RedirectToAction("CustomReport", new { reportId = model.CustomReport.Id });
         }
     }
 }

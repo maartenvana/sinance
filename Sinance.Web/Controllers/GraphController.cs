@@ -143,7 +143,11 @@ namespace Sinance.Controllers
                 return Json(new SinanceJsonResult
                 {
                     Success = true,
-                    ObjectData = expensePercentagePerCategoryName
+                    ObjectData = expensePercentagePerCategoryName.Select(x => new GraphDataEntry
+                    {
+                        Name = x.Key,
+                        Y = x.Value * 100
+                    })
                 });
             }
             catch (Exception)

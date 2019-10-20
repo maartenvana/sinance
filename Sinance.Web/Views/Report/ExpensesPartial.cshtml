@@ -1,14 +1,13 @@
-﻿@using System.Globalization
-@using Sinance.Web.Model
+﻿@using Sinance.Communication.Model.StandardReport.Expense
 
-@model Sinance.Web.Model.BimonthlyExpenseReport
+@model BimonthlyExpenseReportItem
 
 <table style="width:100%;" class="table table-condensed ExpensesTable">
     <thead>
         <tr>
             <th colspan="2">Categorie</th>
-            <th class="text-right">@Model.PreviousMonthDate.ToString("MMM")</th>
-            <th class="text-right">@Model.ThisMonthDate.ToString("MMM")</th>
+            <th class="text-right">@Model.FirstMonthDate.ToString("MMM")</th>
+            <th class="text-right">@Model.SecondMonthDate.ToString("MMM")</th>
         </tr>
     </thead>
     <tbody>
@@ -25,11 +24,11 @@
                 rowClass = expense.AmountNow < expense.AmountPrevious ? "danger" : "";
             }
 
-        <tr class="@rowClass">
-            <td colspan="2">@expense.Name</td>
-            <td class="text-right">@Html.DisplayFor(item => expense.AmountPrevious)</td>
-            <td class="text-right">@Html.DisplayFor(item => expense.AmountNow)</td>
-        </tr>
+            <tr class="@rowClass">
+                <td colspan="2">@expense.Name</td>
+                <td class="text-right">@Html.DisplayFor(item => expense.AmountPrevious)</td>
+                <td class="text-right">@Html.DisplayFor(item => expense.AmountNow)</td>
+            </tr>
             foreach (BimonthlyExpense childExpense in expense.ChildBimonthlyExpenses)
             {
                 if (childExpense.AmountPrevious < 0)
@@ -41,12 +40,12 @@
                     rowClass = childExpense.AmountNow < childExpense.AmountPrevious ? "danger" : "";
                 }
 
-        <tr class="@rowClass">
-            <td>-</td>
-            <td>@childExpense.Name</td>
-            <td class="text-right">@Html.DisplayFor(item => childExpense.AmountPrevious)</td>
-            <td class="text-right">@Html.DisplayFor(item => childExpense.AmountNow)</td>
-        </tr>
+                <tr class="@rowClass">
+                    <td>-</td>
+                    <td>@childExpense.Name</td>
+                    <td class="text-right">@Html.DisplayFor(item => childExpense.AmountPrevious)</td>
+                    <td class="text-right">@Html.DisplayFor(item => childExpense.AmountNow)</td>
+                </tr>
             }
         }
         <tr class="active">

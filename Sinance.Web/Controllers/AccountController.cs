@@ -1,12 +1,12 @@
-﻿using Sinance.Domain.Entities;
-using Sinance.Web.Model;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using System.Security.Claims;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Sinance.Communication.Model.User;
+using Sinance.Web.Model;
+using System.Security.Claims;
+using System.Threading.Tasks;
 using IAuthenticationService = Sinance.Business.Services.Authentication.IAuthenticationService;
 
 namespace Sinance.Controllers
@@ -126,7 +126,7 @@ namespace Sinance.Controllers
             return Url.IsLocalUrl(returnUrl) ? Redirect(returnUrl) : (ActionResult)RedirectToAction("Index", "Home");
         }
 
-        private async Task SignInSinanceUser(SinanceUser user)
+        private async Task SignInSinanceUser(SinanceUserModel user)
         {
             var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
             identity.AddClaim(new Claim(type: ClaimTypes.Name, value: user.Username));

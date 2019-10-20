@@ -1,14 +1,15 @@
-﻿using Sinance.Business.Classes;
-using Sinance.Domain.Entities;
-using Sinance.Web.Model;
-using Sinance.Web;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Threading.Tasks;
+using Sinance.Business.Exceptions;
+using Sinance.Business.Services.Categories;
+using Sinance.Business.Services.CategoryMappings;
+using Sinance.Communication;
+using Sinance.Communication.Model.CategoryMapping;
+using Sinance.Communication.Model.Import;
+using Sinance.Web;
 using Sinance.Web.Helper;
-using Sinance.Storage;
-using Sinance.Business.Services.Authentication;
+using Sinance.Web.Model;
+using System.Threading.Tasks;
 
 namespace Sinance.Controllers
 {
@@ -18,15 +19,15 @@ namespace Sinance.Controllers
     [Authorize]
     public class CategoryMappingController : Controller
     {
-        private readonly IAuthenticationService _sessionService;
-        private readonly Func<IUnitOfWork> _unitOfWork;
+        private readonly ICategoryMappingService _categoryMappingService;
+        private readonly ICategoryService _categoryService;
 
         public CategoryMappingController(
-            Func<IUnitOfWork> unitOfWork,
-            IAuthenticationService sessionService)
+            ICategoryService categoryService,
+            ICategoryMappingService categoryMappingService)
         {
-            _unitOfWork = unitOfWork;
-            _sessionService = sessionService;
+            _categoryService = categoryService;
+            _categoryMappingService = categoryMappingService;
         }
 
         /// <summary>
@@ -36,29 +37,21 @@ namespace Sinance.Controllers
         /// <returns>Partial view for adding the mapping</returns>
         public async Task<IActionResult> AddCategoryMapping(int categoryId)
         {
-            if (categoryId < 0)
-                throw new ArgumentOutOfRangeException(nameof(categoryId));
-
-            CategoryMappingModel model = null;
-            var currentUserId = await _sessionService.GetCurrentUserId();
-
-            using var unitOfWork = _unitOfWork();
-
-            var category = await unitOfWork.CategoryRepository.FindSingle(item => item.Id == categoryId && item.UserId == currentUserId);
-            if (category != null)
+            try
             {
-                model = new CategoryMappingModel
+                var categoryModel = await _categoryService.GetCategoryByIdForCurrentUser(categoryId);
+
+                return PartialView("UpsertCategoryMapping", new CategoryMappingModel
                 {
-                    CategoryName = category.Name,
-                    CategoryId = categoryId
-                };
+                    CategoryName = categoryModel.Name,
+                    CategoryId = categoryModel.Id
+                });
             }
-            else
+            catch (NotFoundException)
             {
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryNotFound);
+                return View("Index");
             }
-
-            return PartialView("UpsertCategoryMapping", model);
         }
 
         /// <summary>
@@ -68,28 +61,16 @@ namespace Sinance.Controllers
         /// <returns>Partial view to edit the mapping</returns>
         public async Task<IActionResult> EditCategoryMapping(int categoryMappingId)
         {
-            if (categoryMappingId < 0)
-                throw new ArgumentOutOfRangeException(nameof(categoryMappingId));
-
-            var currentUserId = await _sessionService.GetCurrentUserId();
-
-            using var unitOfWork = _unitOfWork();
-
-            var existingMapping = await unitOfWork.CategoryMappingRepository.FindSingle(item => item.Id == categoryMappingId &&
-                                       item.Category.UserId == currentUserId,
-                                       includeProperties: nameof(CategoryMapping.Category));
-            CategoryMappingModel model = null;
-
-            if (existingMapping != null)
+            try
             {
-                model = CategoryMappingModel.CreateCategoryMappingModel(existingMapping);
+                var model = await _categoryMappingService.GetCategoryMappingByIdForCurrentUser(categoryMappingId);
+                return PartialView("UpsertCategoryMapping", model);
             }
-            else
+            catch (NotFoundException)
             {
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryMappingNotFound);
+                return View("Index");
             }
-
-            return PartialView("UpsertCategoryMapping", model);
         }
 
         /// <summary>
@@ -97,27 +78,16 @@ namespace Sinance.Controllers
         /// </summary>
         /// <param name="categoryMappingId">Id of the mapping to remove</param>
         /// <returns>Redirect to the edit category view</returns>
-        public async Task<IActionResult> RemoveCategoryMapping(int categoryMappingId)
+        public async Task<IActionResult> RemoveCategoryMapping(int categoryMappingId, int categoryId)
         {
-            if (categoryMappingId < 0)
-                throw new ArgumentOutOfRangeException(nameof(categoryMappingId));
-
-            var currentUserId = await _sessionService.GetCurrentUserId();
-
-            using var unitOfWork = _unitOfWork();
-
-            var mapping = await unitOfWork.CategoryMappingRepository.FindSingleTracked(item => item.Id == categoryMappingId &&
-                               item.Category.UserId == currentUserId);
-
-            if (mapping != null)
+            try
             {
-                unitOfWork.CategoryMappingRepository.Delete(mapping);
-                await unitOfWork.SaveAsync();
+                await _categoryMappingService.DeleteCategoryMappingByIdForCurrentUser(categoryMappingId);
 
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.CategoryMappingDeleted);
-                return RedirectToAction("EditCategory", "Category", new { categoryId = mapping.CategoryId });
+                return RedirectToAction("EditCategory", "Category", new { categoryId });
             }
-            else
+            catch (NotFoundException)
             {
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryMappingNotFound);
                 return RedirectToAction("Index", "Category");
@@ -131,15 +101,8 @@ namespace Sinance.Controllers
         /// <returns>Result of the upsert</returns>
         public async Task<IActionResult> UpsertCategoryMapping(CategoryMappingModel model)
         {
-            if (model == null)
-                throw new ArgumentNullException(nameof(model));
-
             if (ModelState.IsValid)
             {
-                var currentUserId = await _sessionService.GetCurrentUserId();
-
-                using var unitOfWork = _unitOfWork();
-
                 // Placeholder extra validation, in the future all mappings should be possible
                 if (model.ColumnTypeId != ColumnType.Description &&
                     model.ColumnTypeId != ColumnType.Name &&
@@ -148,52 +111,39 @@ namespace Sinance.Controllers
                     ModelState.AddModelError("", Resources.UnsupportedColumnTypeMapping);
                     return PartialView("UpsertCategoryMapping", model);
                 }
-                else if (unitOfWork.CategoryRepository.FindSingleTracked(item => item.UserId == currentUserId &&
-                                                                        item.Id == model.CategoryId) == null)
+
+                if (model.Id > 0)
                 {
-                    ModelState.AddModelError("", Resources.CategoryNotFound);
-                    return PartialView("UpsertCategoryMapping", model);
-                }
-                else
-                {
-                    if (model.Id > 0)
+                    try
                     {
-                        var existingCategoryMapping = await unitOfWork.CategoryMappingRepository.FindSingleTracked(item => item.Id == model.Id &&
-                                                                                                                item.Category.UserId == currentUserId);
-                        if (existingCategoryMapping != null)
-                        {
-                            existingCategoryMapping.Update(matchValue: model.MatchValue,
-                                columnType: model.ColumnTypeId,
-                                categoryId: model.CategoryId);
-
-                            unitOfWork.CategoryMappingRepository.Update(existingCategoryMapping);
-                            await unitOfWork.SaveAsync();
-
-                            return Json(new SinanceJsonResult
-                            {
-                                Success = true
-                            });
-                        }
-                        else
-                        {
-                            TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryMappingNotFound);
-                            return PartialView("UpsertCategoryMapping", model);
-                        }
-                    }
-                    else
-                    {
-                        var newCategoryMapping = new CategoryMapping();
-                        newCategoryMapping.Update(matchValue: model.MatchValue,
-                            columnType: model.ColumnTypeId,
-                            categoryId: model.CategoryId);
-
-                        unitOfWork.CategoryMappingRepository.Insert(newCategoryMapping);
-                        await unitOfWork.SaveAsync();
+                        var updatedModel = await _categoryMappingService.UpdateCategoryMappingForCurrentUser(model);
 
                         return Json(new SinanceJsonResult
                         {
                             Success = true
                         });
+                    }
+                    catch (NotFoundException)
+                    {
+                        TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryMappingNotFound);
+                        return PartialView("UpsertCategoryMapping", model);
+                    }
+                }
+                else
+                {
+                    try
+                    {
+                        var createdModel = await _categoryMappingService.CreateCategoryMappingForCurrentUser(model);
+
+                        return Json(new SinanceJsonResult
+                        {
+                            Success = true
+                        });
+                    }
+                    catch (NotFoundException)
+                    {
+                        TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryNotFound);
+                        return PartialView("UpsertCategoryMapping", model);
                     }
                 }
             }

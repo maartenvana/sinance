@@ -1,4 +1,4 @@
-﻿using Sinance.Domain.Entities;
+﻿using Sinance.Storage.Entities;
 using System;
 using System.Threading.Tasks;
 
@@ -6,17 +6,17 @@ namespace Sinance.Storage
 {
     public interface IUnitOfWork : IDisposable
     {
-        IGenericRepository<BankAccount> BankAccountRepository { get; }
-        IGenericRepository<CategoryMapping> CategoryMappingRepository { get; }
-        IGenericRepository<Category> CategoryRepository { get; }
+        IGenericRepository<BankAccountEntity> BankAccountRepository { get; }
+        IGenericRepository<CategoryMappingEntity> CategoryMappingRepository { get; }
+        IGenericRepository<CategoryEntity> CategoryRepository { get; }
         SinanceContext Context { get; }
-        IGenericRepository<CustomReportCategory> CustomReportCategoryRepository { get; }
-        IGenericRepository<CustomReport> CustomReportRepository { get; }
-        IGenericRepository<ImportBank> ImportBankRepository { get; }
-        IGenericRepository<ImportMapping> ImportMappingRepository { get; }
-        IGenericRepository<TransactionCategory> TransactionCategoryRepository { get; }
-        IGenericRepository<Transaction> TransactionRepository { get; }
-        IGenericRepository<SinanceUser> UserRepository { get; }
+        IGenericRepository<CustomReportCategoryEntity> CustomReportCategoryRepository { get; }
+        IGenericRepository<CustomReportEntity> CustomReportRepository { get; }
+        IGenericRepository<ImportBankEntity> ImportBankRepository { get; }
+        IGenericRepository<ImportMappingEntity> ImportMappingRepository { get; }
+        IGenericRepository<TransactionCategoryEntity> TransactionCategoryRepository { get; }
+        IGenericRepository<TransactionEntity> TransactionRepository { get; }
+        IGenericRepository<SinanceUserEntity> UserRepository { get; }
 
         Task<int> SaveAsync();
     }

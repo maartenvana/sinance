@@ -1,9 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Sinance.Business.Exceptions.Authentication;
+using Sinance.Business.Extensions;
 using Sinance.Business.Services.Authentication;
-using Sinance.Domain.Entities;
+using Sinance.Communication.Model.User;
 using Sinance.Storage;
+using Sinance.Storage.Entities;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,7 +15,7 @@ namespace Sinance.Web.Services
     public class AuthenticationService : IAuthenticationService
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly IPasswordHasher<SinanceUser> _passwordHasher;
+        private readonly IPasswordHasher<SinanceUserEntity> _passwordHasher;
         private readonly Func<IUnitOfWork> _unitOfWork;
 
         public bool IsLoggedIn
@@ -22,7 +24,7 @@ namespace Sinance.Web.Services
         }
 
         public AuthenticationService(
-            IPasswordHasher<SinanceUser> passwordHasher,
+            IPasswordHasher<SinanceUserEntity> passwordHasher,
             IHttpContextAccessor httpContextAccessor,
             Func<IUnitOfWork> unitOfWork)
         {
@@ -31,14 +33,14 @@ namespace Sinance.Web.Services
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<SinanceUser> CreateUser(string userName, string password)
+        public async Task<SinanceUserModel> CreateUser(string userName, string password)
         {
             using var unitOfWork = _unitOfWork();
             var user = await unitOfWork.UserRepository.FindSingle(x => x.Username == userName);
 
             if (user == null)
             {
-                var newUser = new SinanceUser
+                var newUser = new SinanceUserEntity
                 {
                     Username = userName
                 };
@@ -47,7 +49,7 @@ namespace Sinance.Web.Services
                 unitOfWork.UserRepository.Insert(newUser);
                 await unitOfWork.SaveAsync();
 
-                return newUser;
+                return newUser.ToDto();
             }
             else
             {
@@ -65,17 +67,23 @@ namespace Sinance.Web.Services
             return Task.FromResult(int.Parse(userIdClaim.Value));
         }
 
-        public async Task<SinanceUser> SignIn(string userName, string password)
+        public async Task<SinanceUserModel> SignIn(string userName, string password)
         {
             using var unitOfWork = _unitOfWork();
-            var user = await unitOfWork.UserRepository.FindSingle(x => x.Username == userName);
+            var user = await unitOfWork.UserRepository.FindSingleTracked(x => x.Username == userName);
 
             if (user != null)
             {
                 var passwordVerificationResult = _passwordHasher.VerifyHashedPassword(user, user.Password, password);
                 if (passwordVerificationResult == PasswordVerificationResult.Success)
                 {
-                    return user;
+                    return user.ToDto();
+                }
+                else if (passwordVerificationResult == PasswordVerificationResult.SuccessRehashNeeded)
+                {
+                    user.Password = _passwordHasher.HashPassword(user, password);
+                    await unitOfWork.SaveAsync();
+                    return user.ToDto();
                 }
                 else
                 {

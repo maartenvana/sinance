@@ -1,4 +1,7 @@
-﻿@model Sinance.Web.Model.TransactionModel
+﻿@using Sinance.Communication.Model.Transaction
+
+@model UpsertTransactionViewModel
+
 <div id="UpsertTransactionContentWrapper">
     <script type="text/javascript">
         $(function() {
@@ -14,12 +17,12 @@
             var deleteConfirm = confirm("Weet u zeker dat u deze transactie wilt verwijderen?");
 
             if (deleteConfirm)
-                document.location.href = "@Url.Action("DeleteTransaction", "AccountOverview", new {@transactionId = Model.Id})";
+                document.location.href = "@Html.Raw(Url.Action("DeleteTransaction", "AccountOverview", new { transactionId = Model.Transaction.Id, bankAccountId = Model.Transaction.BankAccountId }))";
         }
 
         function SaveCompleted(response) {
             if (response.responseJSON && response.responseJSON.success === true) {
-                document.location.href = "@Url.Action("Index", "AccountOverview", new {@bankAccountId = Model.BankAccountId})";
+                document.location.href = "@Url.Action("Index", "AccountOverview", new {@bankAccountId = Model.Transaction.BankAccountId})";
             } else {
                 $("#UpsertTransactionContentWrapper").html(response.responseText);
             }
@@ -28,8 +31,8 @@
 
     <form asp-controller="AccountOverview" asp-action="UpsertTransaction" data-ajax="true" data-ajax-complete="SaveCompleted" data-ajax-method="POST">
 
-        @Html.HiddenFor(item => item.Id)
-        @Html.HiddenFor(item => item.BankAccountId)
+        @Html.HiddenFor(x => x.Transaction.Id)
+        @Html.HiddenFor(x => x.Transaction.BankAccountId)
 
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
@@ -43,45 +46,45 @@
                 <tbody>
                     <tr>
                         <th>
-                            @Html.LabelFor(item => item.Name)
+                            @Html.LabelFor(x => x.Transaction.Name)
                         </th>
                         <td>
-                            @Html.TextBoxFor(item => item.Name, new { @class = "form-control", autocomplete = "off" })
-                            @Html.ValidationMessageFor(item => item.Name)
+                            @Html.TextBoxFor(x => x.Transaction.Name, new { @class = "form-control", autocomplete = "off" })
+                            @Html.ValidationMessageFor(x => x.Transaction.Name)
                         </td>
                     </tr>
                     <tr>
                         <th>
-                            @Html.LabelFor(item => item.Amount)
+                            @Html.LabelFor(x => x.Transaction.Amount)
                         </th>
                         <td>
-                            @Html.TextBoxFor(item => item.Amount, new { @class = "form-control decimalPointConvert", autocomplete = "off" })
-                            @Html.ValidationMessageFor(item => item.Amount)
+                            @Html.TextBoxFor(x => x.Transaction.Amount, new { @class = "form-control decimalPointConvert", autocomplete = "off" })
+                            @Html.ValidationMessageFor(x => x.Transaction.Amount)
                         </td>
                     </tr>
                     <tr>
                         <th>
-                            @Html.LabelFor(item => item.Date)
+                            @Html.LabelFor(x => x.Transaction.Date)
                         </th>
                         <td>
-                            @Html.TextBoxFor(item => item.Date, new { @class = "form-control", Value = Model.Date.ToString("dd-MM-yyyy") })
+                            @Html.TextBoxFor(x => x.Transaction.Date, new { @class = "form-control", Value = Model.Transaction.Date.ToString("dd-MM-yyyy") })
                         </td>
                     </tr>
                     <tr>
                         <th>
-                            @Html.LabelFor(item => item.DestinationAccount)
+                            @Html.LabelFor(x => x.Transaction.DestinationAccount)
                         </th>
                         <td>
-                            @Html.TextBoxFor(item => item.DestinationAccount, new { @class = "form-control", autocomplete = "off" })
-                            @Html.ValidationMessageFor(item => item.DestinationAccount)
+                            @Html.TextBoxFor(x => x.Transaction.DestinationAccount, new { @class = "form-control", autocomplete = "off" })
+                            @Html.ValidationMessageFor(x => x.Transaction.DestinationAccount)
                         </td>
                     </tr>
                     <tr>
                         <th>
-                            @Html.LabelFor(item => Model.Description)
+                            @Html.LabelFor(x => Model.Transaction.Description)
                         </th>
                         <td>
-                            @Html.TextBoxFor(item => item.Description, new { @class = "form-control", autocomplete = "off" })
+                            @Html.TextBoxFor(x => x.Transaction.Description, new { @class = "form-control", autocomplete = "off" })
                         </td>
                     </tr>
                 </tbody>

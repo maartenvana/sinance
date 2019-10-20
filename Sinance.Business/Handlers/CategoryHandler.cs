@@ -1,5 +1,8 @@
-﻿using Sinance.Domain.Entities;
+﻿using Sinance.Business.Extensions;
+using Sinance.Communication.Model.Import;
+using Sinance.Communication.Model.Transaction;
 using Sinance.Storage;
+using Sinance.Storage.Entities;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,7 +20,7 @@ namespace Sinance.Business.Handlers
         /// <param name="genericRepository">Generic repository to use</param>
         /// <param name="categoryId">Category Id to map</param>
         /// <param name="transactions">Transactions to map</param>
-        public static async Task MapCategoryToTransactions(IUnitOfWork unitOfWork, int categoryId, IEnumerable<Transaction> transactions)
+        public static async Task MapCategoryToTransactions(IUnitOfWork unitOfWork, int categoryId, IEnumerable<TransactionEntity> transactions)
         {
             foreach (var transaction in transactions)
             {
@@ -28,7 +31,7 @@ namespace Sinance.Business.Handlers
 
                 if (transaction.TransactionCategories.All(item => item.CategoryId != categoryId))
                 {
-                    unitOfWork.TransactionCategoryRepository.Insert(new TransactionCategory
+                    unitOfWork.TransactionCategoryRepository.Insert(new TransactionCategoryEntity
                     {
                         TransactionId = transaction.Id,
                         Amount = null,
@@ -41,57 +44,12 @@ namespace Sinance.Business.Handlers
         }
 
         /// <summary>
-        /// Maps categories to transactions
-        /// </summary>
-        /// <param name="categoryMappings">CategoryMappings to use</param>
-        /// <param name="transactions">Transactions to map to</param>
-        /// <returns>List of transactions that can map</returns>
-        public static IList<Transaction> PreviewMapTransactions(IEnumerable<CategoryMapping> categoryMappings, IEnumerable<Transaction> transactions)
-        {
-            var mappedTransactions = new List<Transaction>();
-
-            foreach (var transaction in transactions)
-            {
-                foreach (var mapping in categoryMappings)
-                {
-                    var isMatch = false;
-
-                    switch (mapping.ColumnTypeId)
-                    {
-                        case ColumnType.Description:
-                            isMatch = MatchString(transaction.Description, mapping.MatchValue);
-                            break;
-
-                        case ColumnType.Name:
-                            isMatch = MatchString(transaction.Name, mapping.MatchValue); ;
-                            break;
-
-                        case ColumnType.DestinationAccount:
-                            isMatch = MatchString(transaction.DestinationAccount, mapping.MatchValue); ;
-                            break;
-
-                        default:
-                            break;
-                    }
-
-                    if (isMatch)
-                    {
-                        mappedTransactions.Add(transaction);
-                        break;
-                    }
-                }
-            }
-
-            return mappedTransactions;
-        }
-
-        /// <summary>
         /// Unmaps the category from the given transactions
         /// </summary>
         /// <param name="genericRepository">Generic repository to use</param>
         /// <param name="categoryId">Category Id to unmap</param>
         /// <param name="transactions">Transactions to unmap</param>
-        public static async Task RemoveTransactionMappingFromCategory(IUnitOfWork unitOfWork, int categoryId, IEnumerable<Transaction> transactions)
+        public static async Task RemoveTransactionMappingFromCategory(IUnitOfWork unitOfWork, int categoryId, IEnumerable<TransactionEntity> transactions)
         {
             foreach (var transaction in transactions)
             {
@@ -106,7 +64,7 @@ namespace Sinance.Business.Handlers
         /// </summary>
         /// <param name="transactions">Transaction to set category for</param>
         /// <param name="categoryMappings">Mappings to use</param>
-        public static void SetTransactionCategories(IEnumerable<Transaction> transactions, IList<CategoryMapping> categoryMappings)
+        public static void SetTransactionCategories(IEnumerable<TransactionModel> transactions, IList<CategoryMappingEntity> categoryMappings)
         {
             foreach (var transaction in transactions)
             {
@@ -134,14 +92,14 @@ namespace Sinance.Business.Handlers
 
                     if (isMatch)
                     {
-                        transaction.TransactionCategories = new List<TransactionCategory>
+                        transaction.Categories = new List<TransactionCategoryModel>
                         {
-                            new TransactionCategory
+                            new TransactionCategoryEntity
                             {
                                 CategoryId = mapping.CategoryId,
                                 TransactionId = transaction.Id,
                                 Category = mapping.Category
-                            }
+                            }.ToDto()
                         };
                         break;
                     }
@@ -157,10 +115,7 @@ namespace Sinance.Business.Handlers
         /// <returns>If its a match or not</returns>
         private static bool MatchString(string transactionValue, string matchValue)
         {
-            if (!string.IsNullOrEmpty(transactionValue))
-                return transactionValue.ToUpperInvariant().Contains(matchValue.ToUpperInvariant());
-
-            return false;
+            return !string.IsNullOrEmpty(transactionValue) ? transactionValue.ToUpperInvariant().Contains(matchValue.ToUpperInvariant()) : false;
         }
     }
 }

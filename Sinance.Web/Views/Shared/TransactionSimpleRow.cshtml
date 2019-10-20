@@ -1,7 +1,8 @@
 ﻿@using System
 @using System.Linq
-@using Sinance.Domain.Entities
-@model Transaction
+@using Sinance.Communication.Model.Transaction
+
+@model TransactionModel
 <tr>
     <td class="dateColumn">
         @Model.Date.ToString("dd-MM-yyyy")
@@ -11,11 +12,11 @@
     </td>
     <td class="categoryColumn">
         <a class="transactionCategoryBox">
-            @foreach (TransactionCategory transactionCategory in Model.TransactionCategories)
+            @foreach (var transactionCategory in Model.Categories)
             {
                 int width = 50;
 
-                if (Model.TransactionCategories.Count() > 1)
+                if (Model.Categories.Count() > 1)
                 {
                     width = (int)Math.Round(((transactionCategory.Amount ?? 1) / Model.Amount * 50));
                     if (width < 0)
@@ -25,8 +26,8 @@
                     }
                 }
 
-                string style = string.Format("width:{0}px;background-color:{1};", width, transactionCategory.Category.ColorCode);
-            <div class="transactionCategoryFillBox" style="@style"></div>
+                string style = string.Format("width:{0}px;background-color:{1};", width, transactionCategory.ColorCode);
+                <div class="transactionCategoryFillBox" style="@style"></div>
             }
         </a>
     </td>

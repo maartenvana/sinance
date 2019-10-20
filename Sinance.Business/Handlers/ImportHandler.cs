@@ -1,8 +1,10 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
-using Sinance.Business.Classes;
-using Sinance.Domain.Entities;
+using Sinance.Business.Extensions;
+using Sinance.Communication.Model.Import;
+using Sinance.Communication.Model.Transaction;
 using Sinance.Storage;
+using Sinance.Storage.Entities;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -30,9 +32,8 @@ namespace Sinance.Business.Handlers
         /// <param name="importBank">Import bank entity</param>
         /// <param name="bankAccountId">Bank account id to use for processing</param>
         /// <returns>Created list of import rows</returns>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
-        public static async Task<IList<ImportRow>> ProcessImport(IUnitOfWork unitOfWork, Stream fileInputStream, int userId,
-            IList<ImportMapping> importMappings, ImportBank importBank, int bankAccountId)
+        public static async Task<IList<ImportRow>> CreateImportRowsFromFile(IUnitOfWork unitOfWork, Stream fileInputStream, int userId,
+            IList<ImportMappingEntity> importMappings, ImportBankEntity importBank, int bankAccountId)
         {
             IList<ImportRow> importRows;
             using (var reader = new StreamReader(fileInputStream))
@@ -61,7 +62,7 @@ namespace Sinance.Business.Handlers
                     importRow.Import = !transactionExists;
                 }
 
-                IList<CategoryMapping> categoryMappings = await unitOfWork.CategoryMappingRepository.FindAll(item => item.Category.UserId == userId, "Category");
+                var categoryMappings = await unitOfWork.CategoryMappingRepository.FindAll(item => item.Category.UserId == userId, "Category");
 
                 CategoryHandler.SetTransactionCategories(transactions: importRows.Select(item => item.Transaction), categoryMappings: categoryMappings);
             }
@@ -89,15 +90,12 @@ namespace Sinance.Business.Handlers
                 .Where(cachedImportRow => cachedImportRow != null))
             {
                 // Set the application user id and bank account id
-                cachedImportRow.Transaction.UserId = userId;
                 cachedImportRow.Transaction.BankAccountId = bankAccountId;
 
                 // Remove the category entity reference, otherwise it wont save
-                var mappedTransactionCategory = cachedImportRow.Transaction.TransactionCategories.FirstOrDefault();
-                if (mappedTransactionCategory != null)
-                    mappedTransactionCategory.Category = null;
+                var mappedTransactionCategory = cachedImportRow.Transaction.Categories.FirstOrDefault();
 
-                unitOfWork.TransactionRepository.Insert(cachedImportRow.Transaction);
+                unitOfWork.TransactionRepository.Insert(cachedImportRow.Transaction.ToNewEntity(userId));
 
                 // Count how many we inserted
                 savedTransactions++;
@@ -114,7 +112,7 @@ namespace Sinance.Business.Handlers
         /// <param name="importBank">Import bank entity with settings</param>
         /// <param name="importMappings">Import column mappings to use for mapping values</param>
         /// <returns>A created import row list</returns>
-        private static IList<ImportRow> ConvertFileToImportRows(Stream fileStream, ImportBank importBank, IList<ImportMapping> importMappings)
+        private static IList<ImportRow> ConvertFileToImportRows(Stream fileStream, ImportBankEntity importBank, IList<ImportMappingEntity> importMappings)
         {
             IList<ImportRow> importRows = new List<ImportRow>();
 
@@ -136,7 +134,12 @@ namespace Sinance.Business.Handlers
                 while (csv.Read())
                 {
                     // Create a new import row
-                    var importRow = new ImportRow { Transaction = new Transaction() };
+                    var importRow = new ImportRow
+                    {
+                        Transaction = new TransactionModel()
+                    };
+
+                    var amountIsNegative = false;
 
                     // Loop through fields
                     for (var i = 0; csv.TryGetField<string>(i, out var rawValue); i++)
@@ -145,11 +148,22 @@ namespace Sinance.Business.Handlers
 
                         // If we have a mapping for this column, convert it
                         if (importMapping != null)
-                            ConvertRawColumn(rawValue, importMapping, importRow.Transaction);
+                        {
+                            if (importMapping.ColumnTypeId == ColumnType.AddSubtract)
+                            {
+                                amountIsNegative = ConvertRawToIsNegative(rawValue, importMapping.FormatValue);
+                            }
+                            else
+                            {
+                                ConvertRawColumn(rawValue, importMapping, importRow.Transaction);
+                            }
+                        }
                     }
 
-                    if (importRow.Transaction.AmountIsNegative && importRow.Transaction.Amount > 0)
+                    if (amountIsNegative && importRow.Transaction.Amount > 0)
+                    {
                         importRow.Transaction.Amount *= -1;
+                    }
 
                     importRow.ImportRowId = importRowId++;
 
@@ -166,14 +180,8 @@ namespace Sinance.Business.Handlers
         /// <param name="transaction">Transaction to set property of</param>
         /// <param name="importMapping">Specifies which property to map to</param>
         /// <param name="rawValue">The raw string value</param>
-        private static void ConvertRawColumn(string rawValue, ImportMapping importMapping, Transaction transaction)
+        private static void ConvertRawColumn(string rawValue, ImportMappingEntity importMapping, TransactionModel transaction)
         {
-            if (importMapping == null)
-                throw new ArgumentNullException(nameof(importMapping));
-
-            if (rawValue == null)
-                throw new ArgumentNullException(nameof(rawValue));
-
             // Make sure we got no leading or trailing whitespace
             rawValue = rawValue.Trim();
             rawValue = _trimExtraWhitespaceRegex.Replace(rawValue, " ");
@@ -185,10 +193,6 @@ namespace Sinance.Business.Handlers
 
                 case ColumnType.Date:
                     transaction.Date = ConvertRawToDate(rawValue, importMapping.FormatValue);
-                    break;
-
-                case ColumnType.AddSubtract:
-                    transaction.AmountIsNegative = ConvertRawToIsNegative(rawValue, importMapping.FormatValue);
                     break;
 
                 case ColumnType.Amount:
@@ -208,7 +212,7 @@ namespace Sinance.Business.Handlers
                     break;
 
                 case ColumnType.BankAccountFrom:
-                    transaction.AccountNumber = rawValue;
+                    transaction.FromAccount = rawValue;
                     break;
 
                 default:
@@ -224,7 +228,9 @@ namespace Sinance.Business.Handlers
         private static decimal ConvertRawToAmount(string rawValue)
         {
             if (rawValue.Count(item => item == '.') > 1)
+            {
                 throw new ArgumentOutOfRangeException(nameof(rawValue));
+            }
 
             rawValue = rawValue.Replace(',', '.');
             var amount = decimal.Parse(rawValue, CultureInfo.InvariantCulture);
@@ -258,7 +264,7 @@ namespace Sinance.Business.Handlers
         /// <returns>Whether or not it is negative</returns>
         private static bool ConvertRawToIsNegative(string rawValue, string format)
         {
-            var isNegative = String.Equals(rawValue, format, StringComparison.OrdinalIgnoreCase);
+            var isNegative = string.Equals(rawValue, format, StringComparison.OrdinalIgnoreCase);
 
             return isNegative;
         }

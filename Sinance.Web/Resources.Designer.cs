@@ -133,6 +133,15 @@ namespace Sinance.Web {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Category with name {0} already exists.
+        /// </summary>
+        public static string CategoryAlreadyExists {
+            get {
+                return ResourceManager.GetString("CategoryAlreadyExists", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Categorie aangemaakt.
         /// </summary>
         public static string CategoryCreated {
@@ -228,6 +237,15 @@ namespace Sinance.Web {
         public static string CouldNotUpdateTransactionCategory {
             get {
                 return ResourceManager.GetString("CouldNotUpdateTransactionCategory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Report not found.
+        /// </summary>
+        public static string CustomReportNotFound {
+            get {
+                return ResourceManager.GetString("CustomReportNotFound", resourceCulture);
             }
         }
         

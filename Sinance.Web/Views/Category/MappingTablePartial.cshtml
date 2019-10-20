@@ -1,9 +1,9 @@
 ﻿@using System.Collections.Generic
 @using System.Globalization
 @using System.Linq
-@using Sinance.Domain.Entities
+@using Sinance.Communication.Model.Transaction
 
-@model IEnumerable<KeyValuePair<Transaction, bool>>
+@model IEnumerable<KeyValuePair<TransactionModel, bool>>
 
 <table id="TransactionOverviewTable" class="table">
     <thead>
@@ -16,41 +16,41 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (KeyValuePair<Transaction, bool> transaction in Model)
+        @foreach (KeyValuePair<TransactionModel, bool> transaction in Model)
         {
-        <tr class="@(transaction.Value == true ? "success" : "danger")" data-toggle="modal" data-target="#overviewModal" onclick="selectedTransaction = @transaction.Key.Id; action = 'details';">
-            <td class="dateColumn">
-                @transaction.Key.Date.ToString("dd-MM-yyyy")
-            </td>
-            <td class="nameColumn">
-                @transaction.Key.Name
-            </td>
-            <td class="categoryColumn">
-                @if (transaction.Key.TransactionCategories.Count() == 1)
+            <tr class="@(transaction.Value == true ? "success" : "danger")" data-toggle="modal" data-target="#overviewModal" onclick="selectedTransaction = @transaction.Key.Id; action = 'details';">
+                <td class="dateColumn">
+                    @transaction.Key.Date.ToString("dd-MM-yyyy")
+                </td>
+                <td class="nameColumn">
+                    @transaction.Key.Name
+                </td>
+                <td class="categoryColumn">
+                    @if (transaction.Key.Categories.Count() == 1)
                     {
-                <div style="width:52px;height:22px;border:solid 1px gray;background-color:@transaction.Key.TransactionCategories.ElementAt(0).Category.ColorCode;"></div>
+                        <div style="width:52px;height:22px;border:solid 1px gray;background-color:@transaction.Key.Categories.ElementAt(0).ColorCode;"></div>
                     }
-                    else if (transaction.Key.TransactionCategories.Count() > 1)
+                    else if (transaction.Key.Categories.Count() > 1)
                     {
-                <div style="width:52px;height:22px;border:solid 1px gray; overflow:hidden;">
-                    @foreach (TransactionCategory transactionCategory in transaction.Key.TransactionCategories)
+                        <div style="width:52px;height:22px;border:solid 1px gray; overflow:hidden;">
+                            @foreach (var transactionCategory in transaction.Key.Categories)
                             {
                                 int width = (int)(50 * (transactionCategory.Amount ?? 1) / transaction.Key.Amount);
-                                string style = string.Format(CultureInfo.InvariantCulture, "width:{0}px;height:20px;background-color:{1};float:left;", width, transactionCategory.Category.ColorCode);
-                    <div style="@style"></div>
+                                string style = string.Format(CultureInfo.InvariantCulture, "width:{0}px;height:20px;background-color:{1};float:left;", width, transactionCategory.ColorCode);
+                                <div style="@style"></div>
                             }
-                </div>
+                        </div>
                     }
-            </td>
-            <td class="amountColumn ">
-                <span class="label @(transaction.Key.Amount > 0 ? "label-success" : "label label-danger")">
-                    @string.Format(CultureInfo.InvariantCulture, "{0}{1}", transaction.Key.Amount > 0 ? "+" : "", transaction.Key.Amount)
-                </span>
-            </td>
-            <td class="descriptionColumn">
-                @transaction.Key.Description
-            </td>
-        </tr>
+                </td>
+                <td class="amountColumn ">
+                    <span class="label @(transaction.Key.Amount > 0 ? "label-success" : "label label-danger")">
+                        @string.Format(CultureInfo.InvariantCulture, "{0}{1}", transaction.Key.Amount > 0 ? "+" : "", transaction.Key.Amount)
+                    </span>
+                </td>
+                <td class="descriptionColumn">
+                    @transaction.Key.Description
+                </td>
+            </tr>
         }
     </tbody>
 </table>

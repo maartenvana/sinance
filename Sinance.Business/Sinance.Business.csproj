@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Sinance.Common\Sinance.Common.csproj" />
-    <ProjectReference Include="..\Sinance.Domain\Sinance.Domain.csproj" />
+    <ProjectReference Include="..\Sinance.Communication\Sinance.Communication.csproj" />
     <ProjectReference Include="..\Sinance.Storage\Sinance.Storage.csproj" />
   </ItemGroup>
 </Project>

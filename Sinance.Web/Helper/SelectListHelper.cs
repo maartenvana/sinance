@@ -1,24 +1,42 @@
-﻿using Sinance.Business.Services;
-using Sinance.Domain.Entities;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Sinance.Communication.Model.BankAccount;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Sinance.Web.Helper
 {
     /// <summary>
     /// Select list helper for creating select lists for dropdowns
     /// </summary>
-    public class SelectListHelper
+    public static class SelectListHelper
     {
-        private readonly IBankAccountService bankAccountService;
-
-        public SelectListHelper(IBankAccountService bankAccountService)
+        /// <summary>
+        /// Creates a list of bank accounts for a dropdown
+        /// </summary>
+        /// <returns>Created list of bank accounts</returns>
+        public static IEnumerable<SelectListItem> CreateActiveBankAccountSelectList(IEnumerable<BankAccountModel> bankAccounts, BankAccountType? typeFilter)
         {
-            this.bankAccountService = bankAccountService;
+            var availableAccounts = new List<SelectListItem>
+                {
+                    new SelectListItem
+                    {
+                        Text = Resources.ChooseBankAccount,
+                        Value = "0"
+                    }
+                };
+
+            var selectedBankAccounts = typeFilter.HasValue ? bankAccounts.Where(item => item.AccountType == typeFilter.Value) : bankAccounts;
+            selectedBankAccounts = selectedBankAccounts.Where(item => !item.Disabled);
+
+            availableAccounts.AddRange(selectedBankAccounts.Select(item => new SelectListItem
+            {
+                Text = item.Name,
+                Value = item.Id.ToString(CultureInfo.InvariantCulture)
+            }));
+
+            return availableAccounts;
         }
 
         /// <summary>
@@ -62,39 +80,6 @@ namespace Sinance.Web.Helper
             }
 
             return availableYears;
-        }
-
-        /// <summary>
-        /// Creates a list of bank accounts for a dropdown
-        /// </summary>
-        /// <returns>Created list of bank accounts</returns>
-        public async Task<IList<SelectListItem>> CreateActiveBankAccountSelectList(BankAccountType? typeFilter)
-        {
-            var availableAccounts = new List<SelectListItem>
-                {
-                    new SelectListItem
-                    {
-                        Text = Resources.ChooseBankAccount,
-                        Value = "0"
-                    }
-                };
-
-            IEnumerable<BankAccount> bankAccounts;
-
-            if (typeFilter.HasValue)
-                bankAccounts = (await bankAccountService.GetActiveBankAccountsForCurrentUser()).Where(item => item.AccountType == typeFilter.Value);
-            else
-                bankAccounts = await bankAccountService.GetActiveBankAccountsForCurrentUser();
-
-            bankAccounts = bankAccounts.Where(item => !item.Disabled);
-
-            availableAccounts.AddRange(bankAccounts.ToList().ConvertAll(item => new SelectListItem
-            {
-                Text = item.Name,
-                Value = item.Id.ToString(CultureInfo.InvariantCulture)
-            }));
-
-            return availableAccounts;
         }
     }
 }

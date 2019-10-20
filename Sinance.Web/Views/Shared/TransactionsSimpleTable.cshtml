@@ -1,5 +1,6 @@
-﻿@using Sinance.Domain.Entities
-@model System.Collections.Generic.IEnumerable<Transaction>
+﻿@using Sinance.Communication.Model.Transaction
+
+@model IEnumerable<TransactionModel>
 
 <table class="table TransactionTable">
     <thead>
@@ -13,11 +14,11 @@
     </thead>
     <tbody>
         @if (Model != null)
-    {
-        foreach (Transaction transaction in Model)
         {
-        @await Html.PartialAsync("TransactionSimpleRow", transaction)
+            foreach (var transaction in Model)
+            {
+                @await Html.PartialAsync("TransactionSimpleRow", transaction)
+            }
         }
-    }
     </tbody>
 </table>

@@ -1,10 +1,10 @@
-﻿@using Sinance.Domain.Entities
+﻿@using Sinance.Communication.Model.Transaction
 
-@model System.Collections.Generic.IList<Transaction>
+@model List<TransactionModel>
 
 @if (Model != null && Model.Any())
 {
-<script>
+    <script>
         var defaultTransactionIncrement = 100;
         var currentTransactionCount = @Model.Count();
         var loadingMoreTransactions = false;
@@ -43,31 +43,31 @@
                 });
             }
         }
-</script>
+    </script>
 
-<table id="TransactionOverviewTable" class="table TransactionTable">
-    <thead>
-        <tr>
-            <th>Datum</th>
-            <th>Titel</th>
-            <th></th>
-            <th class="amountColumn">Bedrag</th>
-            <th>Omschrijving</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (Transaction transaction in Model)
+    <table id="TransactionOverviewTable" class="table TransactionTable">
+        <thead>
+            <tr>
+                <th>Datum</th>
+                <th>Titel</th>
+                <th></th>
+                <th class="amountColumn">Bedrag</th>
+                <th>Omschrijving</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var transaction in Model)
             {
-        @await Html.PartialAsync("TransactionEditRow", transaction)
+                @await Html.PartialAsync("TransactionEditRow", transaction)
             }
-        <tr id="LoadMoreTransactionsPlaceholder"></tr>
-        <tr id="LoadMoreTransactionsRow">
-            <td colspan="6">
-                <input type="button" class="btn btn-block btn-primary" onclick="LoadMoreTransactions(defaultTransactionIncrement)" value="Laad meer transacties" />
-            </td>
-        </tr>
-    </tbody>
-</table>
+            <tr id="LoadMoreTransactionsPlaceholder"></tr>
+            <tr id="LoadMoreTransactionsRow">
+                <td colspan="6">
+                    <input type="button" class="btn btn-block btn-primary" onclick="LoadMoreTransactions(defaultTransactionIncrement)" value="Laad meer transacties" />
+                </td>
+            </tr>
+        </tbody>
+    </table>
 
 }

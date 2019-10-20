@@ -21,7 +21,9 @@ namespace Sinance.Web.Helper
 
             string message = null;
             if (tempData.ContainsKey("Message"))
+            {
                 message = (string)tempData["Message"];
+            }
 
             return message;
         }
@@ -38,7 +40,9 @@ namespace Sinance.Web.Helper
 
             var messageState = MessageState.None;
             if (tempData.ContainsKey("MessageState"))
+            {
                 messageState = (MessageState)tempData["MessageState"];
+            }
 
             return messageState;
         }
@@ -52,17 +56,27 @@ namespace Sinance.Web.Helper
         public static void SetTemporaryMessage(ITempDataDictionary tempData, MessageState state, string message)
         {
             if (tempData == null)
+            {
                 throw new ArgumentNullException(nameof(tempData));
+            }
 
             if (tempData.ContainsKey("MessageState"))
+            {
                 tempData["MessageState"] = state;
+            }
             else
+            {
                 tempData.Add("MessageState", state);
+            }
 
             if (tempData.ContainsKey("Message"))
-                tempData["MessageState"] = message;
+            {
+                tempData["Message"] = message;
+            }
             else
+            {
                 tempData.Add("Message", message);
+            }
         }
     }
 }

@@ -18,7 +18,7 @@ namespace Sinance.Storage.Migrations
                 .HasAnnotation("ProductVersion", "3.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
-            modelBuilder.Entity("Sinance.Domain.Entities.BankAccount", b =>
+            modelBuilder.Entity("Sinance.Storage.Entities.BankAccountEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -54,7 +54,7 @@ namespace Sinance.Storage.Migrations
                     b.ToTable("BankAccount");
                 });
 
-            modelBuilder.Entity("Sinance.Domain.Entities.Category", b =>
+            modelBuilder.Entity("Sinance.Storage.Entities.CategoryEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -88,7 +88,7 @@ namespace Sinance.Storage.Migrations
                     b.ToTable("Category");
                 });
 
-            modelBuilder.Entity("Sinance.Domain.Entities.CategoryMapping", b =>
+            modelBuilder.Entity("Sinance.Storage.Entities.CategoryMappingEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -118,28 +118,7 @@ namespace Sinance.Storage.Migrations
                     b.ToTable("CategoryMapping");
                 });
 
-            modelBuilder.Entity("Sinance.Domain.Entities.CustomReport", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("CustomReport");
-                });
-
-            modelBuilder.Entity("Sinance.Domain.Entities.CustomReportCategory", b =>
+            modelBuilder.Entity("Sinance.Storage.Entities.CustomReportCategoryEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -161,7 +140,28 @@ namespace Sinance.Storage.Migrations
                     b.ToTable("CustomReportCategory");
                 });
 
-            modelBuilder.Entity("Sinance.Domain.Entities.ImportBank", b =>
+            modelBuilder.Entity("Sinance.Storage.Entities.CustomReportEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("CustomReport");
+                });
+
+            modelBuilder.Entity("Sinance.Storage.Entities.ImportBankEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -184,7 +184,7 @@ namespace Sinance.Storage.Migrations
                     b.ToTable("ImportBank");
                 });
 
-            modelBuilder.Entity("Sinance.Domain.Entities.ImportMapping", b =>
+            modelBuilder.Entity("Sinance.Storage.Entities.ImportMappingEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -214,7 +214,7 @@ namespace Sinance.Storage.Migrations
                     b.ToTable("ImportMapping");
                 });
 
-            modelBuilder.Entity("Sinance.Domain.Entities.SinanceUser", b =>
+            modelBuilder.Entity("Sinance.Storage.Entities.SinanceUserEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -232,7 +232,32 @@ namespace Sinance.Storage.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("Sinance.Domain.Entities.Transaction", b =>
+            modelBuilder.Entity("Sinance.Storage.Entities.TransactionCategoryEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<decimal?>("Amount")
+                        .HasColumnType("decimal(65,30)");
+
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TransactionId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CategoryId");
+
+                    b.HasIndex("TransactionId");
+
+                    b.ToTable("TransactionCategory");
+                });
+
+            modelBuilder.Entity("Sinance.Storage.Entities.TransactionEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -245,9 +270,6 @@ namespace Sinance.Storage.Migrations
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("decimal(65,30)");
-
-                    b.Property<bool>("AmountIsNegative")
-                        .HasColumnType("bit");
 
                     b.Property<int>("BankAccountId")
                         .HasColumnType("int");
@@ -280,127 +302,102 @@ namespace Sinance.Storage.Migrations
                     b.ToTable("Transaction");
                 });
 
-            modelBuilder.Entity("Sinance.Domain.Entities.TransactionCategory", b =>
+            modelBuilder.Entity("Sinance.Storage.Entities.BankAccountEntity", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<decimal?>("Amount")
-                        .HasColumnType("decimal(65,30)");
-
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TransactionId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CategoryId");
-
-                    b.HasIndex("TransactionId");
-
-                    b.ToTable("TransactionCategory");
-                });
-
-            modelBuilder.Entity("Sinance.Domain.Entities.BankAccount", b =>
-                {
-                    b.HasOne("Sinance.Domain.Entities.SinanceUser", "User")
+                    b.HasOne("Sinance.Storage.Entities.SinanceUserEntity", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Sinance.Domain.Entities.Category", b =>
+            modelBuilder.Entity("Sinance.Storage.Entities.CategoryEntity", b =>
                 {
-                    b.HasOne("Sinance.Domain.Entities.Category", "ParentCategory")
+                    b.HasOne("Sinance.Storage.Entities.CategoryEntity", "ParentCategory")
                         .WithMany("ChildCategories")
                         .HasForeignKey("ParentId");
 
-                    b.HasOne("Sinance.Domain.Entities.SinanceUser", "User")
+                    b.HasOne("Sinance.Storage.Entities.SinanceUserEntity", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Sinance.Domain.Entities.CategoryMapping", b =>
+            modelBuilder.Entity("Sinance.Storage.Entities.CategoryMappingEntity", b =>
                 {
-                    b.HasOne("Sinance.Domain.Entities.Category", "Category")
+                    b.HasOne("Sinance.Storage.Entities.CategoryEntity", "Category")
                         .WithMany("CategoryMappings")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Sinance.Domain.Entities.SinanceUser", "User")
+                    b.HasOne("Sinance.Storage.Entities.SinanceUserEntity", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Sinance.Domain.Entities.CustomReport", b =>
+            modelBuilder.Entity("Sinance.Storage.Entities.CustomReportCategoryEntity", b =>
                 {
-                    b.HasOne("Sinance.Domain.Entities.SinanceUser", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Sinance.Domain.Entities.CustomReportCategory", b =>
-                {
-                    b.HasOne("Sinance.Domain.Entities.Category", "Category")
+                    b.HasOne("Sinance.Storage.Entities.CategoryEntity", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Sinance.Domain.Entities.CustomReport", "CustomReport")
+                    b.HasOne("Sinance.Storage.Entities.CustomReportEntity", "CustomReport")
                         .WithMany("ReportCategories")
                         .HasForeignKey("CustomReportId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Sinance.Domain.Entities.ImportMapping", b =>
+            modelBuilder.Entity("Sinance.Storage.Entities.CustomReportEntity", b =>
                 {
-                    b.HasOne("Sinance.Domain.Entities.ImportBank", "ImportBank")
-                        .WithMany("ImportMappings")
-                        .HasForeignKey("ImportBankId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Sinance.Domain.Entities.Transaction", b =>
-                {
-                    b.HasOne("Sinance.Domain.Entities.BankAccount", "BankAccount")
-                        .WithMany("Transactions")
-                        .HasForeignKey("BankAccountId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Sinance.Domain.Entities.SinanceUser", "User")
+                    b.HasOne("Sinance.Storage.Entities.SinanceUserEntity", "User")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Sinance.Domain.Entities.TransactionCategory", b =>
+            modelBuilder.Entity("Sinance.Storage.Entities.ImportMappingEntity", b =>
                 {
-                    b.HasOne("Sinance.Domain.Entities.Category", "Category")
+                    b.HasOne("Sinance.Storage.Entities.ImportBankEntity", "ImportBank")
+                        .WithMany("ImportMappings")
+                        .HasForeignKey("ImportBankId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Sinance.Storage.Entities.TransactionCategoryEntity", b =>
+                {
+                    b.HasOne("Sinance.Storage.Entities.CategoryEntity", "Category")
                         .WithMany("TransactionCategories")
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Sinance.Domain.Entities.Transaction", "Transaction")
+                    b.HasOne("Sinance.Storage.Entities.TransactionEntity", "Transaction")
                         .WithMany("TransactionCategories")
                         .HasForeignKey("TransactionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Sinance.Storage.Entities.TransactionEntity", b =>
+                {
+                    b.HasOne("Sinance.Storage.Entities.BankAccountEntity", "BankAccount")
+                        .WithMany("Transactions")
+                        .HasForeignKey("BankAccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Sinance.Storage.Entities.SinanceUserEntity", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

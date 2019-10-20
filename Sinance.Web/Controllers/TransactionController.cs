@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Linq;
-using System;
-using Sinance.Storage;
+using Sinance.Business.Services.Transactions;
 using System.Threading.Tasks;
-using Sinance.Business.Services;
 
 namespace Sinance.Controllers
 {
@@ -12,15 +9,11 @@ namespace Sinance.Controllers
     /// </summary>
     public class TransactionController : Controller
     {
-        private readonly IBankAccountService _bankAccountService;
-        private readonly Func<IUnitOfWork> _unitOfWork;
+        private readonly ITransactionService _transactionService;
 
-        public TransactionController(
-            IBankAccountService bankAccountService,
-            Func<IUnitOfWork> unitOfWork)
+        public TransactionController(ITransactionService transactionService)
         {
-            _bankAccountService = bankAccountService;
-            _unitOfWork = unitOfWork;
+            _transactionService = transactionService;
         }
 
         /// <summary>
@@ -33,23 +26,9 @@ namespace Sinance.Controllers
         [HttpPost]
         public async Task<IActionResult> LoadMoreEditTransactionsPartial(int bankAccountId, int skipTransactions, int takeTransactions)
         {
-            ActionResult result;
+            var transactions = await _transactionService.GetTransactionsForBankAccountForCurrentUser(bankAccountId, takeTransactions, skip: skipTransactions);
 
-            using var unitOfWork = _unitOfWork();
-
-            var bankAccounts = await _bankAccountService.GetAllBankAccountsForCurrentUser();
-
-            if (!bankAccounts.Any(x => x.Id == bankAccountId))
-            {
-                return NotFound();
-            }
-
-            var allTransactions = await unitOfWork.TransactionRepository.FindAll(item => item.BankAccountId == bankAccountId);
-
-            var transactions = allTransactions.OrderByDescending(item => item.Date).Skip(skipTransactions).Take(takeTransactions).ToList();
-            result = PartialView(transactions);
-
-            return result;
+            return PartialView(transactions);
         }
     }
 }

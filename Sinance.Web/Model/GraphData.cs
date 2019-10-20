@@ -11,7 +11,6 @@ namespace Sinance.Web.Model
         /// <summary>
         /// Y-axis point data
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1819:PropertiesShouldNotReturnArrays")]
         [JsonProperty("data")]
         public decimal[] Data { get; set; }
 

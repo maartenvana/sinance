@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace Sinance.Web.Model
+namespace Sinance.Communication.Model.StandardReport.Income
 {
     /// <summary>
     /// Regular expense

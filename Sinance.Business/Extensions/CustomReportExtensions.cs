@@ -1,9 +1,7 @@
 ﻿using Sinance.Communication.Model.CustomReport;
 using Sinance.Storage.Entities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Sinance.Business.Extensions
 {
@@ -17,12 +15,36 @@ namespace Sinance.Business.Extensions
             {
                 Id = entity.Id,
                 Name = entity.Name,
-                CustomReportCategories = entity.ReportCategories.Select(x => new CustomReportCategoryModel
+                Categories = entity.ReportCategories.Select(x => new CustomReportCategoryModel
                 {
                     CategoryId = x.CategoryId,
                     CategoryName = x.Category.Name
                 }).ToList()
             };
+        }
+
+        public static CustomReportEntity ToNewEntity(this CustomReportModel model, int userId)
+        {
+            return new CustomReportEntity
+            {
+                Name = model.Name,
+                UserId = userId,
+                ReportCategories = model.Categories.Select(x => new CustomReportCategoryEntity
+                {
+                    CategoryId = x.CategoryId
+                }).ToList()
+            };
+        }
+
+        public static CustomReportEntity UpdateWithModel(this CustomReportEntity entity, CustomReportModel model)
+        {
+            entity.Name = model.Name;
+            entity.ReportCategories = model.Categories.Select(x => new CustomReportCategoryEntity
+            {
+                CategoryId = x.CategoryId
+            }).ToList();
+
+            return entity;
         }
     }
 }

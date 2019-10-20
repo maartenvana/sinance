@@ -40,6 +40,7 @@
     <Watch Remove="Components\SimpleMonthSelector.cs" />
     <Watch Remove="Extensions\IApplicationBuilderStorageExtensions.cs" />
     <Watch Remove="Model\CategoriesOverviewModel.cs" />
+    <Watch Remove="Model\CustomGraphReportUpsertModel.cs" />
     <Watch Remove="Model\EditTransactionModel.cs" />
     <Watch Remove="Model\MonthYearSelectionModel.cs" />
     <Watch Remove="Model\UpsertCategoryModel.cs" />

@@ -258,4 +258,7 @@
   <data name="CategoryAlreadyExists" xml:space="preserve">
     <value>Category with name {0} already exists</value>
   </data>
+  <data name="CustomReportNotFound" xml:space="preserve">
+    <value>Report not found</value>
+  </data>
 </root>

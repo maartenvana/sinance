@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Sinance.Web.Model
+namespace Sinance.Communication.Model.StandardReport.Income
 {
     /// <summary>
     /// Bimonthly exepense report
     /// </summary>
-    public class BimonthlyIncomeReport
+    public class BimonthlyIncomeReportItem
     {
         /// <summary>
         /// Incomes to show (parent and child's
@@ -20,7 +20,7 @@ namespace Sinance.Web.Model
         /// Date of the previous month
         /// </summary>
         [DisplayFormat(DataFormatString = "{0:MMMM}")]
-        public DateTime PreviousMonthDate { get; set; }
+        public DateTime FirstMonth { get; set; }
 
         /// <summary>
         /// Last month total expenses
@@ -32,7 +32,7 @@ namespace Sinance.Web.Model
         /// Date of this month
         /// </summary>
         [DisplayFormat(DataFormatString = "{0:MMMM}")]
-        public DateTime ThisMonthDate { get; set; }
+        public DateTime SecondMonth { get; set; }
 
         /// <summary>
         /// This month total expenses

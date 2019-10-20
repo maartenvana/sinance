@@ -3,24 +3,23 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Sinance.Web.Model
+namespace Sinance.Communication.Model.StandardReport.Expense
 {
     /// <summary>
     /// Bimonthly exepense report
     /// </summary>
-    public class BimonthlyExpenseReport
+    public class BimonthlyExpenseReportItem
     {
         /// <summary>
         /// Incomes to show (parent and child's
         /// </summary>
-        [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "Its a model!")]
         public IList<BimonthlyExpense> Expenses { get; set; }
 
         /// <summary>
         /// Date of the previous month
         /// </summary>
         [DisplayFormat(DataFormatString = "{0:MMMM}")]
-        public DateTime PreviousMonthDate { get; set; }
+        public DateTime FirstMonthDate { get; set; }
 
         /// <summary>
         /// Last month total expenses
@@ -38,7 +37,7 @@ namespace Sinance.Web.Model
         /// Date of this month
         /// </summary>
         [DisplayFormat(DataFormatString = "{0:MMMM}")]
-        public DateTime ThisMonthDate { get; set; }
+        public DateTime SecondMonthDate { get; set; }
 
         /// <summary>
         /// This month total expenses

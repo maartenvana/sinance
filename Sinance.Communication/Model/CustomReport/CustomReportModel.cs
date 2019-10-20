@@ -6,7 +6,7 @@ namespace Sinance.Communication.Model.CustomReport
 {
     public class CustomReportModel
     {
-        public List<CustomReportCategoryModel> CustomReportCategories { get; set; } = new List<CustomReportCategoryModel>();
+        public List<CustomReportCategoryModel> Categories { get; set; } = new List<CustomReportCategoryModel>();
 
         public int Id { get; set; }
 

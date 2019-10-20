@@ -15,21 +15,26 @@ namespace Sinance.Business
     {
         protected override void Load(ContainerBuilder builder)
         {
-            builder.RegisterType<PasswordHasher<SinanceUserEntity>>().As<IPasswordHasher<SinanceUserEntity>>();
-
+            // Services
             builder.RegisterType<BankAccountService>().As<IBankAccountService>();
             builder.RegisterType<CategoryService>().As<ICategoryService>();
             builder.RegisterType<CustomReportService>().As<ICustomReportService>();
             builder.RegisterType<TransactionService>().As<ITransactionService>();
             builder.RegisterType<CustomReportService>().As<ICustomReportService>();
 
+            // Calculations
             builder.RegisterType<BalanceHistoryCalculation>().As<IBalanceHistoryCalculation>();
             builder.RegisterType<ExpensePercentageCalculation>().As<IExpensePercentageCalculation>();
             builder.RegisterType<ProfitLossCalculation>().As<IProfitLossCalculation>();
+            builder.RegisterType<ExpenseCalculation>().As<IExpenseCalculation>();
+            builder.RegisterType<IncomeCalculation>().As<IIncomeCalculation>();
 
-            builder.RegisterType<DataSeedService>().AsSelf();
+            // Other
+            builder.RegisterType<PasswordHasher<SinanceUserEntity>>().As<IPasswordHasher<SinanceUserEntity>>();
 
+            // Storage
             builder.RegisterModule<StorageModule>();
+            builder.RegisterType<DataSeedService>().AsSelf();
         }
     }
 }

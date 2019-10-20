@@ -107,7 +107,7 @@ namespace Sinance.Controllers
         public async Task<IActionResult> CustomReportMonthlyGraph(int customReportId, int year)
         {
             var report = await _customReportService.GetCustomReportByIdForCurrentUser(customReportId);
-            var reportCategories = report.CustomReportCategories.Select(x => x.CategoryId);
+            var reportCategories = report.Categories.Select(x => x.CategoryId);
 
             var expensesPerMonth = await _expenseCalculation.ExpensePerCategoryIdPerMonthForYear(year, reportCategories);
 

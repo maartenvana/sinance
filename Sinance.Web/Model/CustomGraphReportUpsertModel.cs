@@ -6,7 +6,7 @@ namespace Sinance.Web.Model
     /// <summary>
     /// Model for upserting a custom graph report
     /// </summary>
-    public class CustomGraphReportSettingsModel
+    public class CustomGraphReportUpsertModel
     {
         /// <summary>
         /// List of all available categories for the report to use

@@ -1,9 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Linq;
-using System;
 using System.Threading.Tasks;
 using Sinance.Business.Services.Transactions;
-using Sinance.Business.Services.Authentication;
 
 namespace Sinance.Controllers
 {
@@ -12,14 +9,10 @@ namespace Sinance.Controllers
     /// </summary>
     public class TransactionController : Controller
     {
-        private readonly IAuthenticationService _sessionService;
         private readonly ITransactionService _transactionService;
 
-        public TransactionController(
-            IAuthenticationService sessionService,
-            ITransactionService transactionService)
+        public TransactionController(ITransactionService transactionService)
         {
-            _sessionService = sessionService;
             _transactionService = transactionService;
         }
 

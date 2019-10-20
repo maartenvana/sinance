@@ -241,6 +241,15 @@ namespace Sinance.Web {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Report not found.
+        /// </summary>
+        public static string CustomReportNotFound {
+            get {
+                return ResourceManager.GetString("CustomReportNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to december.
         /// </summary>
         public static string December {

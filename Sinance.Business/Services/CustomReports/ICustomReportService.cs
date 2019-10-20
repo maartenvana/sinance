@@ -6,8 +6,12 @@ namespace Sinance.Business.Services
 {
     public interface ICustomReportService
     {
+        Task<CustomReportModel> CreateCustomReport(CustomReportModel model);
+
         Task<CustomReportModel> GetCustomReportByIdForCurrentUser(int customReportId);
 
         Task<IEnumerable<CustomReportModel>> GetCustomReportsForCurrentUser();
+
+        Task<CustomReportModel> UpdateCustomReport(CustomReportModel model);
     }
 }

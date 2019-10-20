@@ -1,4 +1,4 @@
-﻿namespace Sinance.Business.Classes
+﻿namespace Sinance.Communication
 {
     /// <summary>
     /// Standard json result
@@ -19,19 +19,5 @@
         /// If the operation completed succesfully
         /// </summary>
         public bool Success { get; set; }
-
-        /// <summary>
-        /// Default constructor
-        /// </summary>
-        public SinanceJsonResult() { }
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="success">If the call is successfull</param>
-        public SinanceJsonResult(bool success)
-        {
-            Success = success;
-        }
     }
 }

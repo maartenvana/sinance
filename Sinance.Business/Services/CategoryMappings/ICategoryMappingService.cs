@@ -1,5 +1,4 @@
-﻿using Sinance.Communication.CategoryMapping;
-using System.Collections.Generic;
+﻿using Sinance.Communication.Model.CategoryMapping;
 using System.Threading.Tasks;
 
 namespace Sinance.Business.Services.CategoryMappings

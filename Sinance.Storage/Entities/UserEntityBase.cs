@@ -9,7 +9,7 @@ namespace Sinance.Storage.Entities
         /// User
         /// </summary>
         [ForeignKey("UserId")]
-        public virtual SinanceUserEntity User { get; set; }
+        public SinanceUserEntity User { get; set; }
 
         /// <summary>
         /// User id

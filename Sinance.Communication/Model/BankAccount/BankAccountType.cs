@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 
-namespace Sinance.Communication.BankAccount
+namespace Sinance.Communication.Model.BankAccount
 {
     public enum BankAccountType
     {

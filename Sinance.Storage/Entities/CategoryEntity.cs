@@ -14,14 +14,12 @@ namespace Sinance.Storage.Entities
         /// <summary>
         /// Category mappings
         /// </summary>
-        [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<CategoryMappingEntity> CategoryMappings { get; set; }
+        public List<CategoryMappingEntity> CategoryMappings { get; set; }
 
         /// <summary>
         /// Child categories
         /// </summary>
-        [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<CategoryEntity> ChildCategories { get; set; }
+        public List<CategoryEntity> ChildCategories { get; set; }
 
         /// <summary>
         /// Color code
@@ -45,7 +43,7 @@ namespace Sinance.Storage.Entities
         /// ParentCategory
         /// </summary>
         [ForeignKey("ParentId")]
-        public virtual CategoryEntity ParentCategory { get; set; }
+        public CategoryEntity ParentCategory { get; set; }
 
         /// <summary>
         /// Parent id
@@ -55,19 +53,6 @@ namespace Sinance.Storage.Entities
         /// <summary>
         /// Transaction categories
         /// </summary>
-        [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<TransactionCategoryEntity> TransactionCategories { get; set; }
-
-        /// <summary>
-        /// Default constructor
-        /// </summary>
-        /// TODO: Check if it still is necesary
-        [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "EF needs virtual collections for lazy loading")]
-        public CategoryEntity()
-        {
-            ChildCategories = new HashSet<CategoryEntity>();
-            TransactionCategories = new HashSet<TransactionCategoryEntity>();
-            CategoryMappings = new HashSet<CategoryMappingEntity>();
-        }
+        public List<TransactionCategoryEntity> TransactionCategories { get; set; }
     }
 }

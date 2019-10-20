@@ -7,6 +7,7 @@ using Sinance.Storage;
 using Sinance.Storage.Entities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sinance.Business.Services.Transactions
@@ -109,7 +110,7 @@ namespace Sinance.Business.Services.Transactions
             return transaction.ToDto();
         }
 
-        public async Task<IEnumerable<TransactionModel>> GetTransactionsForBankAccountForCurrentUser(int bankAccountId, int count, int skip)
+        public async Task<List<TransactionModel>> GetTransactionsForBankAccountForCurrentUser(int bankAccountId, int count, int skip)
         {
             var userId = await _authenticationService.GetCurrentUserId();
 
@@ -125,10 +126,10 @@ namespace Sinance.Business.Services.Transactions
                                         $"{nameof(TransactionEntity.TransactionCategories)}.{nameof(TransactionCategoryEntity.Category)}"
                                     });
 
-            return transactions.ToDto();
+            return transactions.ToDto().ToList();
         }
 
-        public async Task<IEnumerable<TransactionModel>> GetTransactionsForMonthForCurrentUser(int year, int month)
+        public async Task<List<TransactionModel>> GetTransactionsForMonthForCurrentUser(int year, int month)
         {
             var userId = await _authenticationService.GetCurrentUserId();
 
@@ -143,7 +144,7 @@ namespace Sinance.Business.Services.Transactions
                             $"{nameof(TransactionEntity.TransactionCategories)}.{nameof(CategoryEntity.ParentCategory)}"
                             });
 
-            return transactions.ToDto();
+            return transactions.ToDto().ToList();
         }
 
         public async Task<TransactionModel> OverwriteTransactionCategoriesForCurrentUser(int transactionId, int categoryId)

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Sinance.Communication.BankAccount
+namespace Sinance.Communication.Model.BankAccount
 {
     public class BankAccountModel
     {

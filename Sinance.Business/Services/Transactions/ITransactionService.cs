@@ -14,9 +14,9 @@ namespace Sinance.Business.Services.Transactions
 
         Task<TransactionModel> GetTransactionByIdForCurrentUser(int transactionId);
 
-        Task<IEnumerable<TransactionModel>> GetTransactionsForBankAccountForCurrentUser(int bankAccountId, int count, int skip);
+        Task<List<TransactionModel>> GetTransactionsForBankAccountForCurrentUser(int bankAccountId, int count, int skip);
 
-        Task<IEnumerable<TransactionModel>> GetTransactionsForMonthForCurrentUser(int year, int month);
+        Task<List<TransactionModel>> GetTransactionsForMonthForCurrentUser(int year, int month);
 
         Task<TransactionModel> OverwriteTransactionCategoriesForCurrentUser(int transactionId, int categoryId);
 

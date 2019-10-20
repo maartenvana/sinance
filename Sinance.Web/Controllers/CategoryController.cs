@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Sinance.Business.Exceptions;
-using Sinance.Business.Services.Authentication;
 using Sinance.Business.Services.Categories;
 using Sinance.Communication.Model.Category;
 using Sinance.Web;
@@ -10,7 +9,6 @@ using Sinance.Web.Helper;
 using Sinance.Web.Model;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -50,7 +48,6 @@ namespace Sinance.Controllers
         /// <param name="categoryId">Id of category to edit</param>
         /// <param name="includeTransactions">Include transactions or not for overview</param>
         /// <returns>Actionresult for editing a new category</returns>
-        [SuppressMessage("Microsoft.Design", "CA1026:DefaultParametersShouldNotBeUsed", Justification = "Needed for optional parameter from outside")]
         public async Task<IActionResult> EditCategory(int categoryId)
         {
             try
@@ -144,7 +141,6 @@ namespace Sinance.Controllers
         /// </summary>
         /// <param name="model">Model to upsert</param>
         /// <returns>Index page and message if success</returns>
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Multiple exceptions types all require the same handling")]
         public async Task<IActionResult> UpsertCategory(CategoryModel model)
         {
             if (ModelState.IsValid)

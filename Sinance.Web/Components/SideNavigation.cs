@@ -2,6 +2,7 @@
 using Sinance.Web.Model;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
+using Sinance.Business.Services.BankAccounts;
 
 namespace Sinance.Web.Components
 {
@@ -23,7 +24,7 @@ namespace Sinance.Web.Components
             var bankAccounts = await _bankAccountService.GetActiveBankAccountsForCurrentUser();
             var customReports = await _customReportService.GetCustomReportsForCurrentUser();
 
-            var model = new NavigationModel
+            var model = new NavigationViewModel
             {
                 BankAccounts = bankAccounts,
                 CustomReports = customReports

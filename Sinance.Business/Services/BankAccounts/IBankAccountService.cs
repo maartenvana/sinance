@@ -1,4 +1,4 @@
-﻿using Sinance.Communication.BankAccount;
+﻿using Sinance.Communication.Model.BankAccount;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -10,9 +10,9 @@ namespace Sinance.Business.Services.BankAccounts
 
         Task DeleteBankAccountByIdForCurrentUser(int accountId);
 
-        Task<IList<BankAccountModel>> GetActiveBankAccountsForCurrentUser();
+        Task<List<BankAccountModel>> GetActiveBankAccountsForCurrentUser();
 
-        Task<IList<BankAccountModel>> GetAllBankAccountsForCurrentUser();
+        Task<List<BankAccountModel>> GetAllBankAccountsForCurrentUser();
 
         Task<BankAccountModel> GetBankAccountByIdForCurrentUser(int bankAccountId);
 

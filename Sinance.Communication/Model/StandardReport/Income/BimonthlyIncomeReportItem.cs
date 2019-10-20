@@ -11,16 +11,15 @@ namespace Sinance.Communication.Model.StandardReport.Income
     public class BimonthlyIncomeReportItem
     {
         /// <summary>
-        /// Incomes to show (parent and child's
-        /// </summary>
-        [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "Its a model!")]
-        public IList<BimonthlyIncome> Incomes { get; set; }
-
-        /// <summary>
         /// Date of the previous month
         /// </summary>
         [DisplayFormat(DataFormatString = "{0:MMMM}")]
         public DateTime FirstMonth { get; set; }
+
+        /// <summary>
+        /// Incomes to show (parent and child's
+        /// </summary>
+        public IList<BimonthlyIncome> Incomes { get; set; }
 
         /// <summary>
         /// Last month total expenses

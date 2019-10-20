@@ -9,7 +9,6 @@ using Sinance.Web;
 using Sinance.Web.Helper;
 using Sinance.Web.Model;
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -108,7 +107,6 @@ namespace Sinance.Controllers
         /// Action for displaying all the expenses per category
         /// </summary>
         /// <returns></returns>
-        [SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling", Justification = "Fine to maintain")]
         public async Task<IActionResult> ExpenseOverview()
         {
             var thisMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);

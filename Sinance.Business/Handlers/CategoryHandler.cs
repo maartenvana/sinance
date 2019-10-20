@@ -1,4 +1,6 @@
-﻿using Sinance.Communication.Import;
+﻿using Sinance.Business.Extensions;
+using Sinance.Communication.Model.Import;
+using Sinance.Communication.Model.Transaction;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
 using System.Collections.Generic;
@@ -42,13 +44,6 @@ namespace Sinance.Business.Handlers
         }
 
         /// <summary>
-        /// Maps categories to transactions
-        /// </summary>
-        /// <param name="categoryMappings">CategoryMappings to use</param>
-        /// <param name="transactions">Transactions to map to</param>
-        /// <returns>List of transactions that can map</returns>
-
-        /// <summary>
         /// Unmaps the category from the given transactions
         /// </summary>
         /// <param name="genericRepository">Generic repository to use</param>
@@ -69,7 +64,7 @@ namespace Sinance.Business.Handlers
         /// </summary>
         /// <param name="transactions">Transaction to set category for</param>
         /// <param name="categoryMappings">Mappings to use</param>
-        public static void SetTransactionCategories(IEnumerable<TransactionEntity> transactions, IList<CategoryMappingEntity> categoryMappings)
+        public static void SetTransactionCategories(IEnumerable<TransactionModel> transactions, IList<CategoryMappingEntity> categoryMappings)
         {
             foreach (var transaction in transactions)
             {
@@ -97,14 +92,14 @@ namespace Sinance.Business.Handlers
 
                     if (isMatch)
                     {
-                        transaction.TransactionCategories = new List<TransactionCategoryEntity>
+                        transaction.Categories = new List<TransactionCategoryModel>
                         {
                             new TransactionCategoryEntity
                             {
                                 CategoryId = mapping.CategoryId,
                                 TransactionId = transaction.Id,
                                 Category = mapping.Category
-                            }
+                            }.ToDto()
                         };
                         break;
                     }
@@ -120,10 +115,7 @@ namespace Sinance.Business.Handlers
         /// <returns>If its a match or not</returns>
         private static bool MatchString(string transactionValue, string matchValue)
         {
-            if (!string.IsNullOrEmpty(transactionValue))
-                return transactionValue.ToUpperInvariant().Contains(matchValue.ToUpperInvariant());
-
-            return false;
+            return !string.IsNullOrEmpty(transactionValue) ? transactionValue.ToUpperInvariant().Contains(matchValue.ToUpperInvariant()) : false;
         }
     }
 }

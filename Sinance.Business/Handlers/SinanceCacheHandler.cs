@@ -7,7 +7,7 @@ namespace Sinance.Business.Handlers
     /// <summary>
     /// Cache helper for caching operations
     /// </summary>
-    public static class FinanceCacheHandler
+    public static class SinanceCacheHandler
     {
         // Memory cache for all cache operations
         private static readonly MemoryCache _memoryCache = new MemoryCache(new MemoryCacheOptions());

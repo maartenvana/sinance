@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Sinance.Web.Model
 {
-    public class EditTransactionModel
+    public class EditTransactionViewModel
     {
         public List<SelectListItem> AvailableCategories { get; set; }
         public TransactionModel Transaction { get; set; }

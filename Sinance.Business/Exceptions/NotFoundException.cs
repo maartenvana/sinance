@@ -1,13 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Sinance.Business.Exceptions
 {
     public class NotFoundException : Exception
     {
+        public string ItemName { get; }
+
         public NotFoundException(string itemName) : base($"{itemName} not found")
         {
+            ItemName = itemName;
         }
     }
 }

@@ -1,12 +1,11 @@
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Sinance.Communication.Import
+namespace Sinance.Communication.Model.Import
 {
     /// <summary>
     /// Column type entity
     /// </summary>
-    [SuppressMessage("Microsoft.Design", "CA1008:EnumsShouldHaveZeroValue", Justification = "Conversion from the database, no 0 possible")]
     public enum ColumnType
     {
         /// <summary>

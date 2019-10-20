@@ -24,22 +24,12 @@ namespace Sinance.Storage.Entities
         /// <summary>
         /// Import mappings for this bank
         /// </summary>
-        [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly", Justification = "Needed to be this")]
-        public virtual ICollection<ImportMappingEntity> ImportMappings { get; set; }
+        public List<ImportMappingEntity> ImportMappings { get; set; }
 
         /// <summary>
         /// Name of the bank
         /// </summary>
         [Required]
         public string Name { get; set; }
-
-        /// <summary>
-        /// Default constructor
-        /// </summary>
-        [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
-        public ImportBankEntity()
-        {
-            ImportMappings = new HashSet<ImportMappingEntity>();
-        }
     }
 }

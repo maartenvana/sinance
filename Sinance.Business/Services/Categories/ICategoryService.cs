@@ -10,11 +10,11 @@ namespace Sinance.Business.Services.Categories
 
         Task DeleteCategoryByIdForCurrentUser(int categoryId);
 
-        Task<IEnumerable<CategoryModel>> GetAllCategoriesForCurrentUser();
+        Task<List<CategoryModel>> GetAllCategoriesForCurrentUser();
 
         Task<CategoryModel> GetCategoryByIdForCurrentUser(int categoryId);
 
-        Task<IEnumerable<CategoryModel>> GetPossibleParentCategoriesForCurrentUser(int categoryId);
+        Task<List<CategoryModel>> GetPossibleParentCategoriesForCurrentUser(int categoryId);
 
         Task MapCategoryToTransactionsForCurrentUser(int categoryId, IEnumerable<int> transactionIds);
 

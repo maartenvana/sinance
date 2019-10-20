@@ -1,8 +1,8 @@
 ﻿using Sinance.Business.Exceptions;
 using Sinance.Business.Extensions;
 using Sinance.Business.Services.Authentication;
-using Sinance.Communication.Import;
 using Sinance.Communication.Model.Category;
+using Sinance.Communication.Model.Import;
 using Sinance.Communication.Model.Transaction;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
@@ -46,7 +46,7 @@ namespace Sinance.Business.Services.Categories
             return newCategory.ToDto();
         }
 
-        public async Task<IEnumerable<KeyValuePair<TransactionModel, bool>>> CreateCategoryMappingToTransactionsForUser(CategoryModel category)
+        public async Task<List<KeyValuePair<TransactionModel, bool>>> CreateCategoryMappingToTransactionsForUser(CategoryModel category)
         {
             var userId = await _authenticationService.GetCurrentUserId();
 
@@ -58,7 +58,8 @@ namespace Sinance.Business.Services.Categories
             var categoryMappings = await unitOfWork.CategoryMappingRepository.FindAll(item => item.UserId == userId && item.CategoryId == category.Id);
 
             var mappedTransactions = MapTransactionsWithCategoryMappings(categoryMappings, allTransactions)
-                .Select(item => new KeyValuePair<TransactionModel, bool>(item.ToDto(), true));
+                .Select(item => new KeyValuePair<TransactionModel, bool>(item.ToDto(), true))
+                .ToList();
 
             return mappedTransactions;
         }
@@ -83,7 +84,7 @@ namespace Sinance.Business.Services.Categories
             await unitOfWork.SaveAsync();
         }
 
-        public async Task<IEnumerable<CategoryModel>> GetAllCategoriesForCurrentUser()
+        public async Task<List<CategoryModel>> GetAllCategoriesForCurrentUser()
         {
             var userId = await _authenticationService.GetCurrentUserId();
 
@@ -91,7 +92,7 @@ namespace Sinance.Business.Services.Categories
 
             var allCategories = await unitOfWork.CategoryRepository.FindAll(item => item.UserId == userId);
 
-            return allCategories.ToDto();
+            return allCategories.ToDto().ToList();
         }
 
         public async Task<CategoryModel> GetCategoryByIdForCurrentUser(int categoryId)
@@ -116,7 +117,7 @@ namespace Sinance.Business.Services.Categories
             return category.ToDto();
         }
 
-        public async Task<IEnumerable<CategoryModel>> GetPossibleParentCategoriesForCurrentUser(int categoryId)
+        public async Task<List<CategoryModel>> GetPossibleParentCategoriesForCurrentUser(int categoryId)
         {
             var userId = await _authenticationService.GetCurrentUserId();
 
@@ -126,7 +127,7 @@ namespace Sinance.Business.Services.Categories
                                                                         item.Id != categoryId &&
                                                                         item.UserId == userId);
 
-            return categories.ToDto();
+            return categories.ToDto().ToList();
         }
 
         public async Task MapCategoryToTransactionsForCurrentUser(int categoryId, IEnumerable<int> transactionIds)

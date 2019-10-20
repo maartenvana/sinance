@@ -12,7 +12,7 @@ namespace Sinance.Storage.Entities
         /// Category reference
         /// </summary>
         [ForeignKey("CategoryId")]
-        public virtual CategoryEntity Category { get; set; }
+        public CategoryEntity Category { get; set; }
 
         /// <summary>
         /// Category identifier
@@ -24,7 +24,7 @@ namespace Sinance.Storage.Entities
         /// Custom report reference
         /// </summary>
         [ForeignKey("CustomReportId")]
-        public virtual CustomReportEntity CustomReport { get; set; }
+        public CustomReportEntity CustomReport { get; set; }
 
         /// <summary>
         /// Custom report identifier

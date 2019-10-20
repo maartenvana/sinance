@@ -1,4 +1,4 @@
-using Sinance.Communication.Import;
+using Sinance.Communication.Model.Import;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -36,7 +36,7 @@ namespace Sinance.Storage.Entities
         /// Bank of mapping
         /// </summary>
         [ForeignKey("ImportBankId")]
-        public virtual ImportBankEntity ImportBank { get; set; }
+        public ImportBankEntity ImportBank { get; set; }
 
         /// <summary>
         /// Id of bank

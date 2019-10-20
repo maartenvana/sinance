@@ -1,16 +1,13 @@
-﻿using Sinance.Business.Handlers;
-using Sinance.Web.Model;
-using Sinance.Web;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Linq;
-using System.Threading.Tasks;
-using Sinance.Web.Helper;
-using Sinance.Business.Services.Authentication;
-using Sinance.Business.Services.BankAccounts;
-using Sinance.Communication.BankAccount;
 using Sinance.Business.Exceptions;
+using Sinance.Business.Services.BankAccounts;
+using Sinance.Communication.Model.BankAccount;
+using Sinance.Web;
+using Sinance.Web.Helper;
+using Sinance.Web.Model;
+using System;
+using System.Threading.Tasks;
 
 namespace Sinance.Controllers
 {

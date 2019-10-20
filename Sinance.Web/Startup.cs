@@ -78,8 +78,6 @@ namespace Sinance.Web
             builder.RegisterModule<BusinessModule>();
             builder.RegisterModule<StorageModule>();
 
-            builder.RegisterType<SelectListHelper>().AsSelf();
-
             builder.RegisterLogger();
         }
 

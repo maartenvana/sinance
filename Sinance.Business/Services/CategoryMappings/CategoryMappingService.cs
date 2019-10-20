@@ -1,11 +1,11 @@
-﻿using System;
-using System.Threading.Tasks;
-using Sinance.Business.Exceptions;
+﻿using Sinance.Business.Exceptions;
 using Sinance.Business.Extensions;
 using Sinance.Business.Services.Authentication;
-using Sinance.Communication.CategoryMapping;
+using Sinance.Communication.Model.CategoryMapping;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
+using System;
+using System.Threading.Tasks;
 
 namespace Sinance.Business.Services.CategoryMappings
 {

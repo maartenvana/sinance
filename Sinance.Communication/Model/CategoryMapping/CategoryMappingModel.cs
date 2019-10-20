@@ -1,7 +1,7 @@
-﻿using Sinance.Communication.Import;
+﻿using Sinance.Communication.Model.Import;
 using System.ComponentModel.DataAnnotations;
 
-namespace Sinance.Communication.CategoryMapping
+namespace Sinance.Communication.Model.CategoryMapping
 {
     /// <summary>
     /// Category mapping model

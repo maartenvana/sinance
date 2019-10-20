@@ -1,4 +1,4 @@
-﻿using Sinance.Communication.BankAccount;
+﻿using Sinance.Communication.Model.BankAccount;
 using Sinance.Storage.Entities;
 
 namespace Sinance.Business.Extensions

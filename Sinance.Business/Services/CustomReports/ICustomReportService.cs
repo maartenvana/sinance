@@ -10,7 +10,7 @@ namespace Sinance.Business.Services
 
         Task<CustomReportModel> GetCustomReportByIdForCurrentUser(int customReportId);
 
-        Task<IEnumerable<CustomReportModel>> GetCustomReportsForCurrentUser();
+        Task<List<CustomReportModel>> GetCustomReportsForCurrentUser();
 
         Task<CustomReportModel> UpdateCustomReport(CustomReportModel model);
     }

@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Sinance.Communication.Model.User
+﻿namespace Sinance.Communication.Model.User
 {
     public class SinanceUserModel
     {

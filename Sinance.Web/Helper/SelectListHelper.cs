@@ -1,13 +1,9 @@
-﻿using Sinance.Business.Services;
-using Sinance.Domain.Entities;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Sinance.Communication.Model.BankAccount;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Threading.Tasks;
-using Sinance.Communication.BankAccount;
-using Sinance.Business.Services.BankAccounts;
 
 namespace Sinance.Web.Helper
 {

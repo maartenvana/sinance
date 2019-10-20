@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Sinance.Storage.Entities
 {
@@ -18,15 +17,6 @@ namespace Sinance.Storage.Entities
         /// <summary>
         /// Collection of categories to use in the report
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public ICollection<CustomReportCategoryEntity> ReportCategories { get; set; }
-
-        /// <summary>
-        /// Default constructor
-        /// </summary>
-        public CustomReportEntity()
-        {
-            ReportCategories = new HashSet<CustomReportCategoryEntity>();
-        }
+        public List<CustomReportCategoryEntity> ReportCategories { get; set; }
     }
 }

@@ -26,15 +26,10 @@ namespace Sinance.Storage.Entities
         public decimal Amount { get; set; }
 
         /// <summary>
-        /// Amount is negative
-        /// </summary>
-        public bool AmountIsNegative { get; set; }
-
-        /// <summary>
         /// Bank account
         /// </summary>
         [ForeignKey("BankAccountId")]
-        public virtual BankAccountEntity BankAccount { get; set; }
+        public BankAccountEntity BankAccount { get; set; }
 
         /// <summary>
         /// Bank account id
@@ -73,35 +68,6 @@ namespace Sinance.Storage.Entities
         /// <summary>
         /// Transaction categories
         /// </summary>
-        [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<TransactionCategoryEntity> TransactionCategories { get; set; }
-
-        /// <summary>
-        /// Default constructors
-        /// </summary>
-        [SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors", Justification = "EF needs virtual collections for lazy loading")]
-        public TransactionEntity()
-        {
-            TransactionCategories = new HashSet<TransactionCategoryEntity>();
-        }
-
-        /// <summary>
-        /// Updates the current instance of the transaction
-        /// </summary>
-        /// <param name="name">Name to use</param>
-        /// <param name="description">Description to use</param>
-        /// <param name="destinationAccount">Destination account to use</param>
-        /// <param name="amount">Amount to use</param>
-        /// <param name="date">Date to use</param>
-        /// <param name="bankAccountId">Bank account id to use</param>
-        public void Update(string name, string description, string destinationAccount, decimal amount, DateTime date, int bankAccountId)
-        {
-            Name = name;
-            Description = description;
-            DestinationAccount = destinationAccount;
-            Amount = amount;
-            Date = date;
-            BankAccountId = bankAccountId;
-        }
+        public List<TransactionCategoryEntity> TransactionCategories { get; set; }
     }
 }

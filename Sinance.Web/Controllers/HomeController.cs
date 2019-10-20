@@ -1,16 +1,11 @@
-﻿using Sinance.Business.Services;
-using Sinance.Web.Model;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Sinance.Business.Services.BankAccounts;
+using Sinance.Business.Services.Transactions;
+using Sinance.Web.Model;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Sinance.Storage;
-using Sinance.Business.Services.Authentication;
-using Sinance.Business.Services.BankAccounts;
-using Sinance.Storage.Entities;
-using Sinance.Business.Extensions;
-using Sinance.Business.Services.Transactions;
 
 namespace Sinance.Controllers
 {
@@ -21,15 +16,12 @@ namespace Sinance.Controllers
     public class HomeController : Controller
     {
         private readonly IBankAccountService _bankAccountService;
-        private readonly IAuthenticationService _sessionService;
         private readonly ITransactionService _transactionService;
 
         public HomeController(
-            IAuthenticationService sessionService,
             ITransactionService transactionService,
             IBankAccountService bankAccountService)
         {
-            _sessionService = sessionService;
             _transactionService = transactionService;
             _bankAccountService = bankAccountService;
         }
@@ -65,7 +57,7 @@ namespace Sinance.Controllers
                 .Take(15)
                 .ToList();
 
-            var dashboardModel = new DashboardModel
+            var dashboardModel = new DashboardViewModel
             {
                 BankAccounts = bankAccounts,
                 BiggestExpenses = topExpenses,

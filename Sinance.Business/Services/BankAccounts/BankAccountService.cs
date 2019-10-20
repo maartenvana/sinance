@@ -1,14 +1,14 @@
-﻿using Sinance.Storage;
+﻿using Sinance.Business.Exceptions;
+using Sinance.Business.Extensions;
+using Sinance.Business.Handlers;
+using Sinance.Business.Services.Authentication;
+using Sinance.Communication.Model.BankAccount;
+using Sinance.Storage;
+using Sinance.Storage.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Sinance.Business.Services.Authentication;
-using Sinance.Communication.BankAccount;
-using Sinance.Business.Extensions;
-using Sinance.Business.Exceptions;
-using Sinance.Storage.Entities;
-using Sinance.Business.Handlers;
 
 namespace Sinance.Business.Services.BankAccounts
 {
@@ -64,7 +64,7 @@ namespace Sinance.Business.Services.BankAccounts
             await unitOfWork.SaveAsync();
         }
 
-        public async Task<IList<BankAccountModel>> GetActiveBankAccountsForCurrentUser()
+        public async Task<List<BankAccountModel>> GetActiveBankAccountsForCurrentUser()
         {
             var userId = await _authenticationService.GetCurrentUserId();
 
@@ -79,7 +79,7 @@ namespace Sinance.Business.Services.BankAccounts
             return bankAccounts;
         }
 
-        public async Task<IList<BankAccountModel>> GetAllBankAccountsForCurrentUser()
+        public async Task<List<BankAccountModel>> GetAllBankAccountsForCurrentUser()
         {
             var userId = await _authenticationService.GetCurrentUserId();
 

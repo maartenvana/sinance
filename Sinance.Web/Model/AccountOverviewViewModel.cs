@@ -1,4 +1,4 @@
-﻿using Sinance.Communication.BankAccount;
+﻿using Sinance.Communication.Model.BankAccount;
 using Sinance.Communication.Model.Category;
 using Sinance.Communication.Model.Transaction;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ namespace Sinance.Web.Model
     /// <summary>
     /// Account overview model
     /// </summary>
-    public class AccountOverviewModel
+    public class AccountOverviewViewModel
     {
         /// <summary>
         /// Bank account to display

@@ -46,6 +46,8 @@ namespace Sinance.Communication.Model.Transaction
         [StringLength(50)]
         public string DestinationAccount { get; set; }
 
+        public string FromAccount { get; set; }
+
         /// <summary>
         /// Id of the transaction
         /// </summary>

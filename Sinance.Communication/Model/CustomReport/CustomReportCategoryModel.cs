@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Sinance.Communication.Model.CustomReport
+﻿namespace Sinance.Communication.Model.CustomReport
 {
     public class CustomReportCategoryModel
     {

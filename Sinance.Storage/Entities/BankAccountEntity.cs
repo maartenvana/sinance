@@ -1,5 +1,4 @@
-using Sinance.Communication.BankAccount;
-using System;
+using Sinance.Communication.Model.BankAccount;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.CodeAnalysis;
@@ -47,7 +46,6 @@ namespace Sinance.Storage.Entities
         /// <summary>
         /// Transactions
         /// </summary>
-        [SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<TransactionEntity> Transactions { get; set; } = new HashSet<TransactionEntity>();
+        public List<TransactionEntity> Transactions { get; set; }
     }
 }

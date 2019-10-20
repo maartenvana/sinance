@@ -1,16 +1,15 @@
-﻿using Sinance.Business.Classes;
-using Sinance.Web.Model;
-using Sinance.Web;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
-using Sinance.Web.Helper;
-using Sinance.Business.Services.Authentication;
+using Sinance.Business.Exceptions;
 using Sinance.Business.Services.Categories;
 using Sinance.Business.Services.CategoryMappings;
-using Sinance.Business.Exceptions;
-using Sinance.Communication.Import;
-using Sinance.Communication.CategoryMapping;
+using Sinance.Communication;
+using Sinance.Communication.Model.CategoryMapping;
+using Sinance.Communication.Model.Import;
+using Sinance.Web;
+using Sinance.Web.Helper;
+using Sinance.Web.Model;
+using System.Threading.Tasks;
 
 namespace Sinance.Controllers
 {

@@ -1,4 +1,4 @@
-﻿using Sinance.Communication.CategoryMapping;
+﻿using Sinance.Communication.Model.CategoryMapping;
 using Sinance.Storage.Entities;
 
 namespace Sinance.Business.Extensions

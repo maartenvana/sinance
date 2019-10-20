@@ -17,7 +17,7 @@ namespace Sinance.Storage.Entities
         /// Category
         /// </summary>
         [ForeignKey("CategoryId")]
-        public virtual CategoryEntity Category { get; set; }
+        public CategoryEntity Category { get; set; }
 
         /// <summary>
         /// Category id
@@ -28,25 +28,11 @@ namespace Sinance.Storage.Entities
         /// Transaction
         /// </summary>
         [ForeignKey("TransactionId")]
-        public virtual TransactionEntity Transaction { get; set; }
+        public TransactionEntity Transaction { get; set; }
 
         /// <summary>
         /// Transaction id
         /// </summary>
         public int TransactionId { get; set; }
-
-        /// <summary>
-        /// Updates the current instance with the values from the given entity
-        /// </summary>
-        /// <param name="updatedTransactionCategory">Entity to use properties from for updating</param>
-        public void Update(TransactionCategoryEntity updatedTransactionCategory)
-        {
-            if (updatedTransactionCategory == null)
-                throw new ArgumentNullException(nameof(updatedTransactionCategory));
-
-            Amount = updatedTransactionCategory.Amount;
-            CategoryId = updatedTransactionCategory.CategoryId;
-            TransactionId = updatedTransactionCategory.TransactionId;
-        }
     }
 }

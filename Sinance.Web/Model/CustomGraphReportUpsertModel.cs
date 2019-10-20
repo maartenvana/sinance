@@ -11,7 +11,6 @@ namespace Sinance.Web.Model
         /// <summary>
         /// List of all available categories for the report to use
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public IList<BasicCheckBoxItem> AvailableCategories { get; set; }
 
         /// <summary>

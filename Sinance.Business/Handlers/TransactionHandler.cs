@@ -22,7 +22,7 @@ namespace Sinance.Business.Handlers
         public static void ClearTransactionsForUserCached(string userId)
         {
             var cacheKey = string.Format(CultureInfo.CurrentCulture, _transactionCacheKeyFormat, userId);
-            FinanceCacheHandler.ClearCache(cacheKey);
+            SinanceCacheHandler.ClearCache(cacheKey);
         }
 
         /// <summary>
@@ -35,7 +35,7 @@ namespace Sinance.Business.Handlers
         {
             var cacheKey = string.Format(CultureInfo.CurrentCulture, _transactionCacheKeyFormat, userId);
 
-            return await FinanceCacheHandler.Cache(key: cacheKey,
+            return await SinanceCacheHandler.Cache(key: cacheKey,
                 contentAction: async () =>
                 {
                     return await unitOfWork.TransactionRepository.FindAll(item => item.UserId == userId);

@@ -26,7 +26,7 @@ namespace Sinance.Business.Extensions
 
         public static TransactionEntity ToNewEntity(this TransactionModel transactionModel, int userId)
         {
-            return new TransactionEntity
+            var entity = new TransactionEntity
             {
                 Name = transactionModel.Name,
                 Description = transactionModel.Description,
@@ -34,8 +34,20 @@ namespace Sinance.Business.Extensions
                 Amount = transactionModel.Amount,
                 Date = transactionModel.Date,
                 BankAccountId = transactionModel.BankAccountId,
+                AccountNumber = transactionModel.FromAccount,
                 UserId = userId
             };
+
+            if (transactionModel.Categories != null)
+            {
+                entity.TransactionCategories = transactionModel.Categories.Select(x => new TransactionCategoryEntity
+                {
+                    Amount = x.Amount,
+                    CategoryId = x.CategoryId
+                }).ToList();
+            }
+
+            return entity;
         }
 
         public static TransactionEntity UpdateFromModel(this TransactionEntity transactionEntity, TransactionModel model)

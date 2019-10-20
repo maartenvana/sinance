@@ -1,4 +1,4 @@
-using Sinance.Communication.Import;
+using Sinance.Communication.Model.Import;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -14,7 +14,7 @@ namespace Sinance.Storage.Entities
         /// Category
         /// </summary>
         [ForeignKey("CategoryId")]
-        public virtual CategoryEntity Category { get; set; }
+        public CategoryEntity Category { get; set; }
 
         /// <summary>
         /// Category id
@@ -35,18 +35,5 @@ namespace Sinance.Storage.Entities
         [Required(ErrorMessage = "{0} is vereist")]
         [StringLength(200, MinimumLength = 1, ErrorMessage = "{0} moet minimaal {2} en maximaal {1} karakters lang zijn")]
         public string MatchValue { get; set; }
-
-        /// <summary>
-        /// Updates the current instance with the values from the given entity
-        /// </summary>
-        public void Update(string matchValue, ColumnType columnType, int categoryId)
-        {
-            if (matchValue == null)
-                throw new ArgumentNullException(nameof(matchValue));
-
-            MatchValue = matchValue;
-            ColumnTypeId = columnType;
-            CategoryId = categoryId;
-        }
     }
 }

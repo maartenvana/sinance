@@ -1,7 +1,7 @@
 ﻿using Serilog;
 using Sinance.Business.Handlers;
 using Sinance.Business.Services.Authentication;
-using Sinance.Communication.BankAccount;
+using Sinance.Communication.Model.BankAccount;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
 using System;
@@ -185,7 +185,6 @@ namespace Sinance.Business.DataSeeding
                 {
                     AccountNumber = "NL02ABNA9450889198",
                     Amount = -amount,
-                    AmountIsNegative = true,
                     BankAccount = primaryChecking,
                     Description = "Savings deposit",
                     Date = startDate.AddMonths(-i),
@@ -206,7 +205,6 @@ namespace Sinance.Business.DataSeeding
                 {
                     AccountNumber = "NL83RABO2338418883",
                     Amount = amount,
-                    AmountIsNegative = false,
                     BankAccount = savingsAccount,
                     Description = "Savings deposit",
                     Date = startDate.AddMonths(-i),
@@ -249,7 +247,6 @@ namespace Sinance.Business.DataSeeding
                 {
                     AccountNumber = "NL02ABNA9450889198",
                     Amount = amount,
-                    AmountIsNegative = true,
                     BankAccount = bankAccount,
                     Description = transactionDescription,
                     Date = startDate.AddMonths(-i),
@@ -299,7 +296,6 @@ namespace Sinance.Business.DataSeeding
                 {
                     AccountNumber = "NL02ABNA9450889198",
                     Amount = amount,
-                    AmountIsNegative = true,
                     BankAccount = bankAccount,
                     Description = transactionDescription,
                     Date = transactionDate,
@@ -345,7 +341,6 @@ namespace Sinance.Business.DataSeeding
                 {
                     AccountNumber = "NL02ABNA9450889198",
                     Amount = amount,
-                    AmountIsNegative = true,
                     BankAccount = bankAccount,
                     Description = transactionDescription,
                     Date = startDate.AddDays(-7 * i),

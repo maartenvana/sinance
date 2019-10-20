@@ -1,10 +1,7 @@
-﻿using Sinance.Business.Classes;
-using Sinance.Domain.Entities;
-using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Sinance.Communication.Model.BankAccount;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 
-namespace Sinance.Web.Model
+namespace Sinance.Communication.Model.Import
 {
     /// <summary>
     /// Model for importing a csv to the database
@@ -14,18 +11,16 @@ namespace Sinance.Web.Model
         /// <summary>
         /// Available bank accounts to save transaction to or map unknown bank accounts
         /// </summary>
-        public IList<SelectListItem> AvailableAccounts { get; set; }
+        public IList<BankAccountModel> AvailableAccounts { get; set; }
 
         /// <summary>
         /// Available import banks to choose from
         /// </summary>
-        public IList<ImportBank> AvailableImportBanks { get; set; }
+        public IList<ImportBankModel> AvailableImportBanks { get; set; }
 
         /// <summary>
         /// Bank account to import to
         /// </summary>
-        [Display(ResourceType = typeof(Resources), Name = "ImportToBankAccount")]
-        [Required(ErrorMessageResourceType = typeof(Resources), ErrorMessageResourceName = "ChooseBankAccount")]
         public int BankAccountId { get; set; }
 
         /// <summary>

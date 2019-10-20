@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 using Sinance.Business.Services.Transactions;
+using System.Threading.Tasks;
 
 namespace Sinance.Controllers
 {

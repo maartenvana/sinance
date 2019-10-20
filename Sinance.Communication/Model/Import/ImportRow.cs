@@ -1,6 +1,6 @@
-﻿using Sinance.Storage.Entities;
+﻿using Sinance.Communication.Model.Transaction;
 
-namespace Sinance.Business.Classes
+namespace Sinance.Communication.Model.Import
 {
     /// <summary>
     /// Import row for importing an transaction
@@ -25,6 +25,6 @@ namespace Sinance.Business.Classes
         /// <summary>
         /// The transaction that is going to be inserted
         /// </summary>
-        public TransactionEntity Transaction { get; set; }
+        public TransactionModel Transaction { get; set; }
     }
 }

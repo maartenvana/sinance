@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Sinance.Business.Classes;
 using Sinance.Business.Exceptions;
-using Sinance.Business.Services.Authentication;
 using Sinance.Business.Services.BankAccounts;
 using Sinance.Business.Services.Categories;
 using Sinance.Business.Services.Transactions;
+using Sinance.Communication;
 using Sinance.Communication.Model.Transaction;
 using Sinance.Web;
 using Sinance.Web.Helper;
@@ -102,7 +101,7 @@ namespace Sinance.Controllers
                     Value = item.Id.ToString(CultureInfo.InvariantCulture)
                 }));
 
-                var model = new EditTransactionModel
+                var model = new EditTransactionViewModel
                 {
                     AvailableCategories = availableCategories,
                     Transaction = transaction
@@ -131,7 +130,7 @@ namespace Sinance.Controllers
                 var transactions = await _transactionService.GetTransactionsForBankAccountForCurrentUser(bankAccountId, 200, skip: 0);
                 var availableCategories = await _categoryService.GetAllCategoriesForCurrentUser();
 
-                var model = new AccountOverviewModel
+                var model = new AccountOverviewViewModel
                 {
                     Account = bankAccount,
                     Transactions = transactions.Take(200).ToList(),

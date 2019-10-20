@@ -1,13 +1,13 @@
-﻿using Sinance.Storage.Entities;
+﻿using Sinance.Business.Exceptions;
+using Sinance.Business.Extensions;
+using Sinance.Business.Services.Authentication;
+using Sinance.Communication.Model.CustomReport;
 using Sinance.Storage;
+using Sinance.Storage.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Sinance.Business.Services.Authentication;
-using Sinance.Communication.Model.CustomReport;
-using Sinance.Business.Extensions;
-using Sinance.Business.Exceptions;
 
 namespace Sinance.Business.Services
 {
@@ -60,7 +60,7 @@ namespace Sinance.Business.Services
         /// <summary>
         /// Custom reports active in this session
         /// </summary>
-        public async Task<IEnumerable<CustomReportModel>> GetCustomReportsForCurrentUser()
+        public async Task<List<CustomReportModel>> GetCustomReportsForCurrentUser()
         {
             var userId = await _sessionService.GetCurrentUserId();
 
@@ -73,7 +73,8 @@ namespace Sinance.Business.Services
                         $"{nameof(CustomReportEntity.ReportCategories)}.{nameof(CustomReportCategoryEntity.Category)}"
                     }))
                 .OrderBy(item => item.Name)
-                .ToDto();
+                .ToDto()
+                .ToList();
 
             return customReports;
         }

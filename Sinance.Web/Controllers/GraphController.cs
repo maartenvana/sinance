@@ -1,15 +1,15 @@
-﻿using Sinance.Business.Classes;
-using Sinance.Web.Model;
-using Sinance.Web;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Sinance.Business.Calculations;
+using Sinance.Business.Services;
+using Sinance.Communication;
+using Sinance.Web;
+using Sinance.Web.Helper;
+using Sinance.Web.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Sinance.Web.Helper;
-using Sinance.Business.Calculations;
-using Sinance.Business.Services;
 
 namespace Sinance.Controllers
 {

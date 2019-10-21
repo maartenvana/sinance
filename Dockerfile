@@ -7,7 +7,7 @@ COPY NuGet.config .
 COPY Sinance.Web/*.csproj ./Sinance.Web/
 COPY Sinance.Business/*.csproj ./Sinance.Business/
 COPY Sinance.Common/*.csproj ./Sinance.Common/
-COPY Sinance.Domain/*.csproj ./Sinance.Domain/
+COPY Sinance.Communication/*.csproj ./Sinance.Communication/
 COPY Sinance.Storage/*.csproj ./Sinance.Storage/
 RUN dotnet restore
 

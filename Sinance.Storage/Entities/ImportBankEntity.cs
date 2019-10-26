@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Sinance.Storage.Entities
 {
@@ -25,6 +24,11 @@ namespace Sinance.Storage.Entities
         /// Import mappings for this bank
         /// </summary>
         public List<ImportMappingEntity> ImportMappings { get; set; }
+
+        /// <summary>
+        /// If this import bank definition is a standard available import
+        /// </summary>
+        public bool IsStandard { get; set; }
 
         /// <summary>
         /// Name of the bank

@@ -1,11 +1,9 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Sinance.Common.Configuration;
+using Sinance.Business.DataSeeding;
 using Sinance.Storage;
 using System;
 using System.Threading.Tasks;
-using Serilog;
-using Sinance.Business.DataSeeding;
 
 namespace Sinance.Web.Extensions
 {
@@ -13,23 +11,12 @@ namespace Sinance.Web.Extensions
     {
         public static IApplicationBuilder ApplyDataSeed(this IApplicationBuilder appBuilder)
         {
-            var appSettings = appBuilder.ApplicationServices.GetRequiredService<AppSettings>();
-            var logger = appBuilder.ApplicationServices.GetRequiredService<ILogger>();
-            if (appSettings.Database.SeedDemoData)
-            {
-                logger.Information("Database__SeedDemoData is enabled, starting seed of demo data");
+            var dataSeeder = appBuilder.ApplicationServices.GetRequiredService<DataSeedService>();
 
-                var dataSeeder = appBuilder.ApplicationServices.GetRequiredService<DataSeedService>();
-
-                Task.Run(async () =>
-                    {
-                        await dataSeeder.SeedData(appSettings.Database.OverrideSeedDemoData);
-                    }).Wait();
-            }
-            else
+            Task.Run(async () =>
             {
-                logger.Information("Database__SeedDemoData is disabled");
-            }
+                await dataSeeder.SeedData();
+            }).Wait();
 
             return appBuilder;
         }

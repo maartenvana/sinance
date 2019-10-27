@@ -1,4 +1,7 @@
-﻿using Sinance.Storage.Entities;
+﻿#pragma warning disable S107 // Methods should not have too many parameters
+
+using Sinance.Storage.Entities;
+using System;
 using System.Threading.Tasks;
 
 namespace Sinance.Storage
@@ -58,6 +61,7 @@ namespace Sinance.Storage
         public void Dispose()
         {
             Dispose(true);
+            GC.SuppressFinalize(this);
         }
 
         public async Task<int> SaveAsync()

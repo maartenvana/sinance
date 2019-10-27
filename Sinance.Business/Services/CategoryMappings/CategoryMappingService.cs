@@ -46,7 +46,7 @@ namespace Sinance.Business.Services.CategoryMappings
 
             var insertedCategoryMapping = await FindCategoryMapping(entity.Id, userId, unitOfWork);
 
-            return entity.ToDto();
+            return insertedCategoryMapping.ToDto();
         }
 
         public async Task DeleteCategoryMappingByIdForCurrentUser(int categoryMappingId)

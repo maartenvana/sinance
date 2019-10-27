@@ -7,7 +7,6 @@ using Sinance.Communication.Model.Category;
 using Sinance.Web;
 using Sinance.Web.Helper;
 using Sinance.Web.Model;
-using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -89,11 +88,6 @@ namespace Sinance.Controllers
         /// <returns>Index page</returns>
         public async Task<IActionResult> RemoveCategory(int categoryId)
         {
-            if (categoryId < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(categoryId));
-            }
-
             try
             {
                 await _categoryService.DeleteCategoryByIdForCurrentUser(categoryId);
@@ -101,8 +95,7 @@ namespace Sinance.Controllers
             }
             catch (NotFoundException)
             {
-                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error,
-                    ViewBag.Message = Resources.CategoryNotFound);
+                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryNotFound);
             }
 
             return RedirectToAction("Index");
@@ -115,24 +108,17 @@ namespace Sinance.Controllers
         /// <returns>Redirect to the edit category action</returns>
         public async Task<IActionResult> UpdateCategoryToMappedTransactions(int categoryId, IEnumerable<int> transactionIds)
         {
-            if (categoryId < 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(categoryId));
-            }
-
             try
             {
                 await _categoryService.MapCategoryToTransactionsForCurrentUser(categoryId, transactionIds);
 
-                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success,
-                    ViewBag.Message = Resources.CategoryMappingsAppliedToTransactions);
+                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.CategoryMappingsAppliedToTransactions);
 
                 return RedirectToAction("EditCategory", new { categoryId });
             }
             catch (NotFoundException)
             {
-                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error,
-                    ViewBag.Message = Resources.CategoryNotFound);
+                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryNotFound);
                 return RedirectToAction("Index");
             }
         }
@@ -189,7 +175,6 @@ namespace Sinance.Controllers
         /// <returns>List of available categories</returns>
         internal async Task<List<SelectListItem>> CreateAvailableParentCategoriesSelectList(CategoryModel category)
         {
-            // TODO: Remove SelectListItems, create them inside the view
             var categories = await _categoryService.GetPossibleParentCategoriesForCurrentUser(category.Id);
 
             var availableCategories = new List<SelectListItem>{

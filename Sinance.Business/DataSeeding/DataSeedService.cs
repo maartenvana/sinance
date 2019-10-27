@@ -123,9 +123,6 @@ namespace Sinance.Business.DataSeeding
         {
             _logger.Information("Creating demo categories and transactions");
 
-            // TODO: This should be a standard category, already created issue
-            //var essentialsCategory = InsertCategory(unitOfWork, user, "Essentials", false);
-
             var mortgageCategory = InsertCategory(unitOfWork, user, "Mortgage", true);
             InsertMonthlyTransactionsForCategory(unitOfWork, primaryChecking, mortgageCategory, 3, "Mortgage payment", "Bank", -1000, -1000);
 
@@ -305,8 +302,9 @@ namespace Sinance.Business.DataSeeding
             unitOfWork.TransactionRepository.InsertRange(transactions);
         }
 
-        private List<TransactionEntity> InsertMonthlyTransactionsForCategory(IUnitOfWork unitOfWork, BankAccountEntity bankAccount, CategoryEntity category, int dayInMonth,
-                    string transactionName, string transactionDescription, int amountMinValue, int amountMaxValue)
+        private void InsertMonthlyTransactionsForCategory(
+            IUnitOfWork unitOfWork, BankAccountEntity bankAccount, CategoryEntity category, int dayInMonth,
+            string transactionName, string transactionDescription, int amountMinValue, int amountMaxValue)
         {
             var today = DateTime.Now.Date;
 
@@ -345,11 +343,9 @@ namespace Sinance.Business.DataSeeding
                 });
             }
             unitOfWork.TransactionRepository.InsertRange(transactions);
-
-            return transactions;
         }
 
-        private List<TransactionEntity> InsertRandomMonthlyTransactionsForCategory(IUnitOfWork unitOfWork,
+        private void InsertRandomMonthlyTransactionsForCategory(IUnitOfWork unitOfWork,
             BankAccountEntity bankAccount, CategoryEntity category, string transactionName, string transactionDescription, int amountMinValue, int amountMaxValue)
         {
             var today = DateTime.Now.Date;
@@ -397,11 +393,10 @@ namespace Sinance.Business.DataSeeding
             }
 
             unitOfWork.TransactionRepository.InsertRange(transactions);
-
-            return transactions;
         }
 
-        private List<TransactionEntity> InsertWeeklyTransactionsForCategory(IUnitOfWork unitOfWork, BankAccountEntity bankAccount, CategoryEntity category, DayOfWeek transactionDayOfWeek,
+        private void InsertWeeklyTransactionsForCategory(
+            IUnitOfWork unitOfWork, BankAccountEntity bankAccount, CategoryEntity category, DayOfWeek transactionDayOfWeek,
             string transactionName, string transactionDescription, int amountMinValue, int amountMaxValue)
         {
             var today = DateTime.Now.Date;
@@ -439,8 +434,6 @@ namespace Sinance.Business.DataSeeding
                 });
             }
             unitOfWork.TransactionRepository.InsertRange(transactions);
-
-            return transactions;
         }
     }
 }

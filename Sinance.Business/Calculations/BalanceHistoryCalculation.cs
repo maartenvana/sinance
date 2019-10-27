@@ -45,7 +45,7 @@ namespace Sinance.Business.Calculations
             var userBankAccounts = await _bankAccountService.GetActiveBankAccountsForCurrentUser();
 
             // This might seem backwards, but this way we validate if the bankaccounts given are our own
-            var bankAccounts = bankAccountIds.Any() == true ? userBankAccounts.Where(item => bankAccountIds.Any(y => y == item.Id)).ToList() : userBankAccounts;
+            var bankAccounts = bankAccountIds.Any() ? userBankAccounts.Where(item => bankAccountIds.Any(y => y == item.Id)).ToList() : userBankAccounts;
             var bankAccountsIdFilter = bankAccounts.Select(x => x.Id).ToList();
 
             // Initialze the collection with a certain capacity to preserve ram usage

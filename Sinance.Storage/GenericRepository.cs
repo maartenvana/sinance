@@ -1,10 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Sinance.Storage.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Sinance.Storage.Entities;
 
 namespace Sinance.Storage
 {
@@ -31,9 +31,9 @@ namespace Sinance.Storage
             _dbSet.RemoveRange(entities);
         }
 
-        public async Task<List<TEntity>> FindAll(Expression<Func<TEntity, bool>> predicate, params string[] includeProperties)
+        public async Task<List<TEntity>> FindAll(Expression<Func<TEntity, bool>> findQuery, params string[] includeProperties)
         {
-            var query = _dbSet.Where(predicate);
+            var query = _dbSet.Where(findQuery);
 
             if (includeProperties != null)
             {
@@ -42,9 +42,9 @@ namespace Sinance.Storage
             return await query.AsNoTracking().ToListAsync();
         }
 
-        public async Task<List<TEntity>> FindAllTracked(Expression<Func<TEntity, bool>> predicate, params string[] includeProperties)
+        public async Task<List<TEntity>> FindAllTracked(Expression<Func<TEntity, bool>> findQuery, params string[] includeProperties)
         {
-            var query = _dbSet.Where(predicate);
+            var query = _dbSet.Where(findQuery);
 
             if (includeProperties != null)
             {
@@ -53,7 +53,7 @@ namespace Sinance.Storage
             return await query.AsTracking().ToListAsync();
         }
 
-        public async Task<TEntity> FindSingle(Expression<Func<TEntity, bool>> predicate, params string[] includeProperties)
+        public async Task<TEntity> FindSingle(Expression<Func<TEntity, bool>> findQuery, params string[] includeProperties)
         {
             var query = _dbSet.AsNoTracking();
 
@@ -62,10 +62,10 @@ namespace Sinance.Storage
                 query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
             }
 
-            return await query.SingleOrDefaultAsync(predicate);
+            return await query.SingleOrDefaultAsync(findQuery);
         }
 
-        public async Task<TEntity> FindSingleTracked(Expression<Func<TEntity, bool>> predicate, params string[] includeProperties)
+        public async Task<TEntity> FindSingleTracked(Expression<Func<TEntity, bool>> findQuery, params string[] includeProperties)
         {
             var query = _dbSet.AsTracking();
 
@@ -74,13 +74,13 @@ namespace Sinance.Storage
                 query = includeProperties.Aggregate(query, (current, property) => current.Include(property));
             }
 
-            return await query.SingleOrDefaultAsync(predicate);
+            return await query.SingleOrDefaultAsync(findQuery);
         }
 
-        public async Task<List<TEntity>> FindTopAscending(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderByAscending, int count, int skip, params string[] includeProperties)
+        public async Task<List<TEntity>> FindTopAscending(Expression<Func<TEntity, bool>> findQuery, Expression<Func<TEntity, object>> orderByAscending, int count, int skip, params string[] includeProperties)
         {
             var query = _dbSet
-                 .Where(predicate)
+                 .Where(findQuery)
                  .OrderBy(orderByAscending)
                  .Take(count)
                  .Skip(skip)
@@ -94,11 +94,11 @@ namespace Sinance.Storage
             return await query.ToListAsync();
         }
 
-        public async Task<List<TEntity>> FindTopAscendingTracked(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderBy, int count, int skip, params string[] includeProperties)
+        public async Task<List<TEntity>> FindTopAscendingTracked(Expression<Func<TEntity, bool>> findQuery, Expression<Func<TEntity, object>> orderByAscending, int count, int skip, params string[] includeProperties)
         {
             var query = _dbSet
-                .Where(predicate)
-                .OrderBy(orderBy)
+                .Where(findQuery)
+                .OrderBy(orderByAscending)
                 .Take(count)
                 .Skip(skip)
                 .AsTracking();
@@ -111,10 +111,10 @@ namespace Sinance.Storage
             return await query.ToListAsync();
         }
 
-        public async Task<List<TEntity>> FindTopDescending(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderByDescending, int count, int skip, params string[] includeProperties)
+        public async Task<List<TEntity>> FindTopDescending(Expression<Func<TEntity, bool>> findQuery, Expression<Func<TEntity, object>> orderByDescending, int count, int skip, params string[] includeProperties)
         {
             var query = _dbSet
-                .Where(predicate)
+                .Where(findQuery)
                 .OrderByDescending(orderByDescending)
                 .Take(count)
                 .Skip(skip)
@@ -127,10 +127,10 @@ namespace Sinance.Storage
             return await query.ToListAsync();
         }
 
-        public async Task<List<TEntity>> FindTopDescendingTracked(Expression<Func<TEntity, bool>> predicate, Expression<Func<TEntity, object>> orderByDescending, int count, int skip, params string[] includeProperties)
+        public async Task<List<TEntity>> FindTopDescendingTracked(Expression<Func<TEntity, bool>> findQuery, Expression<Func<TEntity, object>> orderByDescending, int count, int skip, params string[] includeProperties)
         {
             var query = _dbSet
-                .Where(predicate)
+                .Where(findQuery)
                 .OrderByDescending(orderByDescending)
                 .Take(count)
                 .Skip(skip)
@@ -178,9 +178,9 @@ namespace Sinance.Storage
             return await query.AsTracking().ToListAsync();
         }
 
-        public async Task<decimal> Sum(Expression<Func<TEntity, bool>> filterQuery, Expression<Func<TEntity, decimal>> sumQuery)
+        public async Task<decimal> Sum(Expression<Func<TEntity, bool>> findQuery, Expression<Func<TEntity, decimal>> sumQuery)
         {
-            return await _dbSet.Where(filterQuery).SumAsync(sumQuery);
+            return await _dbSet.Where(findQuery).SumAsync(sumQuery);
         }
 
         public void Update(TEntity entity)
@@ -199,17 +199,6 @@ namespace Sinance.Storage
             foreach (var entity in entities)
             {
                 Update(entity);
-            }
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                if (_context != null)
-                {
-                    _context.Dispose();
-                }
             }
         }
     }

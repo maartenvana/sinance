@@ -1,0 +1,15 @@
+{
+  "ServerUri": "https://sonarcloud.io/",
+  "Organization": {
+    "Key": "maartenvana",
+    "Name": "Maarten van Arem"
+  },
+  "ProjectKey": "maartenvana_sinance",
+  "ProjectName": "sinance",
+  "Profiles": {
+    "CSharp": {
+      "ProfileKey": "AW4NFBEtWHpcZYCADVuX",
+      "ProfileTimestamp": "2019-10-27T12:57:30+01:00"
+    }
+  }
+}

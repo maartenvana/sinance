@@ -39,7 +39,7 @@ namespace Sinance.Controllers
             var transactions = await _transactionService.GetTransactionsForMonthForCurrentUser(monthYearDate.Year, monthYearDate.Month);
 
             // No need to sort this list, we loop through it by month numbers
-            var totalProfitLossLastMonth = transactions.Where(x => bankAccounts.Single(y => y.Id == x.BankAccountId).IncludeInProfitLossGraph == true).Sum(x => x.Amount);
+            var totalProfitLossLastMonth = transactions.Where(x => bankAccounts.Single(y => y.Id == x.BankAccountId).IncludeInProfitLossGraph).Sum(x => x.Amount);
 
             var totalIncomeLastMonth = transactions.Where(x =>
                         (!x.Categories.Any() || x.Categories.Any(x => x.CategoryId != 69)) && // Cashflow

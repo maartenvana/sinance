@@ -42,11 +42,6 @@ namespace Sinance.Controllers
         /// <returns>Actionresult with details of the account</returns>
         public async Task<IActionResult> EditAccount(int accountId)
         {
-            if (accountId <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(accountId));
-            }
-
             try
             {
                 var bankAccount = await _bankAccountService.GetBankAccountByIdForCurrentUser(accountId);
@@ -77,22 +72,15 @@ namespace Sinance.Controllers
         /// <returns>ActionResult with details of the remove action</returns>
         public async Task<IActionResult> RemoveAccount(int accountId)
         {
-            if (accountId <= 0)
-            {
-                throw new ArgumentOutOfRangeException(nameof(accountId));
-            }
-
             try
             {
                 await _bankAccountService.DeleteBankAccountByIdForCurrentUser(accountId);
 
-                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success,
-                    ViewBag.Message = Resources.BankAccountRemoved);
+                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Success, Resources.BankAccountRemoved);
             }
             catch (NotFoundException)
             {
-                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error,
-                    ViewBag.Message = Resources.BankAccountNotFound);
+                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.BankAccountNotFound);
             }
 
             return RedirectToAction("Index");
@@ -105,11 +93,6 @@ namespace Sinance.Controllers
         /// <returns>ActionResult with the outcome</returns>
         public async Task<IActionResult> UpsertAccount(BankAccountModel model)
         {
-            if (model == null)
-            {
-                throw new ArgumentNullException(nameof(model));
-            }
-
             ActionResult result = View(model);
 
             if (ModelState.IsValid)

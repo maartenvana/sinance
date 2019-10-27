@@ -28,7 +28,7 @@ namespace Sinance.Business.Calculations
 
             // No need to sort this list, we loop through it by month numbers
             var transactionsPerMonth = (await unitOfWork.TransactionRepository
-                .FindAll(item => item.Date.Year == year && item.UserId == currentUserId && item.BankAccount.IncludeInProfitLossGraph == true))
+                .FindAll(item => item.Date.Year == year && item.UserId == currentUserId && item.BankAccount.IncludeInProfitLossGraph))
                 .GroupBy(item => item.Date.Month)
                 .ToList();
 

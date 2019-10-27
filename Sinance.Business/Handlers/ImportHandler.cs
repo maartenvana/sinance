@@ -85,15 +85,12 @@ namespace Sinance.Business.Handlers
             var savedTransactions = 0;
 
             // Select all cached import rows that have to be imported
-            foreach (var cachedImportRow in importRows.Where(item => item.ExistsInDatabase == false && item.Import)
+            foreach (var cachedImportRow in importRows.Where(item => !item.ExistsInDatabase && item.Import)
                 .Select(importRow => cachedImportRows.SingleOrDefault(item => item.ImportRowId == importRow.ImportRowId))
                 .Where(cachedImportRow => cachedImportRow != null))
             {
                 // Set the application user id and bank account id
                 cachedImportRow.Transaction.BankAccountId = bankAccountId;
-
-                // Remove the category entity reference, otherwise it wont save
-                var mappedTransactionCategory = cachedImportRow.Transaction.Categories.FirstOrDefault();
 
                 unitOfWork.TransactionRepository.Insert(cachedImportRow.Transaction.ToNewEntity(userId));
 

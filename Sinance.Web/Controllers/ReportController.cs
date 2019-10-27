@@ -145,7 +145,7 @@ namespace Sinance.Controllers
             {
                 try
                 {
-                    model.CustomReport.Categories = model.AvailableCategories.Where(x => x.Checked == true).Select(x => new CustomReportCategoryModel
+                    model.CustomReport.Categories = model.AvailableCategories.Where(x => x.Checked).Select(x => new CustomReportCategoryModel
                     {
                         CategoryId = x.Id
                     }).ToList();
@@ -160,7 +160,7 @@ namespace Sinance.Controllers
             }
             else
             {
-                model.CustomReport.Categories = model.AvailableCategories.Where(x => x.Checked == true).Select(x => new CustomReportCategoryModel
+                model.CustomReport.Categories = model.AvailableCategories.Where(x => x.Checked).Select(x => new CustomReportCategoryModel
                 {
                     CategoryId = x.Id
                 }).ToList();

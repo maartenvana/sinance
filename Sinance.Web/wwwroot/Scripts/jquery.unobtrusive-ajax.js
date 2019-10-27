@@ -59,34 +59,29 @@
             var top;
 
             switch (mode) {
-            case "BEFORE":
-                top = update.firstChild;
-                $("<div />").html(data).contents().each(function () {
-                    update.insertBefore(this, top);
-                });
-                break;
-            case "AFTER":
-                $("<div />").html(data).contents().each(function () {
-                    update.appendChild(this);
-                });
-                break;
-            case "REPLACE-WITH":
-                $(update).replaceWith(data);
-                break;
-            default:
-                $(update).html(data);
-                break;
+                case "BEFORE":
+                    top = update.firstChild;
+                    $("<div />").html(data).contents().each(function () {
+                        update.insertBefore(this, top);
+                    });
+                    break;
+                case "AFTER":
+                    $("<div />").html(data).contents().each(function () {
+                        update.appendChild(this);
+                    });
+                    break;
+                case "REPLACE-WITH":
+                    $(update).replaceWith(data);
+                    break;
+                default:
+                    $(update).html(data);
+                    break;
             }
         });
     }
 
     function asyncRequest(element, options) {
-        var confirm, loading, method, duration;
-
-        confirm = element.getAttribute("data-ajax-confirm");
-        if (confirm && !window.confirm(confirm)) {
-            return;
-        }
+        var loading, method, duration;
 
         loading = $(element.getAttribute("data-ajax-loading"));
         duration = parseInt(element.getAttribute("data-ajax-loading-duration"), 10) || 0;

@@ -26,16 +26,16 @@ namespace Sinance.Business.Calculations
 
         public async Task<List<decimal[]>> BalanceHistoryForYear(int year, IEnumerable<int> includeBankAccounts)
         {
-            var startDate = new DateTime(year, 1, 1).Date;
-            var endDate = new DateTime(year, 12, 31).AddDays(-1).Date;
+            var startDate = new DateTime(year, 1, 1);
+            var endDate = new DateTime(year, 12, 31, 23, 59, 59, 999);
 
             return await CalculateBalanceHistory(startDate, endDate, includeBankAccounts);
         }
 
         public async Task<List<decimal[]>> BalanceHistoryFromYearInPast(int yearsInPast, IEnumerable<int> includeBankAccounts)
         {
-            var startDate = DateTime.Now.AddYears(yearsInPast * -1).Date;
-            var endDate = DateTime.Now.Date;
+            var startDate = DateTime.Now.AddYears(yearsInPast * -1);
+            var endDate = DateTime.Now;
 
             return await CalculateBalanceHistory(startDate, endDate, includeBankAccounts);
         }
@@ -45,7 +45,7 @@ namespace Sinance.Business.Calculations
             var userBankAccounts = await _bankAccountService.GetActiveBankAccountsForCurrentUser();
 
             // This might seem backwards, but this way we validate if the bankaccounts given are our own
-            var bankAccounts = bankAccountIds.Any() == true ? userBankAccounts.Where(item => bankAccountIds.Any(y => y == item.Id)).ToList() : userBankAccounts;
+            var bankAccounts = bankAccountIds.Any() ? userBankAccounts.Where(item => bankAccountIds.Any(y => y == item.Id)).ToList() : userBankAccounts;
             var bankAccountsIdFilter = bankAccounts.Select(x => x.Id).ToList();
 
             // Initialze the collection with a certain capacity to preserve ram usage

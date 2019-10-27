@@ -95,7 +95,7 @@ namespace Sinance.Business.Services.Imports
             }
 
             using var unitOfWork = _unitOfWork();
-            var bankAccount = await unitOfWork.BankAccountRepository.FindSingle(x => x.Id == model.BankAccountId && x.UserId == userId);
+            var bankAccount = await unitOfWork.BankAccountRepository.FindSingleTracked(x => x.Id == model.BankAccountId && x.UserId == userId);
             if (bankAccount == null)
             {
                 throw new NotFoundException(nameof(BankAccountEntity));
@@ -109,9 +109,10 @@ namespace Sinance.Business.Services.Imports
                 userId: bankAccount.UserId);
 
             // Update the current balance of bank account and refresh them
-            await TransactionHandler.UpdateCurrentBalance(unitOfWork,
-                bankAccountId: bankAccount.Id,
-                userId: bankAccount.UserId);
+            bankAccount.CurrentBalance = await TransactionHandler.CalculateCurrentBalanceForBankAccount(unitOfWork,
+                bankAccount);
+
+            await unitOfWork.SaveAsync();
 
             // Clear the cache entry
             SinanceCacheHandler.ClearCache(importCacheKey);

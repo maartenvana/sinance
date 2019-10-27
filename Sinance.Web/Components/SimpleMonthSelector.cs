@@ -1,5 +1,5 @@
-﻿using Sinance.Web.Model;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using Sinance.Web.Model;
 using System;
 
 namespace Sinance.Web.Components

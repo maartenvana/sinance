@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using Sinance.Communication.Model.Category;
-using Sinance.Communication.Model.CategoryMapping;
 using System.Collections.Generic;
 
 namespace Sinance.Web.Model

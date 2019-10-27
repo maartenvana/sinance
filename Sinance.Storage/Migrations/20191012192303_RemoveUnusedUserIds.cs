@@ -4,57 +4,6 @@ namespace Sinance.Storage.Migrations
 {
     public partial class RemoveUnusedUserIds : Migration
     {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropForeignKey(
-                name: "FK_CustomReportCategory_Users_UserId",
-                table: "CustomReportCategory");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_ImportBank_Users_UserId",
-                table: "ImportBank");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_ImportMapping_Users_UserId",
-                table: "ImportMapping");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_TransactionCategory_Users_UserId",
-                table: "TransactionCategory");
-
-            migrationBuilder.DropIndex(
-                name: "IX_TransactionCategory_UserId",
-                table: "TransactionCategory");
-
-            migrationBuilder.DropIndex(
-                name: "IX_ImportMapping_UserId",
-                table: "ImportMapping");
-
-            migrationBuilder.DropIndex(
-                name: "IX_ImportBank_UserId",
-                table: "ImportBank");
-
-            migrationBuilder.DropIndex(
-                name: "IX_CustomReportCategory_UserId",
-                table: "CustomReportCategory");
-
-            migrationBuilder.DropColumn(
-                name: "UserId",
-                table: "TransactionCategory");
-
-            migrationBuilder.DropColumn(
-                name: "UserId",
-                table: "ImportMapping");
-
-            migrationBuilder.DropColumn(
-                name: "UserId",
-                table: "ImportBank");
-
-            migrationBuilder.DropColumn(
-                name: "UserId",
-                table: "CustomReportCategory");
-        }
-
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<int>(
@@ -136,6 +85,57 @@ namespace Sinance.Storage.Migrations
                 principalTable: "Users",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Restrict);
+        }
+
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropForeignKey(
+                name: "FK_CustomReportCategory_Users_UserId",
+                table: "CustomReportCategory");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_ImportBank_Users_UserId",
+                table: "ImportBank");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_ImportMapping_Users_UserId",
+                table: "ImportMapping");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_TransactionCategory_Users_UserId",
+                table: "TransactionCategory");
+
+            migrationBuilder.DropIndex(
+                name: "IX_TransactionCategory_UserId",
+                table: "TransactionCategory");
+
+            migrationBuilder.DropIndex(
+                name: "IX_ImportMapping_UserId",
+                table: "ImportMapping");
+
+            migrationBuilder.DropIndex(
+                name: "IX_ImportBank_UserId",
+                table: "ImportBank");
+
+            migrationBuilder.DropIndex(
+                name: "IX_CustomReportCategory_UserId",
+                table: "CustomReportCategory");
+
+            migrationBuilder.DropColumn(
+                name: "UserId",
+                table: "TransactionCategory");
+
+            migrationBuilder.DropColumn(
+                name: "UserId",
+                table: "ImportMapping");
+
+            migrationBuilder.DropColumn(
+                name: "UserId",
+                table: "ImportBank");
+
+            migrationBuilder.DropColumn(
+                name: "UserId",
+                table: "CustomReportCategory");
         }
     }
 }

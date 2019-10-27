@@ -1,23 +1,21 @@
 ﻿using Autofac;
-using Sinance.Business;
-using Sinance.Common;
-using Sinance.Storage;
+using AutofacSerilogIntegration;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using Sinance.Web.Helper;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Sinance.Web.Services;
-using Sinance.Business.Services.Authentication;
 using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.Authorization;
-using Sinance.Common.Configuration;
-using Sinance.Web.Extensions;
 using Serilog;
-using AutofacSerilogIntegration;
+using Sinance.Business;
+using Sinance.Business.Services.Authentication;
+using Sinance.Common.Configuration;
+using Sinance.Storage;
+using Sinance.Web.Extensions;
+using Sinance.Web.Services;
+using System;
 
 namespace Sinance.Web
 {

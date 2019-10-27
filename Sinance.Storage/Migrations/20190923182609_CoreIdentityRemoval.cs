@@ -1,91 +1,11 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Metadata;
+﻿using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
+using System;
 
 namespace Sinance.Storage.Migrations
 {
     public partial class CoreIdentityRemoval : Migration
     {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropForeignKey(
-                name: "FK_BankAccount_AspNetUsers_ApplicationUserId",
-                table: "BankAccount");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Category_AspNetUsers_ApplicationUserId",
-                table: "Category");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_CustomReport_AspNetUsers_ApplicationUserId",
-                table: "CustomReport");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_Transaction_AspNetUsers_ApplicationUserId",
-                table: "Transaction");
-
-            migrationBuilder.DropTable(
-                name: "AspNetRoleClaims");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUserClaims");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUserLogins");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUserRoles");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUserTokens");
-
-            migrationBuilder.DropTable(
-                name: "AspNetRoles");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUsers");
-
-            migrationBuilder.DropIndex(
-                name: "IX_Transaction_ApplicationUserId",
-                table: "Transaction");
-
-            migrationBuilder.DropIndex(
-                name: "IX_CustomReport_ApplicationUserId",
-                table: "CustomReport");
-
-            migrationBuilder.DropIndex(
-                name: "IX_Category_ApplicationUserId",
-                table: "Category");
-
-            migrationBuilder.DropIndex(
-                name: "IX_BankAccount_ApplicationUserId",
-                table: "BankAccount");
-
-            migrationBuilder.AlterColumn<string>(
-                name: "ApplicationUserId",
-                table: "Transaction",
-                nullable: false,
-                oldClrType: typeof(string));
-
-            migrationBuilder.AlterColumn<string>(
-                name: "ApplicationUserId",
-                table: "CustomReport",
-                nullable: false,
-                oldClrType: typeof(string));
-
-            migrationBuilder.AlterColumn<string>(
-                name: "ApplicationUserId",
-                table: "Category",
-                nullable: false,
-                oldClrType: typeof(string));
-
-            migrationBuilder.AlterColumn<string>(
-                name: "ApplicationUserId",
-                table: "BankAccount",
-                nullable: false,
-                oldClrType: typeof(string));
-        }
-
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AlterColumn<string>(
@@ -346,6 +266,86 @@ namespace Sinance.Storage.Migrations
                 principalTable: "AspNetUsers",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Restrict);
+        }
+
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropForeignKey(
+                name: "FK_BankAccount_AspNetUsers_ApplicationUserId",
+                table: "BankAccount");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_Category_AspNetUsers_ApplicationUserId",
+                table: "Category");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_CustomReport_AspNetUsers_ApplicationUserId",
+                table: "CustomReport");
+
+            migrationBuilder.DropForeignKey(
+                name: "FK_Transaction_AspNetUsers_ApplicationUserId",
+                table: "Transaction");
+
+            migrationBuilder.DropTable(
+                name: "AspNetRoleClaims");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserClaims");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserLogins");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserRoles");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "AspNetRoles");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUsers");
+
+            migrationBuilder.DropIndex(
+                name: "IX_Transaction_ApplicationUserId",
+                table: "Transaction");
+
+            migrationBuilder.DropIndex(
+                name: "IX_CustomReport_ApplicationUserId",
+                table: "CustomReport");
+
+            migrationBuilder.DropIndex(
+                name: "IX_Category_ApplicationUserId",
+                table: "Category");
+
+            migrationBuilder.DropIndex(
+                name: "IX_BankAccount_ApplicationUserId",
+                table: "BankAccount");
+
+            migrationBuilder.AlterColumn<string>(
+                name: "ApplicationUserId",
+                table: "Transaction",
+                nullable: false,
+                oldClrType: typeof(string));
+
+            migrationBuilder.AlterColumn<string>(
+                name: "ApplicationUserId",
+                table: "CustomReport",
+                nullable: false,
+                oldClrType: typeof(string));
+
+            migrationBuilder.AlterColumn<string>(
+                name: "ApplicationUserId",
+                table: "Category",
+                nullable: false,
+                oldClrType: typeof(string));
+
+            migrationBuilder.AlterColumn<string>(
+                name: "ApplicationUserId",
+                table: "BankAccount",
+                nullable: false,
+                oldClrType: typeof(string));
         }
     }
 }

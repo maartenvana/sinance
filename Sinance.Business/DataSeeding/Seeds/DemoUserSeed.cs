@@ -12,14 +12,14 @@ namespace Sinance.Business.DataSeeding.Seeds
 {
     public class DemoUserSeed
     {
-        private readonly IAuthenticationService _authenticationService;
+        private readonly Lazy<IAuthenticationService> _authenticationService;
         private readonly ILogger _logger;
         private readonly Random _random;
         private readonly Func<IUnitOfWork> _unitOfWork;
 
         public DemoUserSeed(
             ILogger logger,
-            IAuthenticationService authenticationService,
+            Lazy<IAuthenticationService> authenticationService,
             Func<IUnitOfWork> unitOfWork)
         {
             _random = new Random();
@@ -49,7 +49,7 @@ namespace Sinance.Business.DataSeeding.Seeds
             else
             {
                 _logger.Information("Creating demo user");
-                await _authenticationService.CreateUser(demoUserName, demoUserName);
+                await _authenticationService.Value.CreateUser(demoUserName, demoUserName);
                 user = await unitOfWork.UserRepository.FindSingleTracked(x => x.Username == demoUserName);
             }
 

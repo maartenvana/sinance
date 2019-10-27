@@ -75,6 +75,10 @@ namespace Sinance.Business.Services.Categories
             {
                 throw new NotFoundException(nameof(CategoryEntity));
             }
+            else if (category.IsStandard)
+            {
+                throw new DeleteStandardCategoryException();
+            }
 
             var transactionCategories = await unitOfWork.TransactionCategoryRepository.FindAllTracked(x => x.CategoryId == categoryId);
 

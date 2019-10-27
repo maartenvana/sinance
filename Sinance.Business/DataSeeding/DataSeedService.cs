@@ -5,9 +5,10 @@ using System.Threading.Tasks;
 
 namespace Sinance.Business.DataSeeding
 {
-    public class DataSeedService
+    public class DataSeedService : IDataSeedService
     {
         private readonly AppSettings _appSettings;
+        private readonly CategorySeed _categorySeed;
         private readonly DemoUserSeed _demoUserSeed;
         private readonly ImportBankSeed _importBankSeed;
         private readonly ILogger _logger;
@@ -15,16 +16,25 @@ namespace Sinance.Business.DataSeeding
         public DataSeedService(
             ILogger logger,
             AppSettings appSettings,
+            CategorySeed categorySeed,
             DemoUserSeed demoUserSeed,
             ImportBankSeed importBankSeed)
         {
             _logger = logger;
             _appSettings = appSettings;
+            _categorySeed = categorySeed;
             _demoUserSeed = demoUserSeed;
             _importBankSeed = importBankSeed;
         }
 
-        public async Task SeedData()
+        public async Task NewUserSeed(int userId)
+        {
+            _logger.Information("Seeding new user");
+
+            await _categorySeed.SeedStandardCategoriesForUser(userId);
+        }
+
+        public async Task StartupSeed()
         {
             _logger.Information("Starting database seeding");
 
@@ -36,6 +46,8 @@ namespace Sinance.Business.DataSeeding
             }
 
             await _importBankSeed.SeedData();
+
+            await _categorySeed.SeedStandardCategoriesForAllUsers();
 
             _logger.Information("Database seed completed");
         }

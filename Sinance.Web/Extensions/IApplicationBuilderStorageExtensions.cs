@@ -1,8 +1,5 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Serilog;
-using Sinance.Business.DataSeeding;
-using Sinance.Common.Configuration;
 using Sinance.Business.DataSeeding;
 using Sinance.Storage;
 using System;
@@ -14,11 +11,11 @@ namespace Sinance.Web.Extensions
     {
         public static IApplicationBuilder ApplyDataSeed(this IApplicationBuilder appBuilder)
         {
-            var dataSeeder = appBuilder.ApplicationServices.GetRequiredService<DataSeedService>();
+            var dataSeeder = appBuilder.ApplicationServices.GetRequiredService<IDataSeedService>();
 
             Task.Run(async () =>
             {
-                await dataSeeder.SeedData();
+                await dataSeeder.StartupSeed();
             }).Wait();
 
             return appBuilder;

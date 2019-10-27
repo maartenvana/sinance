@@ -41,9 +41,10 @@ namespace Sinance.Business
             builder.RegisterModule<StorageModule>();
 
             // Data seeding
-            builder.RegisterType<DataSeedService>().AsSelf();
+            builder.RegisterType<DataSeedService>().As<IDataSeedService>();
             builder.RegisterType<DemoUserSeed>().AsSelf();
             builder.RegisterType<ImportBankSeed>().AsSelf();
+            builder.RegisterType<CategorySeed>().AsSelf();
         }
     }
 }

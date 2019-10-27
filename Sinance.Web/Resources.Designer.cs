@@ -259,6 +259,15 @@ namespace Sinance.Web {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Can&apos;t delete a standard category.
+        /// </summary>
+        public static string DeleteStandardCategoryExceptionMessage {
+            get {
+                return ResourceManager.GetString("DeleteStandardCategoryExceptionMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Er is een fout opgetreden.
         /// </summary>
         public static string Error {

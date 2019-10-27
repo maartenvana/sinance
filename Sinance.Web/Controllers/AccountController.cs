@@ -56,7 +56,7 @@ namespace Sinance.Controllers
         [HttpPost]
         [AllowAnonymous]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Login(LoginViewModel loginViewModel, string returnUrl)
+        public async Task<IActionResult> Login(LoginViewModel loginViewModel, string returnUrl)
         {
             var user = await _authenticationService.SignIn(loginViewModel.UserName, loginViewModel.Password);
             if (user == null)
@@ -67,7 +67,7 @@ namespace Sinance.Controllers
 
             await SignInSinanceUser(user);
 
-            return LocalRedirect(returnUrl);
+            return string.IsNullOrWhiteSpace(returnUrl) ? LocalRedirect("/") : LocalRedirect(returnUrl);
         }
 
         /// <summary>

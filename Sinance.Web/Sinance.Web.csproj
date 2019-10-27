@@ -157,7 +157,6 @@
     <None Include="wwwroot\Scripts\jquery-ui-1.11.4.min.js" />
     <None Include="wwwroot\Scripts\jquery.unobtrusive-ajax.js" />
     <None Include="wwwroot\Scripts\jquery.unobtrusive-ajax.min.js" />
-    <None Include="wwwroot\Scripts\jquery.validate-vsdoc.js" />
     <None Include="wwwroot\Scripts\jquery.validate.js" />
     <None Include="wwwroot\Scripts\jquery.validate.min.js" />
     <None Include="wwwroot\Scripts\jquery.validate.unobtrusive.js" />

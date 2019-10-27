@@ -54,7 +54,7 @@ namespace Sinance.Business.Services.Transactions
 
             using var unitOfWork = _unitOfWork();
 
-            var bankAccount = await unitOfWork.BankAccountRepository.FindSingle(x => x.UserId == userId && x.Id == transactionModel.BankAccountId);
+            var bankAccount = await unitOfWork.BankAccountRepository.FindSingleTracked(x => x.UserId == userId && x.Id == transactionModel.BankAccountId);
 
             if (bankAccount == null)
             {
@@ -64,9 +64,9 @@ namespace Sinance.Business.Services.Transactions
             var transactionEntity = transactionModel.ToNewEntity(userId);
             unitOfWork.TransactionRepository.Insert(transactionEntity);
 
-            await unitOfWork.SaveAsync();
+            bankAccount.CurrentBalance = await TransactionHandler.CalculateCurrentBalanceForBankAccount(unitOfWork, bankAccount);
 
-            await TransactionHandler.UpdateCurrentBalance(unitOfWork, bankAccount.Id, userId);
+            await unitOfWork.SaveAsync();
 
             return transactionEntity.ToDto();
         }
@@ -76,7 +76,11 @@ namespace Sinance.Business.Services.Transactions
             var userId = await _authenticationService.GetCurrentUserId();
 
             using var unitOfWork = _unitOfWork();
-            var transaction = await unitOfWork.TransactionRepository.FindSingleTracked(item => item.Id == transactionId && item.UserId == userId);
+            var transaction = await unitOfWork.TransactionRepository.FindSingleTracked(item =>
+                item.Id == transactionId && item.UserId == userId,
+                includeProperties: new string[] {
+                    nameof(TransactionEntity.BankAccount)
+                });
 
             if (transaction == null)
             {
@@ -89,9 +93,10 @@ namespace Sinance.Business.Services.Transactions
             }
 
             unitOfWork.TransactionRepository.Delete(transaction);
-            await unitOfWork.SaveAsync();
 
-            await TransactionHandler.UpdateCurrentBalance(unitOfWork, transaction.BankAccountId, userId);
+            transaction.BankAccount.CurrentBalance = await TransactionHandler.CalculateCurrentBalanceForBankAccount(unitOfWork, transaction.BankAccount);
+
+            await unitOfWork.SaveAsync();
         }
 
         public async Task<TransactionModel> GetTransactionByIdForCurrentUser(int transactionId)
@@ -201,9 +206,10 @@ namespace Sinance.Business.Services.Transactions
             existingTransaction.UpdateFromModel(transactionModel);
 
             unitOfWork.TransactionRepository.Update(existingTransaction);
-            await unitOfWork.SaveAsync();
 
-            await TransactionHandler.UpdateCurrentBalance(unitOfWork, existingTransaction.BankAccountId, userId);
+            existingTransaction.BankAccount.CurrentBalance = await TransactionHandler.CalculateCurrentBalanceForBankAccount(unitOfWork, existingTransaction.BankAccount);
+
+            await unitOfWork.SaveAsync();
 
             return existingTransaction.ToDto();
         }
@@ -213,6 +219,7 @@ namespace Sinance.Business.Services.Transactions
             return await unitOfWork.TransactionRepository.FindSingleTracked(
                 findQuery: item => item.Id == transactionId && item.UserId == userId,
                 includeProperties: new string[] {
+                    nameof(TransactionEntity.BankAccount),
                     nameof(TransactionEntity.TransactionCategories),
                     $"{nameof(TransactionEntity.TransactionCategories)}.{nameof(TransactionCategoryEntity.Category)}"
                 });

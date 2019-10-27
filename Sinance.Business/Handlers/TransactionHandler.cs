@@ -3,7 +3,6 @@ using Sinance.Storage.Entities;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sinance.Business.Handlers
@@ -14,6 +13,23 @@ namespace Sinance.Business.Handlers
     public static class TransactionHandler
     {
         private const string _transactionCacheKeyFormat = "AllTransactions_User_{0}";
+
+        /// <summary>
+        /// Updates the current balance for the given bank account
+        /// </summary>
+        /// <param name="genericRepository">Generic repository to use</param>
+        /// <param name="bankAccountId">Bank account to use</param>
+        /// <param name="userId">Id of the user</param>
+        public static async Task<decimal> CalculateCurrentBalanceForBankAccount(IUnitOfWork unitOfWork, BankAccountEntity bankAccount)
+        {
+            var currentBalance = bankAccount.StartBalance;
+
+            var transactionSum = await unitOfWork.TransactionRepository.Sum(
+                findQuery: x => x.BankAccountId == bankAccount.Id,
+                sumQuery: x => x.Amount);
+
+            return currentBalance + transactionSum;
+        }
 
         /// <summary>
         /// Clears the cache for this user's transactions
@@ -42,34 +58,6 @@ namespace Sinance.Business.Handlers
                 },
                 slidingExpiration: true,
                 expirationTimeSpan: new TimeSpan(0, 1, 0, 0));
-        }
-
-        /// <summary>
-        /// Updates the current balance for the given bank account
-        /// </summary>
-        /// <param name="genericRepository">Generic repository to use</param>
-        /// <param name="bankAccountId">Bank account to use</param>
-        /// <param name="userId">Id of the user</param>
-        public static async Task UpdateCurrentBalance(IUnitOfWork unitOfWork, int bankAccountId, int userId)
-        {
-            // TODO: Do not save, let the caller do that!
-            var bankAccount = await unitOfWork.BankAccountRepository.FindSingleTracked(item => item.Id == bankAccountId &&
-                                                                                        item.UserId == userId);
-            if (bankAccount != null)
-            {
-                var currentBalance = bankAccount.StartBalance;
-
-                var transactions = await unitOfWork.TransactionRepository.FindAllTracked(item => item.BankAccountId == bankAccount.Id);
-
-                if (transactions.Any())
-                {
-                    currentBalance += transactions.Sum(item => item.Amount);
-                }
-
-                bankAccount.CurrentBalance = currentBalance;
-                unitOfWork.BankAccountRepository.Update(bankAccount);
-                await unitOfWork.SaveAsync();
-            }
         }
     }
 }

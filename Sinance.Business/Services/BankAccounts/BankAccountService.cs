@@ -115,7 +115,7 @@ namespace Sinance.Business.Services.BankAccounts
 
             using var unitOfWork = _unitOfWork();
 
-            var bankAccount = await unitOfWork.BankAccountRepository.FindSingle(x => x.UserId == userId && x.Id == model.Id);
+            var bankAccount = await unitOfWork.BankAccountRepository.FindSingleTracked(x => x.UserId == userId && x.Id == model.Id);
 
             if (bankAccount != null)
             {
@@ -126,7 +126,7 @@ namespace Sinance.Business.Services.BankAccounts
 
                 if (recalculateCurrentBalance)
                 {
-                    await TransactionHandler.UpdateCurrentBalance(unitOfWork, bankAccount.Id, userId);
+                    bankAccount.CurrentBalance = await TransactionHandler.CalculateCurrentBalanceForBankAccount(unitOfWork, bankAccount);
                 }
                 await unitOfWork.SaveAsync();
 

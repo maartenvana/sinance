@@ -68,10 +68,11 @@ namespace Sinance.Business.DataSeeding
 
             await unitOfWork.SaveAsync();
 
-            await TransactionHandler.UpdateCurrentBalance(unitOfWork, mainBankAccount.Id, user.Id);
-            await TransactionHandler.UpdateCurrentBalance(unitOfWork, secondaryBankAccount.Id, user.Id);
-            await TransactionHandler.UpdateCurrentBalance(unitOfWork, savingsAccount.Id, user.Id);
-            await TransactionHandler.UpdateCurrentBalance(unitOfWork, investmentAccount.Id, user.Id);
+            mainBankAccount.CurrentBalance = await TransactionHandler.CalculateCurrentBalanceForBankAccount(unitOfWork, mainBankAccount);
+            secondaryBankAccount.CurrentBalance = await TransactionHandler.CalculateCurrentBalanceForBankAccount(unitOfWork, secondaryBankAccount);
+            savingsAccount.CurrentBalance = await TransactionHandler.CalculateCurrentBalanceForBankAccount(unitOfWork, savingsAccount);
+            investmentAccount.CurrentBalance = await TransactionHandler.CalculateCurrentBalanceForBankAccount(unitOfWork, investmentAccount);
+            await unitOfWork.SaveAsync();
 
             _logger.Information("Data seed completed, login with DemoUser/DemoUser");
         }
@@ -159,7 +160,6 @@ namespace Sinance.Business.DataSeeding
             var netflixCategory = InsertCategory(unitOfWork, user, "Netflix", true, subscriptionsCategory);
             InsertMonthlyTransactionsForCategory(unitOfWork, primaryChecking, netflixCategory, 25, "Netflix", "Netflix subscription", -8, -8);
 
-            // TODO: This should be a standard category, already created issue
             var internalCashflowCategory = InsertCategory(unitOfWork, user, "InternalCashFlow", false);
             InsertMonthlySavingTransaction(unitOfWork, primaryChecking, savingsAccount, internalCashflowCategory, 26, 100);
         }

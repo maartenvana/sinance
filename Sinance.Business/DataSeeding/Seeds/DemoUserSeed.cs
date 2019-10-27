@@ -66,10 +66,12 @@ namespace Sinance.Business.DataSeeding.Seeds
 
             await unitOfWork.SaveAsync();
 
-            await TransactionHandler.UpdateCurrentBalance(unitOfWork, mainBankAccount.Id, user.Id);
-            await TransactionHandler.UpdateCurrentBalance(unitOfWork, secondaryBankAccount.Id, user.Id);
-            await TransactionHandler.UpdateCurrentBalance(unitOfWork, savingsAccount.Id, user.Id);
-            await TransactionHandler.UpdateCurrentBalance(unitOfWork, investmentAccount.Id, user.Id);
+            mainBankAccount.CurrentBalance = await TransactionHandler.CalculateCurrentBalanceForBankAccount(unitOfWork, mainBankAccount);
+            secondaryBankAccount.CurrentBalance = await TransactionHandler.CalculateCurrentBalanceForBankAccount(unitOfWork, secondaryBankAccount);
+            savingsAccount.CurrentBalance = await TransactionHandler.CalculateCurrentBalanceForBankAccount(unitOfWork, savingsAccount);
+            investmentAccount.CurrentBalance = await TransactionHandler.CalculateCurrentBalanceForBankAccount(unitOfWork, investmentAccount);
+
+            await unitOfWork.SaveAsync();
 
             _logger.Information("Data seed completed, login with DemoUser/DemoUser");
         }
@@ -114,9 +116,6 @@ namespace Sinance.Business.DataSeeding.Seeds
         {
             _logger.Information("Creating demo categories and transactions");
 
-            // TODO: This should be a standard category, already created issue
-            //var essentialsCategory = InsertCategory(unitOfWork, user, "Essentials", false);
-
             var mortgageCategory = InsertCategory(unitOfWork, user, "Mortgage", true);
             InsertMonthlyTransactionsForCategory(unitOfWork, primaryChecking, mortgageCategory, 3, "Mortgage payment", "Bank", -1000, -1000);
 
@@ -153,7 +152,6 @@ namespace Sinance.Business.DataSeeding.Seeds
             var netflixCategory = InsertCategory(unitOfWork, user, "Netflix", true, subscriptionsCategory);
             InsertMonthlyTransactionsForCategory(unitOfWork, primaryChecking, netflixCategory, 25, "Netflix", "Netflix subscription", -8, -8);
 
-            // TODO: This should be a standard category, already created issue
             var internalCashflowCategory = InsertCategory(unitOfWork, user, "InternalCashFlow", false);
             InsertMonthlySavingTransaction(unitOfWork, primaryChecking, savingsAccount, internalCashflowCategory, 26, 100);
         }
@@ -233,8 +231,9 @@ namespace Sinance.Business.DataSeeding.Seeds
             unitOfWork.TransactionRepository.InsertRange(transactions);
         }
 
-        private List<TransactionEntity> InsertMonthlyTransactionsForCategory(IUnitOfWork unitOfWork, BankAccountEntity bankAccount, CategoryEntity category, int dayInMonth,
-                    string transactionName, string transactionDescription, int amountMinValue, int amountMaxValue)
+        private void InsertMonthlyTransactionsForCategory(
+            IUnitOfWork unitOfWork, BankAccountEntity bankAccount, CategoryEntity category, int dayInMonth,
+            string transactionName, string transactionDescription, int amountMinValue, int amountMaxValue)
         {
             var today = DateTime.Now.Date;
 
@@ -273,11 +272,9 @@ namespace Sinance.Business.DataSeeding.Seeds
                 });
             }
             unitOfWork.TransactionRepository.InsertRange(transactions);
-
-            return transactions;
         }
 
-        private List<TransactionEntity> InsertRandomMonthlyTransactionsForCategory(IUnitOfWork unitOfWork,
+        private void InsertRandomMonthlyTransactionsForCategory(IUnitOfWork unitOfWork,
             BankAccountEntity bankAccount, CategoryEntity category, string transactionName, string transactionDescription, int amountMinValue, int amountMaxValue)
         {
             var today = DateTime.Now.Date;
@@ -325,11 +322,10 @@ namespace Sinance.Business.DataSeeding.Seeds
             }
 
             unitOfWork.TransactionRepository.InsertRange(transactions);
-
-            return transactions;
         }
 
-        private List<TransactionEntity> InsertWeeklyTransactionsForCategory(IUnitOfWork unitOfWork, BankAccountEntity bankAccount, CategoryEntity category, DayOfWeek transactionDayOfWeek,
+        private List<TransactionEntity> InsertWeeklyTransactionsForCategory(
+            IUnitOfWork unitOfWork, BankAccountEntity bankAccount, CategoryEntity category, DayOfWeek transactionDayOfWeek,
             string transactionName, string transactionDescription, int amountMinValue, int amountMaxValue)
         {
             var today = DateTime.Now.Date;

@@ -147,7 +147,6 @@
     <None Include="wwwroot\Scripts\jquery-2.1.4.min.map" />
     <None Include="wwwroot\Scripts\jquery-ui-1.11.4.js" />
     <None Include="wwwroot\Scripts\jquery-ui-1.11.4.min.js" />
-    <None Include="wwwroot\Scripts\jquery.dataTables.js" />
     <None Include="wwwroot\Scripts\jquery.unobtrusive-ajax.js" />
     <None Include="wwwroot\Scripts\jquery.unobtrusive-ajax.min.js" />
     <None Include="wwwroot\Scripts\jquery.validate-vsdoc.js" />
@@ -159,11 +158,6 @@
     <None Include="wwwroot\Scripts\metisMenu.js.map" />
     <None Include="wwwroot\Scripts\metisMenu.min.js" />
     <None Include="wwwroot\Scripts\metisMenu.min.js.map" />
-    <None Include="wwwroot\Scripts\npm.js" />
-    <None Include="wwwroot\Scripts\respond.js" />
-    <None Include="wwwroot\Scripts\respond.matchmedia.addListener.js" />
-    <None Include="wwwroot\Scripts\respond.matchmedia.addListener.min.js" />
-    <None Include="wwwroot\Scripts\respond.min.js" />
     <None Include="wwwroot\Scripts\sb-admin-2.js" />
     <None Include="wwwroot\Scripts\_references.js" />
   </ItemGroup>

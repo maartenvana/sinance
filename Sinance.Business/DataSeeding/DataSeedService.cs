@@ -26,18 +26,18 @@ namespace Sinance.Business.DataSeeding
 
         public async Task SeedData()
         {
+            _logger.Information("Starting database seeding");
+
             if (_appSettings.Database.SeedDemoData)
             {
-                _logger.Information("Database__SeedDemoData is enabled, starting seed of demo data");
+                _logger.Information("SeedDemoData is enabled, starting seed of demo data");
 
                 await _demoUserSeed.SeedData(_appSettings.Database.OverrideSeedDemoData);
             }
-            else
-            {
-                _logger.Information("Database__SeedDemoData is disabled");
-            }
 
             await _importBankSeed.SeedData();
+
+            _logger.Information("Database seed completed");
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Sinance.Storage;
+﻿using Serilog;
+using Sinance.Storage;
 using Sinance.Storage.Entities;
 using System;
 using System.Collections.Generic;
@@ -9,16 +10,22 @@ namespace Sinance.Business.DataSeeding.Seeds
 {
     public class ImportBankSeed
     {
+        private readonly ILogger _logger;
         private readonly Func<IUnitOfWork> _unitOfWork;
 
-        public ImportBankSeed(Func<IUnitOfWork> unitOfWork)
+        public ImportBankSeed(
+            ILogger logger,
+            Func<IUnitOfWork> unitOfWork)
         {
+            _logger = logger;
             _unitOfWork = unitOfWork;
         }
 
         public async Task SeedData()
         {
             using var unitOfWork = _unitOfWork();
+
+            _logger.Information("Updating ImportBank definitions");
 
             await UpdateOrInsertINGBank(unitOfWork);
 
@@ -80,6 +87,7 @@ namespace Sinance.Business.DataSeeding.Seeds
                 IsStandard = true,
                 Name = "ING"
             });
+
             await InsertOrUpdateMappingsForBank(unitOfWork, importBank, new List<ImportMappingEntity>
                 {
                     new ImportMappingEntity

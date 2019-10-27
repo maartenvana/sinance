@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
+using Sinance.Business.DataSeeding;
 using Sinance.Common.Configuration;
 using Sinance.Storage;
 using System;
 using System.Threading.Tasks;
-using Serilog;
-using Sinance.Business.DataSeeding;
 
 namespace Sinance.Web.Extensions
 {

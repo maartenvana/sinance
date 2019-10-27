@@ -4,13 +4,6 @@ namespace Sinance.Storage.Migrations
 {
     public partial class RemoveAmountIsNegative : Migration
     {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropColumn(
-                name: "AmountIsNegative",
-                table: "Transaction");
-        }
-
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<bool>(
@@ -19,6 +12,13 @@ namespace Sinance.Storage.Migrations
                 type: "bit",
                 nullable: false,
                 defaultValue: false);
+        }
+
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropColumn(
+                name: "AmountIsNegative",
+                table: "Transaction");
         }
     }
 }

@@ -1,7 +1,6 @@
 using Sinance.Communication.Model.BankAccount;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Sinance.Storage.Entities
 {

@@ -179,7 +179,14 @@ namespace Sinance.Business.Services.Categories
                 throw new NotFoundException(nameof(CategoryEntity));
             }
 
-            category.UpdateEntity(categoryModel);
+            if (category.IsStandard)
+            {
+                category.UpdateStandardEntity(categoryModel);
+            }
+            else
+            {
+                category.UpdateEntity(categoryModel);
+            }
 
             await unitOfWork.SaveAsync();
 

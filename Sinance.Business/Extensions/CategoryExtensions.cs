@@ -52,5 +52,13 @@ namespace Sinance.Business.Extensions
 
             return entity;
         }
+
+        public static CategoryEntity UpdateStandardEntity(this CategoryEntity entity, CategoryModel model)
+        {
+            entity.ColorCode = model.ColorCode;
+            entity.ParentId = model.ParentId == 0 ? null : model.ParentId;
+
+            return entity;
+        }
     }
 }

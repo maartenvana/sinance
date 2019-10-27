@@ -294,17 +294,17 @@
 
     <div class="col-lg-5">
         <div class="panel panel-default">
-            <div class="panel-heading">
+            <div class="panel-heading" id="biggestExpensesHeading">
                 <i class="fa fa-fire"></i> Grootste uitgaves
             </div>
             <div class="panel-body">
-                <table class="table table-condensed">
+                <table class="table table-condensed" aria-describedby="biggestExpensesHeading">
                     <thead>
                         <tr>
-                            <th>Datum</th>
-                            <th>Titel</th>
-                            <th class="amountColumn">Bedrag</th>
-                            <th>Omschrijving</th>
+                            <th scope="col">Datum</th>
+                            <th scope="col">Titel</th>
+                            <th scope="col" class="amountColumn">Bedrag</th>
+                            <th scope="col">Omschrijving</th>
                         </tr>
                     </thead>
                     <tbody>

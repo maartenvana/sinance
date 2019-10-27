@@ -1,5 +1,5 @@
-﻿using Sinance.Web.Model;
-using Microsoft.AspNetCore.Mvc.ViewFeatures;
+﻿using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Sinance.Web.Model;
 using System;
 
 namespace Sinance.Web.Helper
@@ -7,7 +7,7 @@ namespace Sinance.Web.Helper
     /// <summary>
     /// Session helper containing all variables and actions related to the session of the current user
     /// </summary>
-    public class TempDataHelper
+    public static class TempDataHelper
     {
         /// <summary>
         /// Retrieves the message from the tempdata

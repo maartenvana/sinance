@@ -196,11 +196,6 @@ namespace Sinance.Controllers
         [HttpPost]
         public async Task<IActionResult> UpsertTransaction(UpsertTransactionViewModel model)
         {
-            if (model == null)
-            {
-                throw new ArgumentNullException(nameof(model));
-            }
-
             if (ModelState.IsValid)
             {
                 try

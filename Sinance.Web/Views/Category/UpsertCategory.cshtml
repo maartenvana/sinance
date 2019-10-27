@@ -81,11 +81,11 @@
                 <div class="panel-heading">
                     @if (Model.CategoryModel.Id > 0)
                     {
-                        <span>Categorie aanpassen</span>
+                        <span id="actionTitle">Categorie aanpassen</span>
                     }
                     else
                     {
-                        <span>Categorie toevoegen</span>
+                        <span id="actionTitle">Categorie toevoegen</span>
                     }
                 </div>
                 <div class="panel-body">
@@ -93,17 +93,17 @@
 
                     @Html.HiddenFor(item => item.CategoryModel.Id)
 
-                    <table class="table">
+                    <table class="table" aria-describedby="actionTitle">
                         <tbody>
                             <tr>
-                                <th>@Html.LabelFor(item => item.CategoryModel.Name)</th>
+                                <th scope="row">@Html.LabelFor(item => item.CategoryModel.Name)</th>
                                 <td>
                                     @Html.TextBoxFor(item => item.CategoryModel.Name, new { @class = "form-control" })
                                     @Html.ValidationMessageFor(item => item.CategoryModel.Name)
                                 </td>
                             </tr>
                             <tr>
-                                <th>@Html.LabelFor(item => item.CategoryModel.ColorCode)</th>
+                                <th scope="row">@Html.LabelFor(item => item.CategoryModel.ColorCode)</th>
                                 <td>
                                     @Html.HiddenFor(item => item.CategoryModel.ColorCode, new { @class = "categoryColorCode" })
                                     <div id="ColorCodePicker"></div>
@@ -111,7 +111,7 @@
                                 </td>
                             </tr>
                             <tr>
-                                <th>@Html.LabelFor(item => item.CategoryModel.ParentId)</th>
+                                <th scope="row">@Html.LabelFor(item => item.CategoryModel.ParentId)</th>
                                 <td>
                                     @if (Model.CategoryModel.HasChildren)
                                     {
@@ -125,7 +125,7 @@
                                 </td>
                             </tr>
                             <tr>
-                                <th>@Html.LabelFor(item => item.CategoryModel.IsRegular)</th>
+                                <th scope="row">@Html.LabelFor(item => item.CategoryModel.IsRegular)</th>
                                 <td>
                                     @if (Model.CategoryModel.ParentCategoryIsRegular)
                                     {
@@ -141,17 +141,17 @@
                             @if (Model.CategoryModel.Id > 0)
                             {
                                 <tr>
-                                    <th>
+                                    <th scope="row">
                                         Mappings
                                     </th>
                                     <td>
                                         <table class="table">
                                             <thead>
                                                 <tr>
-                                                    <th>
+                                                    <th scope="col">
                                                         Kolom
                                                     </th>
-                                                    <th>
+                                                    <th scope="col">
                                                         Vergelijking
                                                     </th>
                                                 </tr>

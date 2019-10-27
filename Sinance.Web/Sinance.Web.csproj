@@ -37,10 +37,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Classes\**" />
     <Compile Remove="out\**" />
+    <Content Remove="Classes\**" />
     <Content Remove="out\**" />
+    <EmbeddedResource Remove="Classes\**" />
     <EmbeddedResource Remove="out\**" />
+    <None Remove="Classes\**" />
     <None Remove="out\**" />
+    <Watch Remove="Classes\**" />
     <Watch Remove="out\**" />
   </ItemGroup>
 
@@ -84,10 +89,6 @@
     <None Include="wwwroot\Content\bootstrap.css.map" />
     <None Include="wwwroot\Content\bootstrap.min.css" />
     <None Include="wwwroot\Content\colpick.css" />
-    <None Include="wwwroot\Content\DefaultLayout.css" />
-    <None Include="wwwroot\Content\DefaultLayout.css.map" />
-    <None Include="wwwroot\Content\DefaultLayout.less" />
-    <None Include="wwwroot\Content\DefaultLayout.min.css" />
     <None Include="wwwroot\Content\font-awesome.css" />
     <None Include="wwwroot\Content\font-awesome.min.css" />
     <None Include="wwwroot\Content\jquery-ui.css" />
@@ -140,32 +141,10 @@
     <None Include="wwwroot\fonts\glyphicons-halflings-regular.ttf" />
     <None Include="wwwroot\fonts\glyphicons-halflings-regular.woff" />
     <None Include="wwwroot\fonts\glyphicons-halflings-regular.woff2" />
-    <None Include="wwwroot\Scripts\bootbox.js" />
-    <None Include="wwwroot\Scripts\bootbox.min.js" />
-    <None Include="wwwroot\Scripts\bootstrap.js" />
-    <None Include="wwwroot\Scripts\bootstrap.min.js" />
     <None Include="wwwroot\Scripts\colpick.js" />
     <None Include="wwwroot\Scripts\generalHelper.js" />
     <None Include="wwwroot\Scripts\highcharts-3d.js" />
-    <None Include="wwwroot\Scripts\highcharts.config.js" />
-    <None Include="wwwroot\Scripts\highcharts.js" />
-    <None Include="wwwroot\Scripts\jquery-2.1.4.intellisense.js" />
-    <None Include="wwwroot\Scripts\jquery-2.1.4.js" />
-    <None Include="wwwroot\Scripts\jquery-2.1.4.min.js" />
-    <None Include="wwwroot\Scripts\jquery-2.1.4.min.map" />
-    <None Include="wwwroot\Scripts\jquery-ui-1.11.4.js" />
-    <None Include="wwwroot\Scripts\jquery-ui-1.11.4.min.js" />
-    <None Include="wwwroot\Scripts\jquery.unobtrusive-ajax.js" />
-    <None Include="wwwroot\Scripts\jquery.unobtrusive-ajax.min.js" />
-    <None Include="wwwroot\Scripts\jquery.validate-vsdoc.js" />
-    <None Include="wwwroot\Scripts\jquery.validate.js" />
-    <None Include="wwwroot\Scripts\jquery.validate.min.js" />
-    <None Include="wwwroot\Scripts\jquery.validate.unobtrusive.js" />
-    <None Include="wwwroot\Scripts\jquery.validate.unobtrusive.min.js" />
-    <None Include="wwwroot\Scripts\metisMenu.js" />
-    <None Include="wwwroot\Scripts\metisMenu.js.map" />
-    <None Include="wwwroot\Scripts\metisMenu.min.js" />
-    <None Include="wwwroot\Scripts\metisMenu.min.js.map" />
+    <None Include="wwwroot\Scripts\highcharts.min.js" />
     <None Include="wwwroot\Scripts\sb-admin-2.js" />
     <None Include="wwwroot\Scripts\_references.js" />
   </ItemGroup>
@@ -186,9 +165,5 @@
     <Content Update="Views\_ViewImports.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Classes\" />
   </ItemGroup>
 </Project>

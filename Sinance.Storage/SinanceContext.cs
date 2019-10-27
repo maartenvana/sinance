@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using System;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Sinance.Storage.Entities;
+using System;
 
 namespace Sinance.Storage
 {

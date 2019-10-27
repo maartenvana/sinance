@@ -32,16 +32,16 @@
 
             @Html.ValidationSummary(true)
 
-            <table class="table">
+            <table class="table" aria-describedby="myModalLabel">
                 <tbody>
                     <tr>
-                        <th>@Html.LabelFor(item => item.CategoryName)</th>
+                        <th scope="row">@Html.LabelFor(item => item.CategoryName)</th>
                         <td>
                             @Html.DisplayTextFor(item => item.CategoryName)
                         </td>
                     </tr>
                     <tr>
-                        <th>
+                        <th scope="row">
                             Kolom
                         </th>
                         <td>
@@ -50,7 +50,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <th>
+                        <th scope="row">
                             Controleer op
                         </th>
                         <td>

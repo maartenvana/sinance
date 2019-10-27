@@ -1,5 +1,8 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
+using Sinance.Business.DataSeeding;
+using Sinance.Common.Configuration;
 using Sinance.Business.DataSeeding;
 using Sinance.Storage;
 using System;

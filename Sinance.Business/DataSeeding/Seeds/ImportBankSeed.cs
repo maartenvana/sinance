@@ -34,7 +34,7 @@ namespace Sinance.Business.DataSeeding.Seeds
 
         private async Task<ImportBankEntity> InsertOrUpdateImportBank(IUnitOfWork unitOfWork, ImportBankEntity importBankEntity)
         {
-            var existingImportBank = await unitOfWork.ImportBankRepository.FindSingleTracked(x => x.Name == importBankEntity.Name);
+            var existingImportBank = await unitOfWork.ImportBankRepository.FindSingleTracked(x => x.Name == importBankEntity.Name && x.IsStandard);
             if (existingImportBank == null)
             {
                 unitOfWork.ImportBankRepository.Insert(importBankEntity);

@@ -37,10 +37,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="Classes\**" />
     <Compile Remove="out\**" />
+    <Content Remove="Classes\**" />
     <Content Remove="out\**" />
+    <EmbeddedResource Remove="Classes\**" />
     <EmbeddedResource Remove="out\**" />
+    <None Remove="Classes\**" />
     <None Remove="out\**" />
+    <Watch Remove="Classes\**" />
     <Watch Remove="out\**" />
   </ItemGroup>
 
@@ -84,10 +89,6 @@
     <None Include="wwwroot\Content\bootstrap.css.map" />
     <None Include="wwwroot\Content\bootstrap.min.css" />
     <None Include="wwwroot\Content\colpick.css" />
-    <None Include="wwwroot\Content\DefaultLayout.css" />
-    <None Include="wwwroot\Content\DefaultLayout.css.map" />
-    <None Include="wwwroot\Content\DefaultLayout.less" />
-    <None Include="wwwroot\Content\DefaultLayout.min.css" />
     <None Include="wwwroot\Content\font-awesome.css" />
     <None Include="wwwroot\Content\font-awesome.min.css" />
     <None Include="wwwroot\Content\jquery-ui.css" />
@@ -186,9 +187,5 @@
     <Content Update="Views\_ViewImports.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Classes\" />
   </ItemGroup>
 </Project>

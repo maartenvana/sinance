@@ -11,7 +11,7 @@
     <link href="~/Content/bootstrap-theme.min.css" rel="stylesheet" />
     <link href="~/Content/colpick.css" rel="stylesheet" />
 
-    <link href="~/Content/DefaultLayout.css" rel="stylesheet" />
+    <link href="~/Content/default-layout.min.css" rel="stylesheet" />
     <link href="~/Content/font-awesome.css" rel="stylesheet" />
     <link href="~/Content/jquery-ui.css" rel="stylesheet" />
     <link href="~/Content/metisMenu.css" rel="stylesheet" />
@@ -37,24 +37,24 @@
             {
                 using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
                 {
-            @Html.AntiForgeryToken()
+                    @Html.AntiForgeryToken()
 
-            <ul class="nav navbar-top-links navbar-right">
-                <li class="dropdown">
-                    <a class="dropdown-toggle" data-toggle="dropdown" href="#">
-                        <i class="fa fa-user fa-fw"></i> OH HAI <i class="fa fa-caret-down"></i>
-                    </a>
-                    <ul class="dropdown-menu dropdown-user">
-                        <li>
-                            <a href="@Url.Action("Manage", "Account")"><i class="fa fa-user fa-fw"></i> Profiel</a>
-                        </li>
-                        <li class="divider"></li>
-                        <li>
-                            <a href="javascript:document.getElementById('logoutForm').submit()"><i class="fa fa-sign-out fa-fw"></i> Uitloggen</a>
+                    <ul class="nav navbar-top-links navbar-right">
+                        <li class="dropdown">
+                            <a class="dropdown-toggle" data-toggle="dropdown" href="#">
+                                <i class="fa fa-user fa-fw"></i> OH HAI <i class="fa fa-caret-down"></i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-user">
+                                <li>
+                                    <a href="@Url.Action("Manage", "Account")"><i class="fa fa-user fa-fw"></i> Profiel</a>
+                                </li>
+                                <li class="divider"></li>
+                                <li>
+                                    <a href="javascript:document.getElementById('logoutForm').submit()"><i class="fa fa-sign-out fa-fw"></i> Uitloggen</a>
+                                </li>
+                            </ul>
                         </li>
                     </ul>
-                </li>
-            </ul>
                 }
             }
 

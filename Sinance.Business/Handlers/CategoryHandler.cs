@@ -115,7 +115,7 @@ namespace Sinance.Business.Handlers
         /// <returns>If its a match or not</returns>
         private static bool MatchString(string transactionValue, string matchValue)
         {
-            return !string.IsNullOrEmpty(transactionValue) ? transactionValue.ToUpperInvariant().Contains(matchValue.ToUpperInvariant()) : false;
+            return !string.IsNullOrEmpty(transactionValue) && transactionValue.ToUpperInvariant().Contains(matchValue.ToUpperInvariant());
         }
     }
 }

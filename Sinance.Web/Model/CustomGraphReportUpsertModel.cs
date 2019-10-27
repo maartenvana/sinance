@@ -1,6 +1,5 @@
 ﻿using Sinance.Communication.Model.CustomReport;
 using System.Collections.Generic;
-using System.ComponentModel;
 
 namespace Sinance.Web.Model
 {

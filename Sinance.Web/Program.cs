@@ -8,7 +8,7 @@ using System.Globalization;
 
 namespace Sinance.Web
 {
-    public class Program
+    public static class Program
     {
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)

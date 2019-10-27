@@ -42,10 +42,10 @@
 
             @Html.ValidationSummary(true)
 
-            <table class="table">
+            <table class="table" aria-describedby="myModalLabel">
                 <tbody>
                     <tr>
-                        <th>
+                        <th scope="row">
                             @Html.LabelFor(x => x.Transaction.Name)
                         </th>
                         <td>
@@ -54,7 +54,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <th>
+                        <th scope="row">
                             @Html.LabelFor(x => x.Transaction.Amount)
                         </th>
                         <td>
@@ -63,7 +63,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <th>
+                        <th scope="row">
                             @Html.LabelFor(x => x.Transaction.Date)
                         </th>
                         <td>
@@ -71,7 +71,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <th>
+                        <th scope="row">
                             @Html.LabelFor(x => x.Transaction.DestinationAccount)
                         </th>
                         <td>
@@ -80,7 +80,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <th>
+                        <th scope="row">
                             @Html.LabelFor(x => Model.Transaction.Description)
                         </th>
                         <td>

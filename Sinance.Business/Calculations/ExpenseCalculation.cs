@@ -91,7 +91,7 @@ namespace Sinance.Business.Calculations
             };
         }
 
-        public async Task<Dictionary<string, IDictionary<int, decimal>>> ExpensePerCategoryIdPerMonthForYear(int year, IEnumerable<int> categoryIds)
+        public async Task<Dictionary<string, Dictionary<int, decimal>>> ExpensePerCategoryIdPerMonthForYear(int year, IEnumerable<int> categoryIds)
         {
             var dateRangeStart = new DateTime(year, 1, 1);
             var dateRangeEnd = new DateTime(year, 12, 31);
@@ -114,23 +114,20 @@ namespace Sinance.Business.Calculations
 
             var categories = await unitOfWork.CategoryRepository.FindAll(x => categoryIds.Any(y => y == x.Id));
 
-            var reportDictionary = new Dictionary<string, IDictionary<int, decimal>>();
-
-            foreach (var category in categories)
-            {
-                reportDictionary.Add(category.Name, CreateMonthlyDictionary());
-            }
+            var reportDictionary = categories.ToDictionary(
+                keySelector: x => x.Name,
+                elementSelector: x => CreateMonthlyDictionary());
 
             foreach (var transaction in transactions)
             {
-                if (transaction.TransactionCategories != null && transaction.TransactionCategories.Any())
+                if (transaction.TransactionCategories?.Any() == true)
                 {
                     foreach (var transactionCategory in transaction.TransactionCategories.Where(transactionCategory => categoryIds.Any(reportCategory => reportCategory == transactionCategory.CategoryId)))
                     {
                         var category = categories.Single(x => x.Id == transactionCategory.CategoryId);
 
                         var amount = transactionCategory.Amount ?? transaction.Amount;
-                        amount = amount < 0 ? amount * -1 : amount;
+                        amount = GetPositiveAmount(amount);
 
                         reportDictionary[category.Name][transaction.Date.Month] += amount;
                     }
@@ -144,7 +141,7 @@ namespace Sinance.Business.Calculations
                     }
 
                     // Make sure the number is positive
-                    reportDictionary[noCategoryName][transaction.Date.Month] += transaction.Amount < 0 ? transaction.Amount * -1 : transaction.Amount;
+                    reportDictionary[noCategoryName][transaction.Date.Month] += GetPositiveAmount(transaction.Amount);
                 }
             }
 
@@ -239,6 +236,11 @@ namespace Sinance.Business.Calculations
                 { 11, 0 },
                 { 12, 0 }
                     };
+
+        private static decimal GetPositiveAmount(decimal amount)
+        {
+            return amount < 0 ? amount * -1 : amount;
+        }
 
         /// <summary>
         /// Searches for transactions between two dates and that are mapped to the given category

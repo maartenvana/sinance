@@ -1,8 +1,8 @@
-﻿using Sinance.Business.Services;
-using Sinance.Web.Model;
-using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
+﻿using Microsoft.AspNetCore.Mvc;
+using Sinance.Business.Services;
 using Sinance.Business.Services.BankAccounts;
+using Sinance.Web.Model;
+using System.Threading.Tasks;
 
 namespace Sinance.Web.Components
 {

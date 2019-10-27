@@ -26,16 +26,16 @@ namespace Sinance.Business.Calculations
 
         public async Task<List<decimal[]>> BalanceHistoryForYear(int year, IEnumerable<int> includeBankAccounts)
         {
-            var startDate = new DateTime(year, 1, 1).Date;
-            var endDate = new DateTime(year, 12, 31).AddDays(-1).Date;
+            var startDate = new DateTime(year, 1, 1);
+            var endDate = new DateTime(year, 12, 31, 23, 59, 59, 999);
 
             return await CalculateBalanceHistory(startDate, endDate, includeBankAccounts);
         }
 
         public async Task<List<decimal[]>> BalanceHistoryFromYearInPast(int yearsInPast, IEnumerable<int> includeBankAccounts)
         {
-            var startDate = DateTime.Now.AddYears(yearsInPast * -1).Date;
-            var endDate = DateTime.Now.Date;
+            var startDate = DateTime.Now.AddYears(yearsInPast * -1);
+            var endDate = DateTime.Now;
 
             return await CalculateBalanceHistory(startDate, endDate, includeBankAccounts);
         }

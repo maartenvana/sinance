@@ -1,4 +1,5 @@
 ﻿using Serilog;
+using Sinance.Business.Constants;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
 using System;
@@ -49,15 +50,13 @@ namespace Sinance.Business.DataSeeding.Seeds
 
         private void CreateOrUpdateCashFlowCategory(IUnitOfWork unitOfWork, List<CategoryEntity> standardCategoriesForUser, int userId)
         {
-            const string internalCashFlowName = "InternalCashFlow";
-
-            if (!standardCategoriesForUser.Any(x => x.Name == internalCashFlowName))
+            if (!standardCategoriesForUser.Any(x => x.Name == StandardCategoryNames.InternalCashFlowName))
             {
                 unitOfWork.CategoryRepository.Insert(new CategoryEntity
                 {
                     IsStandard = true,
                     IsRegular = false,
-                    Name = internalCashFlowName,
+                    Name = StandardCategoryNames.InternalCashFlowName,
                     ColorCode = "#00ff00",
                     UserId = userId
                 });

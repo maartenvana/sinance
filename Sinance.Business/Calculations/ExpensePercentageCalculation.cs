@@ -1,4 +1,5 @@
-﻿using Sinance.Business.Services.Authentication;
+﻿using Sinance.Business.Constants;
+using Sinance.Business.Services.Authentication;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
 using System;
@@ -49,6 +50,8 @@ namespace Sinance.Business.Calculations
 
             var categories = await unitOfWork.CategoryRepository.FindAll(x => x.UserId == currentUserId);
 
+            var internalCashFlowCategory = categories.Single(x => x.Name == StandardCategoryNames.InternalCashFlowName);
+
             var amountPerCategory = new Dictionary<int, decimal>(categories.Count + 1);
             var noneCategory = new CategoryEntity()
             {
@@ -60,7 +63,7 @@ namespace Sinance.Business.Calculations
             {
                 if (transaction.TransactionCategories.Any())
                 {
-                    foreach (var transactionCategory in transaction.TransactionCategories.Where(item => item.CategoryId != 69))
+                    foreach (var transactionCategory in transaction.TransactionCategories.Where(item => item.CategoryId != internalCashFlowCategory.Id))
                     {
                         var categoryId = transactionCategory.CategoryId;
 

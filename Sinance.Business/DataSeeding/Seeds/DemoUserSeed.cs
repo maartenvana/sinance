@@ -1,4 +1,5 @@
 ﻿using Serilog;
+using Sinance.Business.Constants;
 using Sinance.Business.Handlers;
 using Sinance.Business.Services.Authentication;
 using Sinance.Communication.Model.BankAccount;
@@ -12,18 +13,21 @@ namespace Sinance.Business.DataSeeding.Seeds
 {
     public class DemoUserSeed
     {
-        private readonly Lazy<IAuthenticationService> _authenticationService;
+        private readonly IAuthenticationService _authenticationService;
+        private readonly Lazy<CategorySeed> _categorySeed;
         private readonly ILogger _logger;
         private readonly Random _random;
         private readonly Func<IUnitOfWork> _unitOfWork;
 
         public DemoUserSeed(
             ILogger logger,
-            Lazy<IAuthenticationService> authenticationService,
+            Lazy<CategorySeed> categorySeed,
+            IAuthenticationService authenticationService,
             Func<IUnitOfWork> unitOfWork)
         {
             _random = new Random();
             _logger = logger;
+            _categorySeed = categorySeed;
             _authenticationService = authenticationService;
             _unitOfWork = unitOfWork;
         }
@@ -49,8 +53,10 @@ namespace Sinance.Business.DataSeeding.Seeds
             else
             {
                 _logger.Information("Creating demo user");
-                await _authenticationService.Value.CreateUser(demoUserName, demoUserName);
+                await _authenticationService.CreateUser(demoUserName, demoUserName);
                 user = await unitOfWork.UserRepository.FindSingleTracked(x => x.Username == demoUserName);
+
+                await _categorySeed.Value.SeedStandardCategoriesForUser(user.Id);
             }
 
             await DeleteExistingBankAccounts(unitOfWork, user);
@@ -62,7 +68,7 @@ namespace Sinance.Business.DataSeeding.Seeds
             var investmentAccount = InsertBankAccount(unitOfWork, user, "Investments", BankAccountType.Investment);
 
             await DeleteCategoriesAndTransactions(unitOfWork, user);
-            InsertCategoriesAndTransactions(unitOfWork, user, mainBankAccount, savingsAccount);
+            await InsertCategoriesAndTransactions(unitOfWork, user, mainBankAccount, savingsAccount);
 
             await unitOfWork.SaveAsync();
 
@@ -79,7 +85,7 @@ namespace Sinance.Business.DataSeeding.Seeds
         private async Task DeleteCategoriesAndTransactions(IUnitOfWork unitOfWork, SinanceUserEntity user)
         {
             _logger.Information("Deleting existing demo categories and transactions");
-            var existingCategories = await unitOfWork.CategoryRepository.FindAll(x => x.UserId == user.Id);
+            var existingCategories = await unitOfWork.CategoryRepository.FindAll(x => x.UserId == user.Id && !x.IsStandard);
             unitOfWork.CategoryRepository.DeleteRange(existingCategories);
 
             var existingTransactions = await unitOfWork.TransactionRepository.FindAll(x => x.UserId == user.Id);
@@ -112,7 +118,7 @@ namespace Sinance.Business.DataSeeding.Seeds
             return bankAccount;
         }
 
-        private void InsertCategoriesAndTransactions(IUnitOfWork unitOfWork, SinanceUserEntity user, BankAccountEntity primaryChecking, BankAccountEntity savingsAccount)
+        private async Task InsertCategoriesAndTransactions(IUnitOfWork unitOfWork, SinanceUserEntity user, BankAccountEntity primaryChecking, BankAccountEntity savingsAccount)
         {
             _logger.Information("Creating demo categories and transactions");
 
@@ -152,8 +158,8 @@ namespace Sinance.Business.DataSeeding.Seeds
             var netflixCategory = InsertCategory(unitOfWork, user, "Netflix", true, subscriptionsCategory);
             InsertMonthlyTransactionsForCategory(unitOfWork, primaryChecking, netflixCategory, 25, "Netflix", "Netflix subscription", -8, -8);
 
-            var internalCashflowCategory = InsertCategory(unitOfWork, user, "InternalCashFlow", false);
-            InsertMonthlySavingTransaction(unitOfWork, primaryChecking, savingsAccount, internalCashflowCategory, 26, 100);
+            var internalCashFlowCategory = await unitOfWork.CategoryRepository.FindSingle(x => x.IsStandard && x.Name == StandardCategoryNames.InternalCashFlowName);
+            InsertMonthlySavingTransaction(unitOfWork, primaryChecking, savingsAccount, internalCashFlowCategory, 26, 100);
         }
 
         private CategoryEntity InsertCategory(IUnitOfWork unitOfWork, SinanceUserEntity demoUser, string categoryName, bool isRegular, CategoryEntity parentCategory = null)

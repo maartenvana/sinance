@@ -63,9 +63,10 @@ namespace Sinance.Business.Services.Transactions
 
             var transactionEntity = transactionModel.ToNewEntity(userId);
             unitOfWork.TransactionRepository.Insert(transactionEntity);
+            await unitOfWork.SaveAsync();
 
+            // First save the transaction, then recalculate the balance.
             bankAccount.CurrentBalance = await TransactionHandler.CalculateCurrentBalanceForBankAccount(unitOfWork, bankAccount);
-
             await unitOfWork.SaveAsync();
 
             return transactionEntity.ToDto();
@@ -93,6 +94,7 @@ namespace Sinance.Business.Services.Transactions
             }
 
             unitOfWork.TransactionRepository.Delete(transaction);
+            await unitOfWork.SaveAsync();
 
             transaction.BankAccount.CurrentBalance = await TransactionHandler.CalculateCurrentBalanceForBankAccount(unitOfWork, transaction.BankAccount);
 
@@ -206,9 +208,9 @@ namespace Sinance.Business.Services.Transactions
             existingTransaction.UpdateFromModel(transactionModel);
 
             unitOfWork.TransactionRepository.Update(existingTransaction);
+            await unitOfWork.SaveAsync();
 
             existingTransaction.BankAccount.CurrentBalance = await TransactionHandler.CalculateCurrentBalanceForBankAccount(unitOfWork, existingTransaction.BankAccount);
-
             await unitOfWork.SaveAsync();
 
             return existingTransaction.ToDto();

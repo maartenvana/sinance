@@ -23,9 +23,6 @@ namespace Sinance.Business.Handlers
         /// <returns>Cached object</returns>
         public static async Task<T> Cache<T>(string key, Func<Task<T>> contentAction, bool slidingExpiration, TimeSpan expirationTimeSpan)
         {
-            if (contentAction == null)
-                throw new ArgumentNullException(nameof(contentAction));
-
             var cacheObject = await _memoryCache.GetOrCreateAsync(key, async (entry) =>
             {
                 if (slidingExpiration)
@@ -54,22 +51,19 @@ namespace Sinance.Business.Handlers
         /// <returns>Cached object</returns>
         public static T Cache<T>(string key, Func<T> contentAction, bool slidingExpiration, TimeSpan expirationTimeSpan)
         {
-            if (contentAction == null)
-                throw new ArgumentNullException(nameof(contentAction));
+            var cacheObject = _memoryCache.GetOrCreate(key, (entry) =>
+            {
+                if (slidingExpiration)
+                {
+                    entry.SlidingExpiration = expirationTimeSpan;
+                }
+                else
+                {
+                    entry.AbsoluteExpiration = DateTime.Now.AddSeconds(expirationTimeSpan.TotalSeconds);
+                }
 
-            var cacheObject = (T)_memoryCache.GetOrCreate(key, (entry) =>
-           {
-               if (slidingExpiration)
-               {
-                   entry.SlidingExpiration = expirationTimeSpan;
-               }
-               else
-               {
-                   entry.AbsoluteExpiration = DateTime.Now.AddSeconds(expirationTimeSpan.TotalSeconds);
-               }
-
-               return contentAction.Invoke();
-           });
+                return contentAction.Invoke();
+            });
 
             return cacheObject;
         }

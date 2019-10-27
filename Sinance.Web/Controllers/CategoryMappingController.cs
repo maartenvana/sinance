@@ -116,7 +116,7 @@ namespace Sinance.Controllers
                 {
                     try
                     {
-                        var updatedModel = await _categoryMappingService.UpdateCategoryMappingForCurrentUser(model);
+                        await _categoryMappingService.UpdateCategoryMappingForCurrentUser(model);
 
                         return Json(new SinanceJsonResult
                         {
@@ -133,7 +133,7 @@ namespace Sinance.Controllers
                 {
                     try
                     {
-                        var createdModel = await _categoryMappingService.CreateCategoryMappingForCurrentUser(model);
+                        await _categoryMappingService.CreateCategoryMappingForCurrentUser(model);
 
                         return Json(new SinanceJsonResult
                         {

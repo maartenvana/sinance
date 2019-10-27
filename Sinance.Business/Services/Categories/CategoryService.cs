@@ -199,11 +199,11 @@ namespace Sinance.Business.Services.Categories
                             break;
 
                         case ColumnType.Name:
-                            isMatch = FieldContains(transaction.Name, mapping.MatchValue); ;
+                            isMatch = FieldContains(transaction.Name, mapping.MatchValue);
                             break;
 
                         case ColumnType.DestinationAccount:
-                            isMatch = FieldContains(transaction.DestinationAccount, mapping.MatchValue); ;
+                            isMatch = FieldContains(transaction.DestinationAccount, mapping.MatchValue);
                             break;
 
                         default:

@@ -1,5 +1,4 @@
 ﻿using Sinance.Business.Services.Authentication;
-using Sinance.Business.Services.BankAccounts;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
 using System;
@@ -12,17 +11,14 @@ namespace Sinance.Business.Calculations
     public class ExpensePercentageCalculation : IExpensePercentageCalculation
     {
         private readonly IAuthenticationService _authenticationService;
-        private readonly IBankAccountService _bankAccountService;
         private readonly Func<IUnitOfWork> _unitOfWork;
 
         public ExpensePercentageCalculation(
             Func<IUnitOfWork> unitOfWork,
-            IAuthenticationService authenticationService,
-            IBankAccountService bankAccountService)
+            IAuthenticationService authenticationService)
         {
             _unitOfWork = unitOfWork;
             _authenticationService = authenticationService;
-            _bankAccountService = bankAccountService;
         }
 
         public async Task<IEnumerable<KeyValuePair<string, decimal>>> ExpensePercentagePerCategoryNameForMonth(int year, int month)

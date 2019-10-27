@@ -41,11 +41,6 @@ namespace Sinance.Controllers
         [HttpPost]
         public async Task<IActionResult> Import(IFormFile file, ImportModel model)
         {
-            if (file == null)
-            {
-                throw new ArgumentNullException(nameof(file));
-            }
-
             try
             {
                 using var stream = file.OpenReadStream();
@@ -125,11 +120,6 @@ namespace Sinance.Controllers
         [HttpPost]
         public async Task<IActionResult> StartImport(ImportModel model)
         {
-            if (model == null)
-            {
-                throw new ArgumentNullException(nameof(model));
-            }
-
             var bankAccounts = await _bankAccountService.GetActiveBankAccountsForCurrentUser();
             model.AvailableAccounts = bankAccounts;
 

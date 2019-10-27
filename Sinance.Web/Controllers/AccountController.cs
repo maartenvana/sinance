@@ -67,7 +67,7 @@ namespace Sinance.Controllers
 
             await SignInSinanceUser(user);
 
-            return RedirectToLocal(returnUrl);
+            return LocalRedirect(returnUrl);
         }
 
         /// <summary>
@@ -114,16 +114,6 @@ namespace Sinance.Controllers
             }
 
             return View(model);
-        }
-
-        /// <summary>
-        /// Redirects the return url to a local url
-        /// </summary>
-        /// <param name="returnUrl">Url to redirect</param>
-        /// <returns>Redirect for the return url</returns>
-        private ActionResult RedirectToLocal(string returnUrl)
-        {
-            return Url.IsLocalUrl(returnUrl) ? Redirect(returnUrl) : (ActionResult)RedirectToAction("Index", "Home");
         }
 
         private async Task SignInSinanceUser(SinanceUserModel user)

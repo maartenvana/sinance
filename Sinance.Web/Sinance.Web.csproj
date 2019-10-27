@@ -147,6 +147,9 @@
     <None Include="wwwroot\Scripts\jquery-2.1.4.min.map" />
     <None Include="wwwroot\Scripts\jquery-ui-1.11.4.js" />
     <None Include="wwwroot\Scripts\jquery-ui-1.11.4.min.js" />
+    <None Include="wwwroot\Scripts\jquery.dataTables.js" />
+    <None Include="wwwroot\Scripts\jquery.unobtrusive-ajax.js" />
+    <None Include="wwwroot\Scripts\jquery.unobtrusive-ajax.min.js" />
     <None Include="wwwroot\Scripts\jquery.validate-vsdoc.js" />
     <None Include="wwwroot\Scripts\jquery.validate.js" />
     <None Include="wwwroot\Scripts\jquery.validate.min.js" />

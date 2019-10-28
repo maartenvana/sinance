@@ -15,7 +15,7 @@ namespace Sinance.Web.Services
 {
     public class AuthenticationService : IAuthenticationService
     {
-        private readonly IDataSeedService _dataSeedService;
+        private readonly Lazy<IDataSeedService> _dataSeedService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IPasswordHasher<SinanceUserEntity> _passwordHasher;
         private readonly Func<IUnitOfWork> _unitOfWork;
@@ -26,7 +26,7 @@ namespace Sinance.Web.Services
         }
 
         public AuthenticationService(
-            IDataSeedService dataSeedService,
+            Lazy<IDataSeedService> dataSeedService,
             IPasswordHasher<SinanceUserEntity> passwordHasher,
             IHttpContextAccessor httpContextAccessor,
             Func<IUnitOfWork> unitOfWork)
@@ -53,7 +53,7 @@ namespace Sinance.Web.Services
                 unitOfWork.UserRepository.Insert(newUser);
                 await unitOfWork.SaveAsync();
 
-                await _dataSeedService.NewUserSeed(newUser.Id);
+                await _dataSeedService.Value.NewUserSeed(newUser.Id);
 
                 return newUser.ToDto();
             }

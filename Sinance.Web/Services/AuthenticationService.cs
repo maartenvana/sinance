@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Sinance.Business.DataSeeding;
 using Sinance.Business.Exceptions.Authentication;
 using Sinance.Business.Extensions;
 using Sinance.Business.Services.Authentication;
@@ -14,6 +15,7 @@ namespace Sinance.Web.Services
 {
     public class AuthenticationService : IAuthenticationService
     {
+        private readonly Lazy<IDataSeedService> _dataSeedService;
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IPasswordHasher<SinanceUserEntity> _passwordHasher;
         private readonly Func<IUnitOfWork> _unitOfWork;
@@ -24,10 +26,12 @@ namespace Sinance.Web.Services
         }
 
         public AuthenticationService(
+            Lazy<IDataSeedService> dataSeedService,
             IPasswordHasher<SinanceUserEntity> passwordHasher,
             IHttpContextAccessor httpContextAccessor,
             Func<IUnitOfWork> unitOfWork)
         {
+            _dataSeedService = dataSeedService;
             _passwordHasher = passwordHasher;
             _httpContextAccessor = httpContextAccessor;
             _unitOfWork = unitOfWork;
@@ -48,6 +52,8 @@ namespace Sinance.Web.Services
 
                 unitOfWork.UserRepository.Insert(newUser);
                 await unitOfWork.SaveAsync();
+
+                await _dataSeedService.Value.NewUserSeed(newUser.Id);
 
                 return newUser.ToDto();
             }

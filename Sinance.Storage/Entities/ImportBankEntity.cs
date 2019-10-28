@@ -26,6 +26,11 @@ namespace Sinance.Storage.Entities
         public List<ImportMappingEntity> ImportMappings { get; set; }
 
         /// <summary>
+        /// If this import bank definition is a standard available import
+        /// </summary>
+        public bool IsStandard { get; set; }
+
+        /// <summary>
         /// Name of the bank
         /// </summary>
         [Required]

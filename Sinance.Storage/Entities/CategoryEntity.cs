@@ -31,6 +31,11 @@ namespace Sinance.Storage.Entities
         public bool IsRegular { get; set; }
 
         /// <summary>
+        /// If the category is a standard (system) category
+        /// </summary>
+        public bool IsStandard { get; set; }
+
+        /// <summary>
         /// Name
         /// </summary>
         [Required]

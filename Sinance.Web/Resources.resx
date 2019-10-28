@@ -261,4 +261,7 @@
   <data name="CustomReportNotFound" xml:space="preserve">
     <value>Report not found</value>
   </data>
+  <data name="DeleteStandardCategoryExceptionMessage" xml:space="preserve">
+    <value>Can't delete a standard category</value>
+  </data>
 </root>

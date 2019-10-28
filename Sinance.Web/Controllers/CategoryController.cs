@@ -97,6 +97,10 @@ namespace Sinance.Controllers
             {
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryNotFound);
             }
+            catch (DeleteStandardCategoryException)
+            {
+                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.DeleteStandardCategoryExceptionMessage);
+            }
 
             return RedirectToAction("Index");
         }

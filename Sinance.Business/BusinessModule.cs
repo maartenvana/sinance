@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Sinance.Business.Calculations;
 using Sinance.Business.DataSeeding;
+using Sinance.Business.DataSeeding.Seeds;
 using Sinance.Business.Services;
 using Sinance.Business.Services.BankAccounts;
 using Sinance.Business.Services.Categories;
@@ -38,7 +39,12 @@ namespace Sinance.Business
 
             // Storage
             builder.RegisterModule<StorageModule>();
-            builder.RegisterType<DataSeedService>().AsSelf();
+
+            // Data seeding
+            builder.RegisterType<DataSeedService>().As<IDataSeedService>();
+            builder.RegisterType<DemoUserSeed>().AsSelf();
+            builder.RegisterType<ImportBankSeed>().AsSelf();
+            builder.RegisterType<CategorySeed>().AsSelf();
         }
     }
 }

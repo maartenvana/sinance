@@ -28,6 +28,8 @@ namespace Sinance.Business.DataSeeding.Seeds
             _logger.Information("Updating ImportBank definitions");
 
             await UpdateOrInsertINGBank(unitOfWork);
+            await UpdateOrInsertABNAMROBank(unitOfWork);
+            await UpdateOrInsertRaboBankBank(unitOfWork);
 
             await unitOfWork.SaveAsync();
         }
@@ -78,6 +80,56 @@ namespace Sinance.Business.DataSeeding.Seeds
             }
         }
 
+        private async Task UpdateOrInsertABNAMROBank(IUnitOfWork unitOfWork)
+        {
+            var importBank = await InsertOrUpdateImportBank(unitOfWork, new ImportBankEntity
+            {
+                Delimiter = "\t",
+                ImportContainsHeader = false,
+                IsStandard = true,
+                Name = "ABN AMRO"
+            });
+
+            await InsertOrUpdateMappingsForBank(unitOfWork, importBank, new List<ImportMappingEntity>
+                {
+                    new ImportMappingEntity
+                    {
+                        ColumnIndex = 0,
+                        ColumnName = "Rekening",
+                        ColumnTypeId = Communication.Model.Import.ColumnType.BankAccountFrom,
+                        FormatValue = null
+                    },
+                    new ImportMappingEntity
+                    {
+                        ColumnIndex = 1,
+                        ColumnName = "Naam (eur)",
+                        ColumnTypeId = Communication.Model.Import.ColumnType.Name,
+                        FormatValue = null
+                    },
+                    new ImportMappingEntity
+                    {
+                        ColumnIndex = 2,
+                        ColumnName = "Datum",
+                        ColumnTypeId = Communication.Model.Import.ColumnType.Date,
+                        FormatValue = "yyyyMMdd"
+                    },
+                    new ImportMappingEntity
+                    {
+                        ColumnIndex = 6,
+                        ColumnName = "Bedrag",
+                        ColumnTypeId = Communication.Model.Import.ColumnType.Amount,
+                        FormatValue = null
+                    },
+                    new ImportMappingEntity
+                    {
+                        ColumnIndex = 7,
+                        ColumnName = "Mededelingen",
+                        ColumnTypeId = Communication.Model.Import.ColumnType.Description,
+                        FormatValue = "Af"
+                    },
+                });
+        }
+
         private async Task UpdateOrInsertINGBank(IUnitOfWork unitOfWork)
         {
             var importBank = await InsertOrUpdateImportBank(unitOfWork, new ImportBankEntity
@@ -124,6 +176,70 @@ namespace Sinance.Business.DataSeeding.Seeds
                         ColumnName = "Af Bij",
                         ColumnTypeId = Communication.Model.Import.ColumnType.AddSubtract,
                         FormatValue = "Af"
+                    },
+                    new ImportMappingEntity
+                    {
+                        ColumnIndex = 6,
+                        ColumnName = "Bedrag",
+                        ColumnTypeId = Communication.Model.Import.ColumnType.Amount,
+                        FormatValue = null
+                    },
+                    new ImportMappingEntity
+                    {
+                        ColumnIndex = 8,
+                        ColumnName = "Mededelingen",
+                        ColumnTypeId = Communication.Model.Import.ColumnType.Description,
+                        FormatValue = null
+                    }
+                });
+        }
+
+        private async Task UpdateOrInsertRaboBankBank(IUnitOfWork unitOfWork)
+        {
+            var importBank = await InsertOrUpdateImportBank(unitOfWork, new ImportBankEntity
+            {
+                Delimiter = ",",
+                ImportContainsHeader = false,
+                IsStandard = true,
+                Name = "Rabobank"
+            });
+
+            await InsertOrUpdateMappingsForBank(unitOfWork, importBank, new List<ImportMappingEntity>
+                {
+                    new ImportMappingEntity
+                    {
+                        ColumnIndex = 0,
+                        ColumnName = "Datum",
+                        ColumnTypeId = Communication.Model.Import.ColumnType.Date,
+                        FormatValue = "yyyyMMdd"
+                    },
+                    new ImportMappingEntity
+                    {
+                        ColumnIndex = 1,
+                        ColumnName = "Naam/omschrijving",
+                        ColumnTypeId = Communication.Model.Import.ColumnType.Name,
+                        FormatValue = null
+                    },
+                    new ImportMappingEntity
+                    {
+                        ColumnIndex = 2,
+                        ColumnName = "Rekening",
+                        ColumnTypeId = Communication.Model.Import.ColumnType.BankAccountFrom,
+                        FormatValue = null
+                    },
+                    new ImportMappingEntity
+                    {
+                        ColumnIndex = 3,
+                        ColumnName = "Tegenrekening",
+                        ColumnTypeId = Communication.Model.Import.ColumnType.DestinationAccount,
+                        FormatValue = null
+                    },
+                    new ImportMappingEntity
+                    {
+                        ColumnIndex = 5,
+                        ColumnName = "Af Bij",
+                        ColumnTypeId = Communication.Model.Import.ColumnType.AddSubtract,
+                        FormatValue = "D"
                     },
                     new ImportMappingEntity
                     {

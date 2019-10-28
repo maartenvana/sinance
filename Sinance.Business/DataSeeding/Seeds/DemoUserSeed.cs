@@ -330,7 +330,7 @@ namespace Sinance.Business.DataSeeding.Seeds
             unitOfWork.TransactionRepository.InsertRange(transactions);
         }
 
-        private List<TransactionEntity> InsertWeeklyTransactionsForCategory(
+        private void InsertWeeklyTransactionsForCategory(
             IUnitOfWork unitOfWork, BankAccountEntity bankAccount, CategoryEntity category, DayOfWeek transactionDayOfWeek,
             string transactionName, string transactionDescription, int amountMinValue, int amountMaxValue)
         {
@@ -369,8 +369,6 @@ namespace Sinance.Business.DataSeeding.Seeds
                 });
             }
             unitOfWork.TransactionRepository.InsertRange(transactions);
-
-            return transactions;
         }
     }
 }

@@ -40,6 +40,7 @@ namespace Sinance.Business.DataSeeding.Seeds
             if (existingImportBank == null)
             {
                 unitOfWork.ImportBankRepository.Insert(importBankEntity);
+                await unitOfWork.SaveAsync();
 
                 return importBankEntity;
             }
@@ -75,7 +76,7 @@ namespace Sinance.Business.DataSeeding.Seeds
             var newImportMappings = importMappings.Where(x => !existingImportMappings.Any(y => y.ColumnIndex == x.ColumnIndex));
             foreach (var newImportMapping in newImportMappings)
             {
-                newImportMapping.ImportBank = importBank;
+                newImportMapping.ImportBankId = importBank.Id;
                 unitOfWork.ImportMappingRepository.Insert(newImportMapping);
             }
         }

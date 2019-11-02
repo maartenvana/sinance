@@ -36,7 +36,7 @@ namespace Sinance.Business.Services
             await unitOfWork.SaveAsync();
 
             // Reselect to get the categories included
-            entity = await FindCustomReportWithCategories(userId, unitOfWork);
+            entity = await FindCustomReportWithCategories(userId, entity.Id, unitOfWork);
 
             return entity.ToDto();
         }
@@ -47,7 +47,7 @@ namespace Sinance.Business.Services
 
             using var unitOfWork = _unitOfWork();
 
-            var customReport = await FindCustomReportWithCategories(userId, unitOfWork);
+            var customReport = await FindCustomReportWithCategories(userId, customReportId, unitOfWork);
 
             if (customReport == null)
             {
@@ -87,22 +87,22 @@ namespace Sinance.Business.Services
 
             await ValidateModelCategories(model, userId, unitOfWork);
 
-            var entity = await FindCustomReportWithCategories(userId, unitOfWork);
+            var entity = await FindCustomReportWithCategories(userId, model.Id, unitOfWork);
 
             entity.UpdateWithModel(model);
             await unitOfWork.SaveAsync();
 
             // Reselect to get the categories included
-            entity = await FindCustomReportWithCategories(userId, unitOfWork);
+            entity = await FindCustomReportWithCategories(userId, model.Id, unitOfWork);
 
             return entity.ToDto();
         }
 
-        private static async Task<CustomReportEntity> FindCustomReportWithCategories(int userId, IUnitOfWork unitOfWork)
+        private static async Task<CustomReportEntity> FindCustomReportWithCategories(int userId, int reportId, IUnitOfWork unitOfWork)
         {
             var report = await unitOfWork.CustomReportRepository
                             .FindSingleTracked(
-                                findQuery: item => item.UserId == userId,
+                                findQuery: x => x.UserId == userId && x.Id == reportId,
                                 includeProperties: new string[] {
                                     nameof(CustomReportEntity.ReportCategories),
                                     $"{nameof(CustomReportEntity.ReportCategories)}.{nameof(CustomReportCategoryEntity.Category)}"

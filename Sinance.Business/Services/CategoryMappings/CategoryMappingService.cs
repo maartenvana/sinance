@@ -5,6 +5,7 @@ using Sinance.Communication.Model.CategoryMapping;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sinance.Business.Services.CategoryMappings
@@ -30,6 +31,7 @@ namespace Sinance.Business.Services.CategoryMappings
 
             var existingCategoryMapping = await unitOfWork.CategoryMappingRepository.FindSingle(findQuery: x =>
                 x.ColumnTypeId == model.ColumnTypeId &&
+                x.MatchValue == model.MatchValue &&
                 x.CategoryId == model.CategoryId &&
                 x.UserId == userId);
 

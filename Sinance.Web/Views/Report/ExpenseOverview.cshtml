@@ -42,10 +42,10 @@
     <div class="col-lg-12">
         <div class="panel panel-default">
             <div class="panel-heading">
-                Uitgaven zonder categorie voor <strong>@Html.DisplayFor(item => item.RegularBimonthlyExpenseReport.SecondMonthDate)</strong>
+                Uitgaven zonder categorie
             </div>
             <div class="panel-body">
-                @await Html.PartialAsync("TransactionsSimpleTable", Model.UncategorizedTransactionsThisMonth)
+                @await Html.PartialAsync("TransactionsSimpleTable", Model.UncategorizedTransactions)
             </div>
         </div>
     </div>

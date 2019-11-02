@@ -33,7 +33,7 @@
                 Inkomsten zonder categorie voor <strong>@Html.DisplayFor(item => item.BimonthlyIncomeReport.SecondMonth)</strong>
             </div>
             <div class="panel-body">
-                @await Html.PartialAsync("TransactionsSimpleTable", Model.UncategorizedTransactionsThisMonth)
+                @await Html.PartialAsync("TransactionsSimpleTable", Model.UncategorizedTransactions)
             </div>
         </div>
     </div>

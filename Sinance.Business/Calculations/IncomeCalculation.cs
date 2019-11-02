@@ -62,15 +62,15 @@ namespace Sinance.Business.Calculations
                 AddCategoryToBimonthlyIncome(transactions, parentCategory, bimonthlyIncomeReport, startMonth, nextMonthStart);
             }
 
-            var uncategorizedTransactionsThisMonth = transactions.Where(item =>
+            var uncategorizedTransactions = transactions.Where(item =>
                 item.TransactionCategories.Count == 0 &&
-                item.Date < nextMonthStart &&
-                item.Date >= startMonth).ToList().ToDto();
+                item.Date >= startMonth &&
+                item.Date <= nextMonthEnd).ToList().ToDto();
 
             return new BiMonthlyIncomeReportModel
             {
                 BimonthlyIncomeReport = bimonthlyIncomeReport,
-                UncategorizedTransactionsThisMonth = uncategorizedTransactionsThisMonth
+                UncategorizedTransactions = uncategorizedTransactions
             };
         }
 

@@ -78,16 +78,16 @@ namespace Sinance.Business.Calculations
                 AddCategoryToBimonthlyExpense(transactions, parentCategory, volatileMonthlyExpenseReport, startMonth, nextMonthStart, false);
             }
 
-            var uncategorizedTransactionsThisMonth = transactions.Where(item =>
+            var uncategorizedTransactions = transactions.Where(item =>
                 item.TransactionCategories.Count == 0 &&
-                item.Date < nextMonthStart &&
-                item.Date >= startMonth).ToList().ToDto();
+                item.Date >= startMonth &&
+                item.Date <= nextMonthEnd).ToList().ToDto();
 
             return new BiMonthlyExpenseReportModel
             {
                 RegularBimonthlyExpenseReport = regularBimonthlyExpenseReport,
                 VolatileBimonthlyExpenseReport = volatileMonthlyExpenseReport,
-                UncategorizedTransactionsThisMonth = uncategorizedTransactionsThisMonth
+                UncategorizedTransactions = uncategorizedTransactions
             };
         }
 
@@ -112,10 +112,10 @@ namespace Sinance.Business.Calculations
                         nameof(TransactionEntity.TransactionCategories)
                     });
 
-            var categories = await unitOfWork.CategoryRepository.FindAll(x => categoryIds.Any(y => y == x.Id));
+            var categories = await unitOfWork.CategoryRepository.FindAll(x => categoryIds.Any(y => y == x.Id), includeProperties: new string[] { nameof(CategoryEntity.ParentCategory) });
 
             var reportDictionary = categories.ToDictionary(
-                keySelector: x => x.Name,
+                keySelector: x => CreateCategoryNameWithOptionalParent(x),
                 elementSelector: x => CreateMonthlyDictionary());
 
             foreach (var transaction in transactions)
@@ -129,7 +129,7 @@ namespace Sinance.Business.Calculations
                         var amount = transactionCategory.Amount ?? transaction.Amount;
                         amount = GetPositiveAmount(amount);
 
-                        reportDictionary[category.Name][transaction.Date.Month] += amount;
+                        reportDictionary[CreateCategoryNameWithOptionalParent(category)][transaction.Date.Month] += amount;
                     }
                 }
                 else
@@ -218,6 +218,18 @@ namespace Sinance.Business.Calculations
                                         item.Amount :
                                         item.TransactionCategories.Where(transCategory => transCategory.CategoryId == category.Id)
                                             .Sum(transCategory => transCategory.Amount.GetValueOrDefault()));
+        }
+
+        private static string CreateCategoryNameWithOptionalParent(CategoryEntity category)
+        {
+            if (category.ParentCategory != null)
+            {
+                return $"({category.ParentCategory.Name}) {category.Name}";
+            }
+            else
+            {
+                return category.Name;
+            }
         }
 
         private static Dictionary<int, decimal> CreateMonthlyDictionary() =>

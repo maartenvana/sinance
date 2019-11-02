@@ -16,6 +16,6 @@ namespace Sinance.Communication.Model.StandardReport.Income
         /// <summary>
         /// Uncategorized transactions
         /// </summary>
-        public IEnumerable<TransactionModel> UncategorizedTransactionsThisMonth { get; set; }
+        public IEnumerable<TransactionModel> UncategorizedTransactions { get; set; }
     }
 }

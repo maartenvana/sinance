@@ -13,7 +13,7 @@ namespace Sinance.Communication.Model.StandardReport.Expense
         /// <summary>
         /// Uncategorized transactions
         /// </summary>
-        public IEnumerable<TransactionModel> UncategorizedTransactionsThisMonth { get; set; }
+        public IEnumerable<TransactionModel> UncategorizedTransactions { get; set; }
 
         /// <summary>
         /// Volatile expenses report for two months

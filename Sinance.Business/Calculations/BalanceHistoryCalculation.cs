@@ -77,7 +77,7 @@ namespace Sinance.Business.Calculations
             {
                 sumPerDates.Add(new[]
                 {
-                    Convert.ToDecimal((startDate - new DateTimeOffset()).TotalMilliseconds),
+                    Convert.ToDecimal((startDate.Date - DateTimeOffset.UnixEpoch).TotalMilliseconds),
                     accountBalance
                 });
             }
@@ -88,7 +88,7 @@ namespace Sinance.Business.Calculations
 
                 sumPerDates.Add(new[]
                 {
-                    Convert.ToDecimal((groupedTransactions.Key - new DateTimeOffset()).TotalMilliseconds),
+                    Convert.ToDecimal((groupedTransactions.Key - DateTimeOffset.UnixEpoch).TotalMilliseconds),
                     accountBalance
                 });
             }

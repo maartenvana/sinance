@@ -30,20 +30,18 @@ namespace Sinance.Business.Services.BankAccounts
             var userId = await _authenticationService.GetCurrentUserId();
 
             using var unitOfWork = _unitOfWork();
-            var bankAccounts = await unitOfWork.BankAccountRepository.FindAll(x => x.Name == model.Name && x.UserId == userId);
+            var bankAccount = await unitOfWork.BankAccountRepository.FindSingle(x => x.Name == model.Name && x.UserId == userId);
 
-            if (!bankAccounts.Any())
-            {
-                var bankAccountEntity = model.ToNewEntity(userId);
-                unitOfWork.BankAccountRepository.Insert(bankAccountEntity);
-                await unitOfWork.SaveAsync();
-
-                return bankAccountEntity.ToDto();
-            }
-            else
+            if (bankAccount != null)
             {
                 throw new AlreadyExistsException(nameof(BankAccountEntity));
             }
+
+            var bankAccountEntity = model.ToNewEntity(userId);
+            unitOfWork.BankAccountRepository.Insert(bankAccountEntity);
+            await unitOfWork.SaveAsync();
+
+            return bankAccountEntity.ToDto();
         }
 
         public async Task DeleteBankAccountByIdForCurrentUser(int accountId)

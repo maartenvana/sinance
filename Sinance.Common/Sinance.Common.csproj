@@ -5,6 +5,14 @@
     <ProjectGuid>290b6a15-202c-4d90-84ec-f3f299c2364d</ProjectGuid>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <CodeAnalysisRuleSet />
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <CodeAnalysisRuleSet />
+  </PropertyGroup>
+
   <ItemGroup>
     <None Remove="Sinance.Common.csproj.vspscc" />
   </ItemGroup>

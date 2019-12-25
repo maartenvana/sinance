@@ -1,6 +1,7 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
 using Sinance.Business.Extensions;
+using Sinance.Communication.Model.BankAccount;
 using Sinance.Communication.Model.Import;
 using Sinance.Communication.Model.Transaction;
 using Sinance.Storage;
@@ -79,8 +80,8 @@ namespace Sinance.Business.Handlers
         /// <param name="cachedImportRows">The cached import rows</param>
         /// <param name="userId">User to import for</param>
         /// <returns>Amount of saved import result</returns>
-        public static async Task<int> SaveImportResultToDatabase(IUnitOfWork unitOfWork, int bankAccountId,
-            IList<ImportRow> importRows, IList<ImportRow> cachedImportRows, int userId)
+        public static async Task<int> SaveImportResultToDatabase(IUnitOfWork unitOfWork, int bankAccountId, int userId,
+            IList<ImportRow> importRows, IList<ImportRow> cachedImportRows)
         {
             var savedTransactions = 0;
 

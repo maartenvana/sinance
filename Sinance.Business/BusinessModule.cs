@@ -11,6 +11,10 @@ using Sinance.Business.Services.Imports;
 using Sinance.Business.Services.Transactions;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
+using System.Runtime.CompilerServices;
+
+[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
+[assembly: InternalsVisibleTo("Sinance.Business.Tests")]
 
 namespace Sinance.Business
 {
@@ -33,6 +37,9 @@ namespace Sinance.Business
             builder.RegisterType<ProfitLossCalculation>().As<IProfitLossCalculation>();
             builder.RegisterType<ExpenseCalculation>().As<IExpenseCalculation>();
             builder.RegisterType<IncomeCalculation>().As<IIncomeCalculation>();
+
+            // CalculationServices
+            builder.RegisterType<BankAccountCalculationService>().As<IBankAccountCalculationService>();
 
             // Other
             builder.RegisterType<PasswordHasher<SinanceUserEntity>>().As<IPasswordHasher<SinanceUserEntity>>();

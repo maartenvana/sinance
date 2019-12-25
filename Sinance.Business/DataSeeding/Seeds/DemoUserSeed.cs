@@ -1,7 +1,7 @@
 ﻿using Serilog;
 using Sinance.Business.Constants;
-using Sinance.Business.Handlers;
 using Sinance.Business.Services.Authentication;
+using Sinance.Business.Services.BankAccounts;
 using Sinance.Communication.Model.BankAccount;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
@@ -11,23 +11,26 @@ using System.Threading.Tasks;
 
 namespace Sinance.Business.DataSeeding.Seeds
 {
-    public class DemoUserSeed
+    internal class DemoUserSeed
     {
         private readonly IAuthenticationService _authenticationService;
+        private readonly IBankAccountCalculationService _bankAccountCalculationService;
         private readonly Lazy<CategorySeed> _categorySeed;
         private readonly ILogger _logger;
         private readonly Random _random;
         private readonly Func<IUnitOfWork> _unitOfWork;
 
-        public DemoUserSeed(
+        internal DemoUserSeed(
             ILogger logger,
             Lazy<CategorySeed> categorySeed,
+            IBankAccountCalculationService bankAccountCalculationService,
             IAuthenticationService authenticationService,
             Func<IUnitOfWork> unitOfWork)
         {
             _random = new Random();
             _logger = logger;
             _categorySeed = categorySeed;
+            _bankAccountCalculationService = bankAccountCalculationService;
             _authenticationService = authenticationService;
             _unitOfWork = unitOfWork;
         }
@@ -72,12 +75,10 @@ namespace Sinance.Business.DataSeeding.Seeds
 
             await unitOfWork.SaveAsync();
 
-            mainBankAccount.CurrentBalance = await TransactionHandler.CalculateCurrentBalanceForBankAccount(unitOfWork, mainBankAccount);
-            secondaryBankAccount.CurrentBalance = await TransactionHandler.CalculateCurrentBalanceForBankAccount(unitOfWork, secondaryBankAccount);
-            savingsAccount.CurrentBalance = await TransactionHandler.CalculateCurrentBalanceForBankAccount(unitOfWork, savingsAccount);
-            investmentAccount.CurrentBalance = await TransactionHandler.CalculateCurrentBalanceForBankAccount(unitOfWork, investmentAccount);
-
-            await unitOfWork.SaveAsync();
+            await _bankAccountCalculationService.UpdateCurrentBalanceForBankAccount(mainBankAccount.Id, user.Id);
+            await _bankAccountCalculationService.UpdateCurrentBalanceForBankAccount(secondaryBankAccount.Id, user.Id);
+            await _bankAccountCalculationService.UpdateCurrentBalanceForBankAccount(savingsAccount.Id, user.Id);
+            await _bankAccountCalculationService.UpdateCurrentBalanceForBankAccount(investmentAccount.Id, user.Id);
 
             _logger.Information("Data seed completed, login with DemoUser/DemoUser");
         }

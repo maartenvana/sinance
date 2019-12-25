@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 
 namespace Sinance.Business.DataSeeding
 {
-    public class DataSeedService : IDataSeedService
+    internal class DataSeedService : IDataSeedService
     {
         private readonly AppSettings _appSettings;
         private readonly CategorySeed _categorySeed;
@@ -13,7 +13,7 @@ namespace Sinance.Business.DataSeeding
         private readonly ImportBankSeed _importBankSeed;
         private readonly ILogger _logger;
 
-        public DataSeedService(
+        internal DataSeedService(
             ILogger logger,
             AppSettings appSettings,
             CategorySeed categorySeed,

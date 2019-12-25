@@ -1,6 +1,5 @@
 ﻿using Sinance.Business.Exceptions;
 using Sinance.Business.Extensions;
-using Sinance.Business.Handlers;
 using Sinance.Business.Services.Authentication;
 using Sinance.Communication.Model.BankAccount;
 using Sinance.Storage;
@@ -12,16 +11,19 @@ using System.Threading.Tasks;
 
 namespace Sinance.Business.Services.BankAccounts
 {
-    public class BankAccountService : IBankAccountService
+    internal class BankAccountService : IBankAccountService
     {
         private readonly IAuthenticationService _authenticationService;
+        private readonly IBankAccountCalculationService _bankAccountCalculationService;
         private readonly Func<IUnitOfWork> _unitOfWork;
 
-        public BankAccountService(
+        internal BankAccountService(
             Func<IUnitOfWork> unitOfWork,
+            IBankAccountCalculationService bankAccountCalculationService,
             IAuthenticationService authenticationService)
         {
             _unitOfWork = unitOfWork;
+            _bankAccountCalculationService = bankAccountCalculationService;
             _authenticationService = authenticationService;
         }
 
@@ -113,27 +115,26 @@ namespace Sinance.Business.Services.BankAccounts
 
             using var unitOfWork = _unitOfWork();
 
-            var bankAccount = await unitOfWork.BankAccountRepository.FindSingleTracked(x => x.UserId == userId && x.Id == model.Id);
+            var bankAccountEntity = await unitOfWork.BankAccountRepository.FindSingleTracked(x => x.UserId == userId && x.Id == model.Id);
 
-            if (bankAccount != null)
-            {
-                var recalculateCurrentBalance = bankAccount.StartBalance != model.StartBalance;
-
-                bankAccount.UpdateFromModel(model);
-                unitOfWork.BankAccountRepository.Update(bankAccount);
-
-                if (recalculateCurrentBalance)
-                {
-                    bankAccount.CurrentBalance = await TransactionHandler.CalculateCurrentBalanceForBankAccount(unitOfWork, bankAccount);
-                }
-                await unitOfWork.SaveAsync();
-
-                return bankAccount.ToDto();
-            }
-            else
+            if (bankAccountEntity == null)
             {
                 throw new NotFoundException(nameof(BankAccountEntity));
             }
+
+            var recalculateCurrentBalance = bankAccountEntity.StartBalance != model.StartBalance;
+
+            bankAccountEntity.UpdateFromModel(model);
+            
+            if (recalculateCurrentBalance)
+            {
+                bankAccountEntity.CurrentBalance = await _bankAccountCalculationService.CalculateCurrentBalanceForBankAccount(unitOfWork, bankAccountEntity);
+            }
+
+            unitOfWork.BankAccountRepository.Update(bankAccountEntity);
+            await unitOfWork.SaveAsync();
+
+            return bankAccountEntity.ToDto();
         }
     }
 }

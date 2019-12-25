@@ -49,7 +49,7 @@ namespace Sinance.Business.Tests.Services
                 UserId = _defaultUserId
             });
 
-            var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
+            var bankAccountService = _mocker.CreateInstance<BankAccountService>();
 
             // Act
             var result = FluentActions.Awaiting(async () => await bankAccountService.CreateBankAccountForCurrentUser(bankAccountModel));
@@ -73,7 +73,7 @@ namespace Sinance.Business.Tests.Services
                 StartBalance = startBalance
             };
 
-            var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
+            var bankAccountService = _mocker.CreateInstance<BankAccountService>();
 
             // Act
             var result = await bankAccountService.CreateBankAccountForCurrentUser(bankAccountModel);
@@ -98,7 +98,7 @@ namespace Sinance.Business.Tests.Services
                 StartBalance = 1000
             };
 
-            var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
+            var bankAccountService = _mocker.CreateInstance<BankAccountService>();
 
             // Act
             var result = await bankAccountService.CreateBankAccountForCurrentUser(bankAccountModel);
@@ -120,7 +120,7 @@ namespace Sinance.Business.Tests.Services
             // Arrange
             var bankAccountId = 1;
 
-            var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
+            var bankAccountService = _mocker.CreateInstance<BankAccountService>();
 
             // Act
             var result = FluentActions.Awaiting(async () => await bankAccountService.DeleteBankAccountByIdForCurrentUser(bankAccountId));
@@ -144,7 +144,7 @@ namespace Sinance.Business.Tests.Services
 
             InsertEntity(bankAccountEntity);
 
-            var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
+            var bankAccountService = _mocker.CreateInstance<BankAccountService>();
 
             // Act
             await bankAccountService.DeleteBankAccountByIdForCurrentUser(bankAccountId);
@@ -159,7 +159,7 @@ namespace Sinance.Business.Tests.Services
         public async Task DeleteBankAccountByIdForCurrentUser_UserDoesNotOwnAccount_ThrowsException()
         {
             // Arrange
-            var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
+            var bankAccountService = _mocker.CreateInstance<BankAccountService>();
 
             var bankAccountEntity = new BankAccountEntity
             {
@@ -216,7 +216,7 @@ namespace Sinance.Business.Tests.Services
 
             InsertEntities(checkingAccount, savingsAccount, disabledCheckingAccount);
 
-            var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
+            var bankAccountService = _mocker.CreateInstance<BankAccountService>();
 
             // Act
             var result = await bankAccountService.GetActiveBankAccountsForCurrentUser();
@@ -248,7 +248,7 @@ namespace Sinance.Business.Tests.Services
         public async Task GetActiveBankAccountsForCurrentUser_NoAccounts_ReturnsEmptyList()
         {
             // Arrange
-            var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
+            var bankAccountService = _mocker.CreateInstance<BankAccountService>();
 
             // Act
             var result = await bankAccountService.GetActiveBankAccountsForCurrentUser();
@@ -284,7 +284,7 @@ namespace Sinance.Business.Tests.Services
 
             InsertEntities(checkingAccount, disabledCheckingAccount);
 
-            var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
+            var bankAccountService = _mocker.CreateInstance<BankAccountService>();
 
             // Act
             var result = await bankAccountService.GetAllBankAccountsForCurrentUser();
@@ -318,7 +318,7 @@ namespace Sinance.Business.Tests.Services
             // Arrange
             var bankAccountId = 1;
 
-            var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
+            var bankAccountService = _mocker.CreateInstance<BankAccountService>();
 
             // Act
             var result = FluentActions.Awaiting(async () => await bankAccountService.GetBankAccountByIdForCurrentUser(bankAccountId));
@@ -347,7 +347,7 @@ namespace Sinance.Business.Tests.Services
 
             InsertEntity(bankAccountEntity);
 
-            var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
+            var bankAccountService = _mocker.CreateInstance<BankAccountService>();
 
             // Act
             var result = await bankAccountService.GetBankAccountByIdForCurrentUser(bankAccountId);
@@ -382,7 +382,7 @@ namespace Sinance.Business.Tests.Services
 
             InsertEntity(bankAccountEntity);
 
-            var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
+            var bankAccountService = _mocker.CreateInstance<BankAccountService>();
 
             // Act
             var result = FluentActions.Awaiting(async () => await bankAccountService.GetBankAccountByIdForCurrentUser(bankAccountEntity.Id));
@@ -405,7 +405,7 @@ namespace Sinance.Business.Tests.Services
                 StartBalance = 100
             };
 
-            var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
+            var bankAccountService = _mocker.CreateInstance<BankAccountService>();
 
             // Act
             var result = FluentActions.Awaiting(async () => await bankAccountService.UpdateBankAccountForCurrentUser(bankAccountModel));
@@ -455,7 +455,7 @@ namespace Sinance.Business.Tests.Services
                         It.Is<BankAccountEntity>(y => y.Id == existingEntity.Id))).ReturnsAsync(bankAccountModel.StartBalance);
             }
 
-            var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
+            var bankAccountService = _mocker.CreateInstance<BankAccountService>();
 
             // Act
             var result = await bankAccountService.UpdateBankAccountForCurrentUser(bankAccountModel);
@@ -502,7 +502,7 @@ namespace Sinance.Business.Tests.Services
                     It.IsAny<IUnitOfWork>(),
                     It.Is<BankAccountEntity>(x => x.Id == bankAccountEntity.Id))).ReturnsAsync(bankAccountModel.StartBalance).Verifiable();
 
-            var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
+            var bankAccountService = _mocker.CreateInstance<BankAccountService>();
 
             // Act
             await bankAccountService.UpdateBankAccountForCurrentUser(bankAccountModel);
@@ -536,7 +536,7 @@ namespace Sinance.Business.Tests.Services
                 Name = "OtherName"
             };
 
-            var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
+            var bankAccountService = _mocker.CreateInstance<BankAccountService>();
 
             // Act
             var result = FluentActions.Awaiting(async () => await bankAccountService.UpdateBankAccountForCurrentUser(bankAccountModel));

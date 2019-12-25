@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace Sinance.Business.Services.BankAccounts
 {
-    internal interface IBankAccountCalculationService
+    public interface IBankAccountCalculationService
     {
         Task<decimal> CalculateCurrentBalanceForBankAccount(IUnitOfWork unitOfWork, BankAccountEntity bankAccount);
 

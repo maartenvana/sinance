@@ -15,13 +15,13 @@ using System.Threading.Tasks;
 
 namespace Sinance.Business.Services.Imports
 {
-    internal class ImportService : IImportService
+    public class ImportService : IImportService
     {
         private readonly IAuthenticationService _authenticationService;
         private readonly IBankAccountCalculationService _bankAccountCalculationService;
         private readonly Func<IUnitOfWork> _unitOfWork;
 
-        internal ImportService(
+        public ImportService(
             Func<IUnitOfWork> unitOfWork,
             IBankAccountCalculationService bankAccountService,
             IAuthenticationService authenticationService)

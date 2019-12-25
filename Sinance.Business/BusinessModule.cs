@@ -11,10 +11,6 @@ using Sinance.Business.Services.Imports;
 using Sinance.Business.Services.Transactions;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
-using System.Runtime.CompilerServices;
-
-[assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
-[assembly: InternalsVisibleTo("Sinance.Business.Tests")]
 
 namespace Sinance.Business
 {

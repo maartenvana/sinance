@@ -31,7 +31,7 @@ namespace Sinance.Business.DataSeeding.Seeds
 
             foreach (var user in allUsers)
             {
-                await SeedCategories(user.Id, unitOfWork);
+                await SeedStandardCategoriesForUser(unitOfWork, user.Id);
             }
 
             await unitOfWork.SaveAsync();
@@ -39,13 +39,11 @@ namespace Sinance.Business.DataSeeding.Seeds
             _logger.Information("Standard categories seeding completed");
         }
 
-        public async Task SeedStandardCategoriesForUser(int userId)
+        public async Task SeedStandardCategoriesForUser(IUnitOfWork unitOfWork, int userId)
         {
-            using var unitOfWork = _unitOfWork();
+            var standardCategoriesForUser = await unitOfWork.CategoryRepository.FindAll(x => x.IsStandard && x.UserId == userId);
 
-            await SeedCategories(userId, unitOfWork);
-
-            await unitOfWork.SaveAsync();
+            CreateOrUpdateCashFlowCategory(unitOfWork, standardCategoriesForUser, userId);
         }
 
         private void CreateOrUpdateCashFlowCategory(IUnitOfWork unitOfWork, List<CategoryEntity> standardCategoriesForUser, int userId)
@@ -61,13 +59,6 @@ namespace Sinance.Business.DataSeeding.Seeds
                     UserId = userId
                 });
             }
-        }
-
-        private async Task SeedCategories(int userId, IUnitOfWork unitOfWork)
-        {
-            var standardCategoriesForUser = await unitOfWork.CategoryRepository.FindAll(x => x.IsStandard && x.UserId == userId);
-
-            CreateOrUpdateCashFlowCategory(unitOfWork, standardCategoriesForUser, userId);
         }
     }
 }

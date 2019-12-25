@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Sinance.Business.DataSeeding.Seeds
 {
-    internal class DemoUserSeed
+    public class DemoUserSeed
     {
         private readonly IAuthenticationService _authenticationService;
         private readonly IBankAccountCalculationService _bankAccountCalculationService;
@@ -20,7 +20,7 @@ namespace Sinance.Business.DataSeeding.Seeds
         private readonly Random _random;
         private readonly Func<IUnitOfWork> _unitOfWork;
 
-        internal DemoUserSeed(
+        public DemoUserSeed(
             ILogger logger,
             Lazy<CategorySeed> categorySeed,
             IBankAccountCalculationService bankAccountCalculationService,
@@ -58,11 +58,12 @@ namespace Sinance.Business.DataSeeding.Seeds
                 _logger.Information("Creating demo user");
                 await _authenticationService.CreateUser(demoUserName, demoUserName);
                 user = await unitOfWork.UserRepository.FindSingleTracked(x => x.Username == demoUserName);
-
-                await _categorySeed.Value.SeedStandardCategoriesForUser(user.Id);
             }
 
             await DeleteExistingBankAccounts(unitOfWork, user);
+            await _categorySeed.Value.SeedStandardCategoriesForUser(unitOfWork, user.Id);
+
+            await unitOfWork.SaveAsync();
 
             _logger.Information("Creating demo bank accounts");
             var mainBankAccount = InsertBankAccount(unitOfWork, user, "Checking 1", BankAccountType.Checking);
@@ -159,7 +160,7 @@ namespace Sinance.Business.DataSeeding.Seeds
             var netflixCategory = InsertCategory(unitOfWork, user, "Netflix", true, subscriptionsCategory);
             InsertMonthlyTransactionsForCategory(unitOfWork, primaryChecking, netflixCategory, 25, "Netflix", "Netflix subscription", -8, -8);
 
-            var internalCashFlowCategory = await unitOfWork.CategoryRepository.FindSingle(x => x.IsStandard && x.Name == StandardCategoryNames.InternalCashFlowName);
+            var internalCashFlowCategory = await unitOfWork.CategoryRepository.FindSingleTracked(x => x.IsStandard && x.UserId == user.Id && x.Name == StandardCategoryNames.InternalCashFlowName);
             InsertMonthlySavingTransaction(unitOfWork, primaryChecking, savingsAccount, internalCashFlowCategory, 26, 100);
         }
 

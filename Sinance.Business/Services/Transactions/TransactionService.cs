@@ -12,13 +12,13 @@ using System.Threading.Tasks;
 
 namespace Sinance.Business.Services.Transactions
 {
-    internal class TransactionService : ITransactionService
+    public class TransactionService : ITransactionService
     {
         private readonly IAuthenticationService _authenticationService;
         private readonly IBankAccountCalculationService _bankAccountCalculationService;
         private readonly Func<IUnitOfWork> _unitOfWork;
 
-        internal TransactionService(
+        public TransactionService(
             Func<IUnitOfWork> unitOfWork,
             IBankAccountCalculationService bankAccountCalculationService,
             IAuthenticationService authenticationService)

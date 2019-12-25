@@ -3,33 +3,25 @@ DockerFile
 LICENSE
 README.md
 
-# User-specific files
 *.suo
 *.user
 *.userosscache
 *.sln.docstates
 
-# User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
-# Visual Studio 2015/2017 cache/options directory
-.vs/
-
-# Build results
-[Dd]ebug/
-[Dd]ebugPublic/
-[Rr]elease/
-[Rr]eleases/
-x64/
-x86/
-bld/
-[Bb]in/
-[Oo]bj/
-[Ll]og/
-out/
+.dockerignore
+.env
+.git
+.gitignore
+.vs
+.vscode
+docker-compose.yml
+docker-compose.*.yml
+**/bin
+**/obj
+bin/
+obj/
 
 # .NET Core
-project.lock.json
-project.fragment.lock.json
-artifacts/
 **/Properties/launchSettings.json

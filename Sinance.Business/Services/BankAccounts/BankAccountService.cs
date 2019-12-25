@@ -11,13 +11,13 @@ using System.Threading.Tasks;
 
 namespace Sinance.Business.Services.BankAccounts
 {
-    internal class BankAccountService : IBankAccountService
+    public class BankAccountService : IBankAccountService
     {
         private readonly IAuthenticationService _authenticationService;
         private readonly IBankAccountCalculationService _bankAccountCalculationService;
         private readonly Func<IUnitOfWork> _unitOfWork;
 
-        internal BankAccountService(
+        public BankAccountService(
             Func<IUnitOfWork> unitOfWork,
             IBankAccountCalculationService bankAccountCalculationService,
             IAuthenticationService authenticationService)
@@ -125,7 +125,7 @@ namespace Sinance.Business.Services.BankAccounts
             var recalculateCurrentBalance = bankAccountEntity.StartBalance != model.StartBalance;
 
             bankAccountEntity.UpdateFromModel(model);
-            
+
             if (recalculateCurrentBalance)
             {
                 bankAccountEntity.CurrentBalance = await _bankAccountCalculationService.CalculateCurrentBalanceForBankAccount(unitOfWork, bankAccountEntity);

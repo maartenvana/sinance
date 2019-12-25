@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Sinance.Business.Services.BankAccounts
 {
-    internal class BankAccountCalculationService : IBankAccountCalculationService
+    public class BankAccountCalculationService : IBankAccountCalculationService
     {
         private readonly Func<IUnitOfWork> _unitOfWork;
 

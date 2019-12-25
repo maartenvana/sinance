@@ -1,11 +1,12 @@
 ﻿using Serilog;
 using Sinance.Business.DataSeeding.Seeds;
 using Sinance.Common.Configuration;
+using Sinance.Storage;
 using System.Threading.Tasks;
 
 namespace Sinance.Business.DataSeeding
 {
-    internal class DataSeedService : IDataSeedService
+    public class DataSeedService : IDataSeedService
     {
         private readonly AppSettings _appSettings;
         private readonly CategorySeed _categorySeed;
@@ -13,7 +14,7 @@ namespace Sinance.Business.DataSeeding
         private readonly ImportBankSeed _importBankSeed;
         private readonly ILogger _logger;
 
-        internal DataSeedService(
+        public DataSeedService(
             ILogger logger,
             AppSettings appSettings,
             CategorySeed categorySeed,
@@ -27,11 +28,11 @@ namespace Sinance.Business.DataSeeding
             _importBankSeed = importBankSeed;
         }
 
-        public async Task NewUserSeed(int userId)
+        public async Task NewUserSeed(IUnitOfWork unitOfWork, int userId)
         {
             _logger.Information("Seeding new user");
 
-            await _categorySeed.SeedStandardCategoriesForUser(userId);
+            await _categorySeed.SeedStandardCategoriesForUser(unitOfWork, userId);
         }
 
         public async Task StartupSeed()

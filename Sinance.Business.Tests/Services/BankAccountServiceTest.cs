@@ -9,7 +9,6 @@ using Sinance.Storage.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
-using System.Text;
 using System.Threading.Tasks;
 
 using Xunit;
@@ -19,16 +18,24 @@ namespace Sinance.Business.Tests.Services
     public class BankAccountServiceTest
     {
         private const int _defaultUserId = 1;
+        private readonly Mock<IGenericRepository<BankAccountEntity>> _bankAccountRepositoryMock;
         private readonly AutoMocker _mocker;
-        private readonly Mock<IUnitOfWork> _unitOfWorkMock;
 
         public BankAccountServiceTest()
         {
             _mocker = new AutoMocker();
-            _unitOfWorkMock = _mocker.GetMock<IUnitOfWork>();
+
+            _bankAccountRepositoryMock = _mocker.GetMock<IGenericRepository<BankAccountEntity>>();
+
+            _mocker.Use<Func<IUnitOfWork>>(() =>
+            {
+                var unitOfWork = _mocker.GetMock<IUnitOfWork>();
+                unitOfWork.SetupGet(x => x.BankAccountRepository).Returns(_bankAccountRepositoryMock.Object);
+
+                return unitOfWork.Object;
+            });
 
             _mocker.Use<IAuthenticationService>(x => x.GetCurrentUserId() == Task.FromResult(_defaultUserId));
-            _mocker.GetMock<Func<IUnitOfWork>>().SetReturnsDefault(_unitOfWorkMock.Object);
         }
 
         [Fact]
@@ -38,14 +45,15 @@ namespace Sinance.Business.Tests.Services
             var bankAccountModel = new BankAccountModel
             {
                 AccountType = BankAccountType.Checking,
-                CurrentBalance = 500,
                 Disabled = true,
                 IncludeInProfitLossGraph = true,
                 Name = "BankAccountName",
                 StartBalance = 1000
             };
 
-            _mocker.Use<IGenericRepository<BankAccountEntity>>(x => x.FindAll(It.IsAny<Expression<Func<BankAccountEntity, bool>>>(), It.IsAny<string[]>()) == null);
+            _mocker.GetMock<IGenericRepository<BankAccountEntity>>()
+                .Setup(x => x.FindAll(It.IsAny<Expression<Func<BankAccountEntity, bool>>>(), It.IsAny<string[]>()))
+                .ReturnsAsync(new List<BankAccountEntity>());
 
             // Act
             var bankAccountService = _mocker.CreateInstance<BankAccountService>();
@@ -55,7 +63,7 @@ namespace Sinance.Business.Tests.Services
             createResult.Should().NotBeNull();
             createResult.Should().Match<BankAccountModel>(x =>
                 x.AccountType == bankAccountModel.AccountType &&
-                x.CurrentBalance == bankAccountModel.CurrentBalance &&
+                x.CurrentBalance == bankAccountModel.StartBalance &&
                 x.Disabled == bankAccountModel.Disabled &&
                 x.IncludeInProfitLossGraph == bankAccountModel.IncludeInProfitLossGraph &&
                 x.Name == bankAccountModel.Name &&
@@ -64,7 +72,7 @@ namespace Sinance.Business.Tests.Services
             _mocker.Verify<IGenericRepository<BankAccountEntity>>(x =>
                 x.Insert(It.Is<BankAccountEntity>(y =>
                     y.AccountType == bankAccountModel.AccountType &&
-                    y.CurrentBalance == bankAccountModel.CurrentBalance &&
+                    y.CurrentBalance == bankAccountModel.StartBalance &&
                     y.Disabled == bankAccountModel.Disabled &&
                     y.IncludeInProfitLossGraph == bankAccountModel.IncludeInProfitLossGraph &&
                     y.Name == bankAccountModel.Name &&

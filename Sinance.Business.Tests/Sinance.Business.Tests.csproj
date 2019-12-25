@@ -16,6 +16,8 @@
 
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="5.9.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="3.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.3.0" />
     <PackageReference Include="Moq" Version="4.13.1" />
     <PackageReference Include="Moq.AutoMock" Version="1.2.0.120" />
@@ -32,6 +34,7 @@
 
   <ItemGroup>
     <Folder Include="Calculations\" />
+    <Folder Include="Database\" />
     <Folder Include="Handlers\" />
   </ItemGroup>
 

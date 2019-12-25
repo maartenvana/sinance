@@ -1,15 +1,12 @@
 ﻿using FluentAssertions;
 using Moq;
-using Moq.AutoMock;
 using Sinance.Business.Exceptions;
 using Sinance.Business.Services.Authentication;
 using Sinance.Business.Services.BankAccounts;
 using Sinance.Communication.Model.BankAccount;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
-using System;
 using System.Collections.Generic;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -18,31 +15,15 @@ namespace Sinance.Business.Tests.Services
     /// <summary>
     /// Bank account service tests
     /// </summary>
-    public class BankAccountServiceTest
+    public class BankAccountServiceTest : UnitOfWorkTestBase
     {
         private const int _defaultUserId = 1;
-        private readonly Mock<IGenericRepository<BankAccountEntity>> _bankAccountRepositoryMock;
-        private readonly AutoMocker _mocker;
-        private readonly Mock<IUnitOfWork> _unitOfWork;
 
         /// <summary>
         /// Constructor/Setup
         /// </summary>
-        public BankAccountServiceTest()
+        public BankAccountServiceTest() : base()
         {
-            _mocker = new AutoMocker(MockBehavior.Strict);
-
-            _bankAccountRepositoryMock = _mocker.GetMock<IGenericRepository<BankAccountEntity>>();
-
-            _unitOfWork = _mocker.GetMock<IUnitOfWork>();
-            _unitOfWork.SetupGet(x => x.BankAccountRepository).Returns(_bankAccountRepositoryMock.Object);
-            _unitOfWork.Setup(x => x.Dispose()).Verifiable();
-
-            _mocker.Use<Func<IUnitOfWork>>(() =>
-            {
-                return _unitOfWork.Object;
-            });
-
             _mocker.Use<IAuthenticationService>(x => x.GetCurrentUserId() == Task.FromResult(_defaultUserId));
         }
 
@@ -62,7 +43,7 @@ namespace Sinance.Business.Tests.Services
                 StartBalance = 1000
             };
 
-            SetupFindSingleBankAccount(new BankAccountEntity
+            InsertEntity(new BankAccountEntity
             {
                 Name = bankAccountModel.Name,
                 UserId = _defaultUserId
@@ -75,9 +56,6 @@ namespace Sinance.Business.Tests.Services
 
             // Assert
             await result.Should().ThrowAsync<AlreadyExistsException>();
-
-            _bankAccountRepositoryMock.VerifyAll();
-            _bankAccountRepositoryMock.VerifyNoOtherCalls();
         }
 
         [Theory]
@@ -94,11 +72,6 @@ namespace Sinance.Business.Tests.Services
                 Name = "BankAccountName",
                 StartBalance = startBalance
             };
-
-            SetupFindSingleBankAccount(null);
-
-            _bankAccountRepositoryMock.Setup(x => x.Insert(It.IsAny<BankAccountEntity>())).Verifiable();
-            _unitOfWork.Setup(x => x.SaveAsync()).ReturnsAsync(0).Verifiable();
 
             var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
 
@@ -125,21 +98,6 @@ namespace Sinance.Business.Tests.Services
                 StartBalance = 1000
             };
 
-            SetupFindSingleBankAccount(null);
-
-            _bankAccountRepositoryMock
-                .Setup(x =>
-                    x.Insert(It.Is<BankAccountEntity>(y =>
-                        y.AccountType == bankAccountModel.AccountType &&
-                        y.CurrentBalance == bankAccountModel.StartBalance &&
-                        y.Disabled == bankAccountModel.Disabled &&
-                        y.IncludeInProfitLossGraph == bankAccountModel.IncludeInProfitLossGraph &&
-                        y.Name == bankAccountModel.Name &&
-                        y.StartBalance == bankAccountModel.StartBalance
-                    ))).Verifiable();
-
-            _unitOfWork.Setup(x => x.SaveAsync()).ReturnsAsync(0).Verifiable();
-
             var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
 
             // Act
@@ -154,9 +112,6 @@ namespace Sinance.Business.Tests.Services
                 x.IncludeInProfitLossGraph == bankAccountModel.IncludeInProfitLossGraph &&
                 x.Name == bankAccountModel.Name &&
                 x.StartBalance == bankAccountModel.StartBalance);
-
-            _bankAccountRepositoryMock.VerifyAll();
-            _bankAccountRepositoryMock.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -165,8 +120,6 @@ namespace Sinance.Business.Tests.Services
             // Arrange
             var bankAccountId = 1;
 
-            SetupFindSingleBankAccountTracked(null);
-
             var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
 
             // Act
@@ -174,27 +127,22 @@ namespace Sinance.Business.Tests.Services
 
             // Arrange
             await result.Should().ThrowAsync<NotFoundException>();
-
-            _bankAccountRepositoryMock.VerifyAll();
-            _bankAccountRepositoryMock.VerifyNoOtherCalls();
         }
 
         [Fact]
         public async Task DeleteBankAccountByIdForCurrentUser_AccountExists_DeletesBankAccount()
-        {// Arrange
+        {
+            // Arrange
             var bankAccountId = 1;
 
             var bankAccountEntity = new BankAccountEntity
             {
                 Id = 1,
-                Name = "BankAccountName"
+                Name = "BankAccountName",
+                UserId = _defaultUserId
             };
 
-            SetupFindSingleBankAccountTracked(bankAccountEntity);
-
-            _bankAccountRepositoryMock.Setup(x => x.Delete(It.Is<BankAccountEntity>(y => y == bankAccountEntity))).Verifiable();
-
-            _unitOfWork.Setup(x => x.SaveAsync()).ReturnsAsync(0).Verifiable();
+            InsertEntity(bankAccountEntity);
 
             var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
 
@@ -202,45 +150,71 @@ namespace Sinance.Business.Tests.Services
             await bankAccountService.DeleteBankAccountByIdForCurrentUser(bankAccountId);
 
             // Arrange
-            _bankAccountRepositoryMock.VerifyAll();
-            _bankAccountRepositoryMock.VerifyNoOtherCalls();
+            var isDeleted = !await EntityExistsById<BankAccountEntity>(bankAccountId);
 
-            _unitOfWork.VerifyAll();
-            _unitOfWork.VerifyNoOtherCalls();
+            Assert.True(isDeleted);
         }
 
         [Fact]
-        public async Task GetActiveBankAccountsForCurrentUser_AccountsExist_ReturnsAllBankAccounts()
+        public async Task DeleteBankAccountByIdForCurrentUser_UserDoesNotOwnAccount_ThrowsException()
+        {
+            // Arrange
+            var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
+
+            var bankAccountEntity = new BankAccountEntity
+            {
+                UserId = _defaultUserId + 1,
+                AccountType = BankAccountType.Checking,
+                CurrentBalance = 100,
+                Name = "BankAccountName",
+                StartBalance = 100
+            };
+
+            InsertEntity(bankAccountEntity);
+
+            // Act
+            var result = FluentActions.Awaiting(async () => await bankAccountService.DeleteBankAccountByIdForCurrentUser(bankAccountEntity.Id));
+
+            // Arrange
+            await result.Should().ThrowAsync<NotFoundException>();
+        }
+
+        [Fact]
+        public async Task GetActiveBankAccountsForCurrentUser_AccountsExist_ReturnsAllActiveBankAccounts()
         {
             // Arrange
             var checkingAccount = new BankAccountEntity
             {
-                Id = 1,
-                Name = "One",
+                Name = "Checking",
                 CurrentBalance = 100,
                 AccountType = BankAccountType.Checking,
                 Disabled = false,
                 IncludeInProfitLossGraph = false,
+                UserId = _defaultUserId
+            };
+
+            var disabledCheckingAccount = new BankAccountEntity
+            {
+                Name = "DisabledChecking",
+                CurrentBalance = 100,
+                AccountType = BankAccountType.Checking,
+                Disabled = true,
+                IncludeInProfitLossGraph = false,
+                UserId = _defaultUserId
             };
 
             var savingsAccount = new BankAccountEntity
             {
-                Id = 2,
-                Name = "Two",
+                Name = "Savings",
                 CurrentBalance = 300,
                 StartBalance = 200,
                 AccountType = BankAccountType.Savings,
                 Disabled = false,
                 IncludeInProfitLossGraph = true,
+                UserId = _defaultUserId
             };
 
-            _bankAccountRepositoryMock
-                .Setup(x => x.FindAll(It.IsAny<Expression<Func<BankAccountEntity, bool>>>(), It.IsAny<string[]>()))
-                .ReturnsAsync(new List<BankAccountEntity>
-                {
-                    checkingAccount,
-                    savingsAccount
-                });
+            InsertEntities(checkingAccount, savingsAccount, disabledCheckingAccount);
 
             var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
 
@@ -268,19 +242,12 @@ namespace Sinance.Business.Tests.Services
                 x.IncludeInProfitLossGraph == savingsAccount.IncludeInProfitLossGraph &&
                 x.Name == savingsAccount.Name &&
                 x.StartBalance == savingsAccount.StartBalance);
-
-            _bankAccountRepositoryMock.VerifyAll();
-            _bankAccountRepositoryMock.VerifyNoOtherCalls();
         }
 
         [Fact]
         public async Task GetActiveBankAccountsForCurrentUser_NoAccounts_ReturnsEmptyList()
         {
             // Arrange
-            _bankAccountRepositoryMock
-                .Setup(x => x.FindAll(It.IsAny<Expression<Func<BankAccountEntity, bool>>>(), It.IsAny<string[]>()))
-                .ReturnsAsync(new List<BankAccountEntity>());
-
             var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
 
             // Act
@@ -289,9 +256,60 @@ namespace Sinance.Business.Tests.Services
             // Assert
             result.Should().NotBeNull();
             result.Should().BeEmpty();
+        }
 
-            _bankAccountRepositoryMock.VerifyAll();
-            _bankAccountRepositoryMock.VerifyNoOtherCalls();
+        [Fact]
+        public async Task GetAllBankAccountsForCurrentUser_AccountsExist_ReturnsAllBankAccounts()
+        {
+            // Arrange
+            var checkingAccount = new BankAccountEntity
+            {
+                Name = "Checking",
+                CurrentBalance = 100,
+                AccountType = BankAccountType.Checking,
+                Disabled = false,
+                IncludeInProfitLossGraph = false,
+                UserId = _defaultUserId
+            };
+
+            var disabledCheckingAccount = new BankAccountEntity
+            {
+                Name = "DisabledChecking",
+                CurrentBalance = 100,
+                AccountType = BankAccountType.Checking,
+                Disabled = true,
+                IncludeInProfitLossGraph = false,
+                UserId = _defaultUserId
+            };
+
+            InsertEntities(checkingAccount, disabledCheckingAccount);
+
+            var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
+
+            // Act
+            var result = await bankAccountService.GetAllBankAccountsForCurrentUser();
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().HaveCount(2);
+
+            result.Should().Contain(x =>
+                x.AccountType == checkingAccount.AccountType &&
+                x.CurrentBalance == checkingAccount.CurrentBalance &&
+                x.Disabled == checkingAccount.Disabled &&
+                x.Id == checkingAccount.Id &&
+                x.IncludeInProfitLossGraph == checkingAccount.IncludeInProfitLossGraph &&
+                x.Name == checkingAccount.Name &&
+                x.StartBalance == checkingAccount.StartBalance);
+
+            result.Should().Contain(x =>
+                x.AccountType == disabledCheckingAccount.AccountType &&
+                x.CurrentBalance == disabledCheckingAccount.CurrentBalance &&
+                x.Disabled == disabledCheckingAccount.Disabled &&
+                x.Id == disabledCheckingAccount.Id &&
+                x.IncludeInProfitLossGraph == disabledCheckingAccount.IncludeInProfitLossGraph &&
+                x.Name == disabledCheckingAccount.Name &&
+                x.StartBalance == disabledCheckingAccount.StartBalance);
         }
 
         [Fact]
@@ -300,8 +318,6 @@ namespace Sinance.Business.Tests.Services
             // Arrange
             var bankAccountId = 1;
 
-            SetupFindSingleBankAccount(null);
-
             var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
 
             // Act
@@ -309,9 +325,6 @@ namespace Sinance.Business.Tests.Services
 
             // Arrange
             await result.Should().ThrowAsync<NotFoundException>();
-
-            _bankAccountRepositoryMock.VerifyAll();
-            _bankAccountRepositoryMock.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -328,10 +341,11 @@ namespace Sinance.Business.Tests.Services
                 IncludeInProfitLossGraph = true,
                 CurrentBalance = 100,
                 StartBalance = 100,
-                Name = "BankAccount"
+                Name = "BankAccount",
+                UserId = _defaultUserId
             };
 
-            SetupFindSingleBankAccount(bankAccountEntity);
+            InsertEntity(bankAccountEntity);
 
             var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
 
@@ -349,9 +363,32 @@ namespace Sinance.Business.Tests.Services
                 x.IncludeInProfitLossGraph == bankAccountEntity.IncludeInProfitLossGraph &&
                 x.Name == bankAccountEntity.Name &&
                 x.StartBalance == bankAccountEntity.StartBalance);
+        }
 
-            _bankAccountRepositoryMock.VerifyAll();
-            _bankAccountRepositoryMock.VerifyNoOtherCalls();
+        [Fact]
+        public async Task GetBankAccountByIdForCurrentUser_UserDoesNotOwnAccount_ThrowsException()
+        {
+            // Arrange
+            var bankAccountEntity = new BankAccountEntity
+            {
+                AccountType = BankAccountType.Checking,
+                Disabled = true,
+                IncludeInProfitLossGraph = true,
+                CurrentBalance = 100,
+                StartBalance = 100,
+                Name = "BankAccount",
+                UserId = _defaultUserId + 1
+            };
+
+            InsertEntity(bankAccountEntity);
+
+            var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
+
+            // Act
+            var result = FluentActions.Awaiting(async () => await bankAccountService.GetBankAccountByIdForCurrentUser(bankAccountEntity.Id));
+
+            // Arrange
+            await result.Should().ThrowAsync<NotFoundException>();
         }
 
         [Fact]
@@ -368,8 +405,6 @@ namespace Sinance.Business.Tests.Services
                 StartBalance = 100
             };
 
-            SetupFindSingleBankAccountTracked(null);
-
             var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
 
             // Act
@@ -377,9 +412,6 @@ namespace Sinance.Business.Tests.Services
 
             // Arrange
             await result.Should().ThrowAsync<NotFoundException>();
-
-            _bankAccountRepositoryMock.VerifyAll();
-            _bankAccountRepositoryMock.VerifyNoOtherCalls();
         }
 
         [Theory]
@@ -404,35 +436,24 @@ namespace Sinance.Business.Tests.Services
 
             var existingEntity = new BankAccountEntity
             {
-                Id = 1,
                 AccountType = BankAccountType.Checking,
                 Disabled = false,
                 CurrentBalance = 100,
                 IncludeInProfitLossGraph = true,
                 StartBalance = 100,
-                Name = "BankAccountName"
+                Name = "BankAccountName",
+                UserId = _defaultUserId
             };
 
-            SetupFindSingleBankAccountTracked(existingEntity);
+            InsertEntity(existingEntity);
 
             if (bankAccountModel.StartBalance != existingEntity.StartBalance)
             {
                 _mocker.GetMock<IBankAccountCalculationService>().Setup(x =>
                     x.CalculateCurrentBalanceForBankAccount(
                         It.IsAny<IUnitOfWork>(),
-                        It.Is<BankAccountEntity>(y => y == existingEntity))).ReturnsAsync(bankAccountModel.StartBalance);
+                        It.Is<BankAccountEntity>(y => y.Id == existingEntity.Id))).ReturnsAsync(bankAccountModel.StartBalance);
             }
-
-            _bankAccountRepositoryMock.Setup(x =>
-                x.Update(It.Is<BankAccountEntity>(y =>
-                    y.AccountType == bankAccountModel.AccountType &&
-                    y.CurrentBalance == bankAccountModel.StartBalance &&
-                    y.Disabled == bankAccountModel.Disabled &&
-                    y.IncludeInProfitLossGraph == bankAccountModel.IncludeInProfitLossGraph &&
-                    y.Name == bankAccountModel.Name &&
-                    y.StartBalance == bankAccountModel.StartBalance))).Verifiable();
-
-            _unitOfWork.Setup(x => x.SaveAsync()).ReturnsAsync(0).Verifiable();
 
             var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
 
@@ -451,9 +472,6 @@ namespace Sinance.Business.Tests.Services
 
             _mocker.GetMock<IBankAccountCalculationService>().VerifyAll();
             _mocker.GetMock<IBankAccountCalculationService>().VerifyNoOtherCalls();
-
-            _bankAccountRepositoryMock.VerifyAll();
-            _bankAccountRepositoryMock.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -472,24 +490,17 @@ namespace Sinance.Business.Tests.Services
 
             var bankAccountEntity = new BankAccountEntity
             {
-                Id = 1,
                 Name = bankAccountModel.Name,
                 UserId = _defaultUserId,
                 StartBalance = 200
             };
 
-            _unitOfWork.Setup(x => x.SaveAsync()).ReturnsAsync(0).Verifiable();
-
-            SetupFindSingleBankAccountTracked(bankAccountEntity);
+            InsertEntity(bankAccountEntity);
 
             _mocker.GetMock<IBankAccountCalculationService>().Setup(x =>
                 x.CalculateCurrentBalanceForBankAccount(
                     It.IsAny<IUnitOfWork>(),
-                    It.Is<BankAccountEntity>(x => x == bankAccountEntity))).ReturnsAsync(bankAccountModel.StartBalance).Verifiable();
-
-            _bankAccountRepositoryMock
-                            .Setup(x => x.Update(It.Is<BankAccountEntity>(y => y == bankAccountEntity)))
-                            .Verifiable();
+                    It.Is<BankAccountEntity>(x => x.Id == bankAccountEntity.Id))).ReturnsAsync(bankAccountModel.StartBalance).Verifiable();
 
             var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
 
@@ -499,23 +510,39 @@ namespace Sinance.Business.Tests.Services
             // Assert
             _mocker.GetMock<IBankAccountCalculationService>().VerifyAll();
             _mocker.GetMock<IBankAccountCalculationService>().VerifyNoOtherCalls();
-
-            _bankAccountRepositoryMock.VerifyAll();
-            _bankAccountRepositoryMock.VerifyNoOtherCalls();
         }
 
-        private void SetupFindSingleBankAccount(BankAccountEntity bankAccountEntity)
+        [Fact]
+        public async Task UpdateBankAccountForCurrentUser_UserDoesNotOwnAccount_ThrowsException()
         {
-            _bankAccountRepositoryMock
-                            .Setup(x => x.FindSingle(It.IsAny<Expression<Func<BankAccountEntity, bool>>>(), It.IsAny<string[]>()))
-                            .ReturnsAsync(bankAccountEntity);
-        }
+            // Arrange
+            var existingEntity = new BankAccountEntity
+            {
+                AccountType = BankAccountType.Checking,
+                Disabled = false,
+                CurrentBalance = 100,
+                IncludeInProfitLossGraph = true,
+                StartBalance = 100,
+                Name = "BankAccountName",
+                UserId = _defaultUserId + 1
+            };
 
-        private void SetupFindSingleBankAccountTracked(BankAccountEntity bankAccountEntity)
-        {
-            _bankAccountRepositoryMock
-                            .Setup(x => x.FindSingleTracked(It.IsAny<Expression<Func<BankAccountEntity, bool>>>(), It.IsAny<string[]>()))
-                            .ReturnsAsync(bankAccountEntity);
+            InsertEntity(existingEntity);
+
+            var bankAccountModel = new BankAccountModel
+            {
+                Id = existingEntity.Id,
+                AccountType = BankAccountType.Checking,
+                Name = "OtherName"
+            };
+
+            var bankAccountService = _mocker.CreateInstance<BankAccountService>(true);
+
+            // Act
+            var result = FluentActions.Awaiting(async () => await bankAccountService.UpdateBankAccountForCurrentUser(bankAccountModel));
+
+            // Arrange
+            await result.Should().ThrowAsync<NotFoundException>();
         }
     }
 }

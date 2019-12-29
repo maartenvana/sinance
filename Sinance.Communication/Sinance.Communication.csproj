@@ -3,14 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <ProjectGuid>9b20d6c8-27d4-47d5-83fb-b5706557776c</ProjectGuid>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <CodeAnalysisRuleSet />
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <CodeAnalysisRuleSet />
+    <CodeAnalysisRuleSet>Sinance.Communication.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
 
   <ItemGroup>

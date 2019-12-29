@@ -1,6 +1,7 @@
 ﻿using Serilog;
 using Sinance.Business.DataSeeding.Seeds;
 using Sinance.Common.Configuration;
+using Sinance.Storage;
 using System.Threading.Tasks;
 
 namespace Sinance.Business.DataSeeding
@@ -27,11 +28,11 @@ namespace Sinance.Business.DataSeeding
             _importBankSeed = importBankSeed;
         }
 
-        public async Task NewUserSeed(int userId)
+        public async Task NewUserSeed(IUnitOfWork unitOfWork, int userId)
         {
             _logger.Information("Seeding new user");
 
-            await _categorySeed.SeedStandardCategoriesForUser(userId);
+            await _categorySeed.SeedStandardCategoriesForUser(unitOfWork, userId);
         }
 
         public async Task StartupSeed()

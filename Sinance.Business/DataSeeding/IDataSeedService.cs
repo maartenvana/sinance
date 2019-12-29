@@ -1,10 +1,11 @@
-﻿using System.Threading.Tasks;
+﻿using Sinance.Storage;
+using System.Threading.Tasks;
 
 namespace Sinance.Business.DataSeeding
 {
     public interface IDataSeedService
     {
-        Task NewUserSeed(int userId);
+        Task NewUserSeed(IUnitOfWork unitOfWork, int userId);
 
         Task StartupSeed();
     }

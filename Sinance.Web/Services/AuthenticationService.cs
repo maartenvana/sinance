@@ -53,7 +53,7 @@ namespace Sinance.Web.Services
                 unitOfWork.UserRepository.Insert(newUser);
                 await unitOfWork.SaveAsync();
 
-                await _dataSeedService.Value.NewUserSeed(newUser.Id);
+                await _dataSeedService.Value.NewUserSeed(unitOfWork, newUser.Id);
 
                 return newUser.ToDto();
             }

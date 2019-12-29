@@ -34,6 +34,9 @@ namespace Sinance.Business
             builder.RegisterType<ExpenseCalculation>().As<IExpenseCalculation>();
             builder.RegisterType<IncomeCalculation>().As<IIncomeCalculation>();
 
+            // CalculationServices
+            builder.RegisterType<BankAccountCalculationService>().As<IBankAccountCalculationService>();
+
             // Other
             builder.RegisterType<PasswordHasher<SinanceUserEntity>>().As<IPasswordHasher<SinanceUserEntity>>();
 

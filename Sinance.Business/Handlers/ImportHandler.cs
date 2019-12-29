@@ -1,7 +1,6 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
 using Sinance.Business.Extensions;
-using Sinance.Communication.Model.BankAccount;
 using Sinance.Communication.Model.Import;
 using Sinance.Communication.Model.Transaction;
 using Sinance.Storage;

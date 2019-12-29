@@ -5,7 +5,6 @@ using Sinance.Communication.Model.CategoryMapping;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sinance.Business.Services.CategoryMappings

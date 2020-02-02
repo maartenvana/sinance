@@ -1,11 +1,66 @@
 ﻿@using Sinance.Communication.Model.StandardReport.Yearly
+@using Newtonsoft.Json
 
 @model YearlyOverviewModel
 @{
     ViewBag.Title = "Jaaroverzicht";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+@{ 
+    var BankAccountTypeEndPieChartData = Model.BalancePerBankAccountType.ToList().Select(x => new
+    {
+        name = x.Key.ToString(),
+        y = x.Value.End.Percentage
+    });
+}
+@section scripts
+{
+<script type="text/javascript">
+    $(function () {
+        CreateBankAccountTypeEndPieChart();
+    });
 
+    function CreateBankAccountTypeEndPieChart() {
+        $("#bank-account-type-end-chart-container").highcharts({
+            chart: {
+                type: 'pie',
+                options3d: {
+                    enabled: true,
+                    alpha: 45,
+                    beta: 0
+                }
+            },
+            title: {
+                text: ''
+            },
+            credits: {
+                enabled: false
+            },
+            legend: {
+                enabled: false
+            },
+            tooltip: {
+                pointFormat: '<b>{point.percentage:.1f}%</b>'
+            },
+            plotOptions: {
+                pie: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    depth: 35,
+                    dataLabels: {
+                        enabled: true,
+                        format: '{point.name} {point.percentage:.1f}%'
+                    }
+                }
+            },
+            series: [{
+                type: 'pie',
+                data: @Html.Raw(JsonConvert.SerializeObject(BankAccountTypeEndPieChartData))
+            }]
+        });
+    }
+</script>
+}
 <div class="row">
     <div class="col-lg-12">
         <h2 class="pull-left">Jaar overzicht</h2>
@@ -65,7 +120,7 @@
 
 
 <div class="row">
-    <div class="col-lg-6">
+    <div class="col-lg-8">
         <div class="panel panel-default">
             <div class="panel-heading">
                 Balans per rekening
@@ -92,6 +147,16 @@
                         }
                     </tbody>
                 </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="panel panel-default">
+            <div class="panel-heading">
+                Balans verdeling (eind)
+            </div>
+            <div class="panel-body">
+                <div id="bank-account-type-end-chart-container"></div>
             </div>
         </div>
     </div>

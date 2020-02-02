@@ -63,7 +63,7 @@ namespace Sinance.Controllers
 
         public async Task<IActionResult> YearOverview(int? year)
         {
-            var report = await _yearlyOverviewCalculation.CalculateForYear(year.GetValueOrDefault(2019));
+            var report = await _yearlyOverviewCalculation.CalculateForYear(year.GetValueOrDefault(DateTime.Now.Year));
 
             return View("YearReport", report);
         }

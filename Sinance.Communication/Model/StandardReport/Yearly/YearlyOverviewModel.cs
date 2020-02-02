@@ -9,5 +9,6 @@ namespace Sinance.Communication.Model.StandardReport.Yearly
         public YearBalance TotalBalance { get; set; }
 
         public Dictionary<BankAccountModel, YearBalance> BalancePerBankAccount { get; set; } = new Dictionary<BankAccountModel, YearBalance>();
+        public Dictionary<BankAccountType, YearAmountAndPercentage> BalancePerBankAccountType { get; set; } = new Dictionary<BankAccountType, YearAmountAndPercentage>();
     }
 }

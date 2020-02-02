@@ -46,6 +46,7 @@
                 <ul class="nav nav-second-level">
                     <li>@Html.ActionLink("Uitgaven overzicht", "ExpenseOverview", "Report")</li>
                     <li>@Html.ActionLink("Inkomsten overzicht", "IncomeOverview", "Report")</li>
+                    <li>@Html.ActionLink("Jaaroverzicht", "YearOverview", "Report")</li>
                     @foreach (var customReport in Model.CustomReports)
                     {
                         <li>@Html.ActionLink(customReport.Name, "CustomReport", "Report", new { reportId = customReport.Id }, new { })</li>

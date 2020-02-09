@@ -139,12 +139,12 @@
     <None Include="wwwroot\fonts\glyphicons-halflings-regular.ttf" />
     <None Include="wwwroot\fonts\glyphicons-halflings-regular.woff" />
     <None Include="wwwroot\fonts\glyphicons-halflings-regular.woff2" />
-    <None Include="wwwroot\Scripts\colpick.js" />
-    <None Include="wwwroot\Scripts\generalHelper.js" />
-    <None Include="wwwroot\Scripts\highcharts-3d.js" />
-    <None Include="wwwroot\Scripts\highcharts.min.js" />
-    <None Include="wwwroot\Scripts\sb-admin-2.js" />
-    <None Include="wwwroot\Scripts\_references.js" />
+    <None Include="wwwroot\scripts\colpick.js" />
+    <None Include="wwwroot\scripts\generalHelper.js" />
+    <None Include="wwwroot\scripts\highcharts-3d.js" />
+    <None Include="wwwroot\scripts\highcharts.min.js" />
+    <None Include="wwwroot\scripts\sb-admin-2.js" />
+    <None Include="wwwroot\scripts\_references.js" />
   </ItemGroup>
 
   <ItemGroup>

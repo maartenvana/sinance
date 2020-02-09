@@ -25,7 +25,7 @@
                     <div class="panel-heading">
                         <div class="row">
                             <div class="col-xs-3">
-                                <i class="fa fa-money fa-5x"></i>
+                                <em class="fa fa-money fa-5x"></em>
                             </div>
                             <div class="col-xs-9 text-right">
                                 <div class="huge">@(Model.BankAccounts.Sum(item => item.CurrentBalance).GetValueOrDefault().ToString("C", CultureInfo.CurrentCulture))</div>
@@ -41,7 +41,7 @@
                     <div class="panel-heading">
                         <div class="row">
                             <div class="col-xs-3">
-                                <i class="fa fa-arrow-@(Model.LastMonthProfitLoss > 0 ? "up" : "down") fa-5x"></i>
+                                <em class="fa fa-arrow-@(Model.LastMonthProfitLoss > 0 ? "up" : "down") fa-5x"></em>
                             </div>
                             <div class="col-xs-9 text-right">
                                 <div class="huge">@Model.LastMonthProfitLoss.ToString("C2")</div>
@@ -57,7 +57,7 @@
                     <div class="panel-heading">
                         <div class="row">
                             <div class="col-xs-3">
-                                <i class="fa fa-money fa-5x"></i>
+                                <em class="fa fa-money fa-5x"></em>
                             </div>
                             <div class="col-xs-9 text-right">
                                 <div class="huge">@Model.LastMonthIncome.ToString("C2")</div>
@@ -73,7 +73,7 @@
                     <div class="panel-heading">
                         <div class="row">
                             <div class="col-xs-3">
-                                <i class="fa fa-fire fa-5x"></i>
+                                <em class="fa fa-fire fa-5x"></em>
                             </div>
                             <div class="col-xs-9 text-right">
                                 <div class="huge">@Model.LastMonthExpenses.ToString("C2")</div>
@@ -104,7 +104,7 @@
             <div class="col-lg-12">
                 <div class="panel panel-default">
                     <div class="panel-heading" id="biggestExpensesHeading">
-                        <i class="fa fa-fire"></i> Grootste uitgaves
+                        <em class="fa fa-fire"></em> Grootste uitgaves
                     </div>
                     <div class="panel-body">
                         <table class="table table-condensed" aria-describedby="biggestExpensesHeading">

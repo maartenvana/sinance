@@ -1,62 +1,22 @@
 ﻿@model Sinance.Web.ViewComponents.ExpensesPerCategoryPieChartModel
 
 <script type="text/javascript">
-        $(function () {
-            CreateExpensesPieChart("@Model.StartDate", "@Model.EndDate");
+    $(function () {
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("ExpensePercentagesPerCategory", "Graph")",
+            data: { starDate: "@Model.StartDate", endDate: "@Model.EndDate" },
+            success: function (response) {
+                CreateExpensesPerCategoryPieChart("#expenses-chart-container", response.objectData);
+            }
         });
-
-        function CreateExpensesPieChart(startDate, endDate) {
-            $.ajax({
-                type: "POST",
-                url: "@Url.Action("ExpensePercentagesPerCategory", "Graph")",
-                data: { startDate, endDate },
-                success: function (response) {
-
-                    $("#expenses-chart-container").highcharts({
-                        chart: {
-                            type: 'pie',
-                            options3d: {
-                                enabled: true,
-                                alpha: 45,
-                                beta: 0
-                            }
-                        },
-                        title: {
-                            text: ''
-                        },
-                        credits: {
-                            enabled: false
-                        },
-                        legend: {
-                            enabled: false
-                        },
-                        tooltip: {
-                            pointFormat: '<b>{point.percentage:.1f}%</b>'
-                        },
-                        plotOptions: {
-                            pie: {
-                                allowPointSelect: true,
-                                cursor: 'pointer',
-                                depth: 35,
-                                dataLabels: {
-                                    enabled: true,
-                                    format: '{point.name} {point.percentage:.1f}%'
-                                }
-                            }
-                        },
-                        series: [{
-                            type: 'pie',
-                            data: response.objectData
-                        }]
-                    });
-                }
-            });
-        }
+    });
 </script>
+<script src="~/scripts/charts/pie-charts-expenses-per-category-history.js"></script>
 
 <div class="panel panel-default">
     <div class="panel-heading">
-        <i class="fa fa-fire"></i> Uitgave-verdeling
+        <em class="fa fa-fire"></em> Uitgave-verdeling
     </div>
     <div class="panel-body">
         <div id="expenses-chart-container"></div>

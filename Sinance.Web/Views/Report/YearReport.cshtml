@@ -19,50 +19,11 @@
 @section scripts
 {
     <script type="text/javascript">
-    $(function () {
-        CreateBankAccountTypeEndPieChart();
-    });
-
-    function CreateBankAccountTypeEndPieChart() {
-        $("#bank-account-type-end-chart-container").highcharts({
-            chart: {
-                type: 'pie',
-                options3d: {
-                    enabled: true,
-                    alpha: 45,
-                    beta: 0
-                }
-            },
-            title: {
-                text: ''
-            },
-            credits: {
-                enabled: false
-            },
-            legend: {
-                enabled: false
-            },
-            tooltip: {
-                pointFormat: '<b>{point.percentage:.1f}%</b>'
-            },
-            plotOptions: {
-                pie: {
-                    allowPointSelect: true,
-                    cursor: 'pointer',
-                    depth: 35,
-                    dataLabels: {
-                        enabled: true,
-                        format: '{point.name} {point.percentage:.1f}%'
-                    }
-                }
-            },
-            series: [{
-                type: 'pie',
-                data: @Html.Raw(JsonConvert.SerializeObject(BankAccountTypeEndPieChartData))
-            }]
+        $(function () {
+            CreateBankAccountBalancePerTypePieChart("#bank-account-type-end-chart-container", @Html.Raw(JsonConvert.SerializeObject(BankAccountTypeEndPieChartData)));
         });
-    }
     </script>
+    <script src="~/scripts/charts/pie-charts-balance-percentage-per-bank-account.js"></script>
 }
 <div class="row">
     <div class="col-lg-12">
@@ -77,7 +38,7 @@
             <div class="panel-heading">
                 <div class="row">
                     <div class="col-xs-3">
-                        <i class="fa fa-money fa-5x"></i>
+                        <em class="fa fa-money fa-5x"></em>
                     </div>
                     <div class="col-xs-9 text-right">
                         <div class="huge">@Model.TotalBalance.Start.ToString("C2")</div>
@@ -93,7 +54,7 @@
             <div class="panel-heading">
                 <div class="row">
                     <div class="col-xs-3">
-                        <i class="fa fa-arrow-@(Model.TotalBalance.Difference >= 0 ? "up" : "down") fa-5x"></i>
+                        <em class="fa fa-arrow-@(Model.TotalBalance.Difference >= 0 ? "up" : "down") fa-5x"></em>
                     </div>
                     <div class="col-xs-9 text-right">
                         <div class="huge">@(Model.TotalBalance.Difference.ToString("C2"))</div>
@@ -109,7 +70,7 @@
             <div class="panel-heading">
                 <div class="row">
                     <div class="col-xs-3">
-                        <i class="fa fa-money fa-5x"></i>
+                        <em class="fa fa-money fa-5x"></em>
                     </div>
                     <div class="col-xs-9 text-right">
                         <div class="huge">@Model.TotalBalance.End.ToString("C2")</div>
@@ -139,20 +100,20 @@
                         Balans per rekening
                     </div>
                     <div class="panel-body">
-                        <table class="table">
+                        <table class="table" summary="Balans per rekening tabel">
                             <thead>
                                 <tr>
-                                    <th>Naam</th>
-                                    <th>Start balans</th>
-                                    <th>Verschil</th>
-                                    <th>Eind balans</th>
+                                    <th scope="col">Naam</th>
+                                    <th scope="col">Start balans</th>
+                                    <th scope="col">Verschil</th>
+                                    <th scope="col">Eind balans</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach (var bankAccountBalance in Model.BalancePerBankAccount)
                                 {
                                     <tr class="@(bankAccountBalance.Value.Difference >= 0 ? "success" : "danger")">
-                                        <td>@bankAccountBalance.Key.Name</td>
+                                        <td scope="row">@bankAccountBalance.Key.Name</td>
                                         <td>@bankAccountBalance.Value.Start.ToString("C2")</td>
                                         <td>@bankAccountBalance.Value.Difference.ToString("C2")</td>
                                         <td>@bankAccountBalance.Value.End.ToString("C2")</td>
@@ -180,7 +141,7 @@
             <div class="col-lg-12">
                 <div class="panel panel-default">
                     <div class="panel-heading" id="biggestExpensesHeading">
-                        <i class="fa fa-fire"></i> Grootste uitgaves
+                        <em class="fa fa-fire"></em> Grootste uitgaves
                     </div>
                     <div class="panel-body">
                         <table class="table table-condensed" aria-describedby="biggestExpensesHeading">

@@ -10,63 +10,25 @@
     function CreateProfitGraph(year) {
         profitGraphCurrentYear = year;
         $("#profitGraphYearSpan").text(year);
-
         $.ajax({
             type: "POST",
             url: "@Url.Action("ProfitPerMonthForYear", "Graph")",
-            data: { year: year },
+            data: { year },
             success: function (response) {
-
-                var chart = new Highcharts.Chart({
-                    chart: {
-                        renderTo: "profitGraph",
-                        type: "column",
-                        zoomType: "x"
-                    },
-                    title: {
-                        floating: true,
-                        text: ""
-                    },
-                    yAxis: {
-                        title: {
-                            text: ""
-                        }
-                    },
-                    xAxis: {
-                        categories: ["Jan", "Feb", "Maa", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"]
-                    },
-                    credits: {
-                        enabled: false
-                    },
-                    plotOptions: {
-                        column: {
-                            depth: 25
-                        }
-                    },
-                    legend: {
-                        enabled: false
-                    },
-                    tooltip: {
-                        formatter: ChartCurrencyFormatter
-                    },
-                    series: [
-                        {
-                            data: response.objectData
-                        }
-                    ]
-                });
+                CreateProfitPerYearGraph("#profitGraph", response.objectData);
             }
         });
     }
 </script>
+<script src="~/scripts/charts/charts-profit-per-year.js"></script>
 
 <div class="panel panel-default">
     <div class="panel-heading">
-        <i class="fa fa-bar-chart-o fa-fw"></i> Winst/Verlies
+        <em class="fa fa-bar-chart-o fa-fw"></em> Winst/Verlies
         @if (Model.CanChangeYear)
         {
             <div class="pull-right">
-                <a href="#" onclick=" CreateProfitGraph(profitGraphCurrentYear - 1);"><i class="fa fa-chevron-left fa-fw"></i></a> <span id="profitGraphYearSpan"></span> <a href="#" onclick="CreateProfitGraph(profitGraphCurrentYear + 1);"><i class="fa fa-chevron-right fa-fw"></i></a>
+                <a href="#" onclick=" CreateProfitGraph(profitGraphCurrentYear - 1);"><em class="fa fa-chevron-left fa-fw"></em></a> <span id="profitGraphYearSpan"></span> <a href="#" onclick="CreateProfitGraph(profitGraphCurrentYear + 1);"><i class="fa fa-chevron-right fa-fw"></i></a>
             </div>
         }
     </div>

@@ -127,7 +127,7 @@ namespace Sinance.Business.Services.Transactions
             using var unitOfWork = _unitOfWork();
 
             var transactions = await unitOfWork.TransactionRepository
-                .FindTopDescending(item => item.BankAccount.Id == bankAccountId && item.UserId == userId,
+                .FindTopDescending(item => item.BankAccountId == bankAccountId && item.UserId == userId,
                                     orderByDescending: x => x.Date,
                                     count: count,
                                     skip: skip,
@@ -135,6 +135,30 @@ namespace Sinance.Business.Services.Transactions
                                         nameof(TransactionEntity.TransactionCategories),
                                         $"{nameof(TransactionEntity.TransactionCategories)}.{nameof(TransactionCategoryEntity.Category)}"
                                     });
+
+            return transactions.ToDto().ToList();
+        }
+
+
+        public async Task<List<TransactionModel>> GetBiggestExpensesForYearForCurrentUser(int year, int count, int skip, params int[] excludeCategoryIds)
+        {
+            var userId = await _authenticationService.GetCurrentUserId();
+
+            using var unitOfWork = _unitOfWork();
+
+            excludeCategoryIds ??= new int[] { };
+
+            var transactions = await unitOfWork.TransactionRepository.FindTopAscending(findQuery: x =>
+                        x.TransactionCategories.All(x => !excludeCategoryIds.Any(y => y == x.CategoryId)) &&
+                        x.Date.Year == year &&
+                        x.UserId == userId,
+                        orderByAscending: x => x.Amount,
+                        count: count,
+                        skip: skip,
+                        includeProperties: new string[] {
+                            nameof(TransactionEntity.TransactionCategories),
+                            $"{nameof(TransactionEntity.TransactionCategories)}.{nameof(TransactionCategoryEntity.Category)}"
+                            });
 
             return transactions.ToDto().ToList();
         }

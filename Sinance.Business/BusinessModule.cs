@@ -33,6 +33,7 @@ namespace Sinance.Business
             builder.RegisterType<ProfitLossCalculation>().As<IProfitLossCalculation>();
             builder.RegisterType<ExpenseCalculation>().As<IExpenseCalculation>();
             builder.RegisterType<IncomeCalculation>().As<IIncomeCalculation>();
+            builder.RegisterType<YearlyOverviewCalculation>().As<IYearlyOverviewCalculation>();
 
             // CalculationServices
             builder.RegisterType<BankAccountCalculationService>().As<IBankAccountCalculationService>();

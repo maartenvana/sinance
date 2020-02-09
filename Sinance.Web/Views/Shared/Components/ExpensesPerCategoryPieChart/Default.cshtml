@@ -1,0 +1,24 @@
+﻿@model Sinance.Web.ViewComponents.ExpensesPerCategoryPieChartModel
+
+<script type="text/javascript">
+    $(function () {
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("ExpensePercentagesPerCategory", "Graph")",
+            data: { starDate: "@Model.StartDate", endDate: "@Model.EndDate" },
+            success: function (response) {
+                CreateExpensesPerCategoryPieChart("#expenses-chart-container", response.objectData);
+            }
+        });
+    });
+</script>
+<script src="~/scripts/charts/pie-charts-expenses-per-category-history.js"></script>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <em class="fa fa-fire"></em> Uitgave-verdeling
+    </div>
+    <div class="panel-body">
+        <div id="expenses-chart-container"></div>
+    </div>
+</div>

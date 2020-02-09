@@ -18,6 +18,8 @@ namespace Sinance.Business.Services.Transactions
 
         Task<List<TransactionModel>> GetTransactionsForMonthForCurrentUser(int year, int month);
 
+        Task<List<TransactionModel>> GetBiggestExpensesForYearForCurrentUser(int year, int count, int skip, params int[] excludeCategoryIds);
+
         Task<TransactionModel> OverwriteTransactionCategoriesForCurrentUser(int transactionId, int categoryId);
 
         Task<TransactionModel> UpdateTransactionForCurrentUser(TransactionModel transactionModel);

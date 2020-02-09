@@ -43,6 +43,7 @@ namespace Sinance.Web
             {
                 appBuilder.UseDeveloperExceptionPage();
             }
+
             appBuilder.UseSerilogRequestLogging();
 
             appBuilder.UseStaticFiles();
@@ -88,11 +89,16 @@ namespace Sinance.Web
                     options.LoginPath = new PathString("/Account/Login");
                     options.AccessDeniedPath = new PathString("/Account/AccessDenied");
                     options.SlidingExpiration = true;
-                    options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+                    options.ExpireTimeSpan = TimeSpan.FromHours(24);
                 });
 
-            services.AddControllersWithViews();
+            var mvc = services.AddControllersWithViews();
             services.AddRazorPages();
+
+            if (_environment.EnvironmentName == Environments.Development)
+            {
+                mvc.AddRazorRuntimeCompilation();
+            }
 
             services.AddLogging(loggingBuilder =>
                 loggingBuilder.AddSerilog(dispose: true));

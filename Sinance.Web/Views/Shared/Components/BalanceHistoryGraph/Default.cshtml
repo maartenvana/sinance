@@ -1,0 +1,24 @@
+﻿@model int
+
+<script type="text/javascript">
+    $(function () {
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("BalanceHistory", "Graph")",
+            data: { months: @Model },
+            success: function (response) {
+                CreateBalanceHistoryGraph("#historyGraph", response.objectData);
+            }
+        });
+    });
+</script>
+<script src="/scripts/charts/charts-balance-history.js"></script>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <em class="fa fa-bar-chart-o fa-fw"></em> Balans Historie
+    </div>
+    <div class="panel-body">
+        <div id="historyGraph" style="height: 400px;"></div>
+    </div>
+</div>

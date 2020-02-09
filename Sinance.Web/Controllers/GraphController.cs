@@ -46,11 +46,11 @@ namespace Sinance.Controllers
         /// <param name="bankAccountIds">Number of bank accounts</param>
         /// <returns>Result in Json for display in a graph</returns>
         [HttpPost]
-        public async Task<IActionResult> BalanceHistory(int years, IList<int> bankAccountIds = null)
+        public async Task<IActionResult> BalanceHistory(int months, IList<int> bankAccountIds = null)
         {
             try
             {
-                var balancehistory = await _balanceHistoryCalculation.BalanceHistoryFromYearInPast(years, bankAccountIds);
+                var balancehistory = await _balanceHistoryCalculation.BalanceHistoryFromMonthsInPast(months, bankAccountIds);
 
                 return Json(new SinanceJsonResult
                 {
@@ -134,11 +134,11 @@ namespace Sinance.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> ExpensePercentagesPerMonth(int year, int month)
+        public async Task<IActionResult> ExpensePercentagesPerCategory(DateTime startDate, DateTime endDate)
         {
             try
             {
-                var expensePercentagePerCategoryName = await _expensePercentageCalculation.ExpensePercentagePerCategoryNameForMonth(year, month);
+                var expensePercentagePerCategoryName = await _expensePercentageCalculation.ExpensePercentagePerCategoryNameForMonth(startDate, endDate);
 
                 return Json(new SinanceJsonResult
                 {

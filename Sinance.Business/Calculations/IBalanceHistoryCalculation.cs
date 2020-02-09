@@ -7,6 +7,6 @@ namespace Sinance.Business.Calculations
     {
         Task<List<decimal[]>> BalanceHistoryForYear(int year, IEnumerable<int> includeBankAccounts);
 
-        Task<List<decimal[]>> BalanceHistoryFromYearInPast(int yearsInPast, IEnumerable<int> includeBankAccounts);
+        Task<List<decimal[]>> BalanceHistoryFromMonthsInPast(int monthsInPast, IEnumerable<int> includeBankAccounts);
     }
 }

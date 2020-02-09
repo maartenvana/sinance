@@ -22,15 +22,7 @@ namespace Sinance.Business.Calculations
             _authenticationService = authenticationService;
         }
 
-        public async Task<IEnumerable<KeyValuePair<string, decimal>>> ExpensePercentagePerCategoryNameForMonth(int year, int month)
-        {
-            var startDate = new DateTime(year, month, 1);
-            var endDate = new DateTime(year, month, 1).AddMonths(1).AddDays(-1);
-
-            return await CalculateExpensePerCategoryName(startDate, endDate);
-        }
-
-        private async Task<IEnumerable<KeyValuePair<string, decimal>>> CalculateExpensePerCategoryName(DateTime startDate, DateTime endDate)
+        public async Task<IEnumerable<KeyValuePair<string, decimal>>> ExpensePercentagePerCategoryNameForMonth(DateTime startDate, DateTime endDate)
         {
             var currentUserId = await _authenticationService.GetCurrentUserId();
 

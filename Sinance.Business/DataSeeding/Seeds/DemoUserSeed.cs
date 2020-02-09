@@ -60,7 +60,9 @@ namespace Sinance.Business.DataSeeding.Seeds
                 user = await unitOfWork.UserRepository.FindSingleTracked(x => x.Username == demoUserName);
             }
 
-            await DeleteExistingBankAccounts(unitOfWork, user);
+            unitOfWork.Context.OverwriteUserIdProvider(new SeedUserIdProvider(user.Id));
+
+            await DeleteExistingBankAccounts(unitOfWork);
             await _categorySeed.Value.SeedStandardCategoriesForUser(unitOfWork, user.Id);
 
             await unitOfWork.SaveAsync();
@@ -71,35 +73,35 @@ namespace Sinance.Business.DataSeeding.Seeds
             var savingsAccount = InsertBankAccount(unitOfWork, user, "Savings", BankAccountType.Savings);
             var investmentAccount = InsertBankAccount(unitOfWork, user, "Investments", BankAccountType.Investment);
 
-            await DeleteCategoriesAndTransactions(unitOfWork, user);
+            await DeleteCategoriesAndTransactions(unitOfWork);
             await InsertCategoriesAndTransactions(unitOfWork, user, mainBankAccount, savingsAccount);
 
-            await unitOfWork.SaveAsync();
+            await _bankAccountCalculationService.UpdateCurrentBalanceForBankAccount(unitOfWork, mainBankAccount.Id);
+            await _bankAccountCalculationService.UpdateCurrentBalanceForBankAccount(unitOfWork, secondaryBankAccount.Id);
+            await _bankAccountCalculationService.UpdateCurrentBalanceForBankAccount(unitOfWork, savingsAccount.Id);
+            await _bankAccountCalculationService.UpdateCurrentBalanceForBankAccount(unitOfWork, investmentAccount.Id);
 
-            await _bankAccountCalculationService.UpdateCurrentBalanceForBankAccount(mainBankAccount.Id, user.Id);
-            await _bankAccountCalculationService.UpdateCurrentBalanceForBankAccount(secondaryBankAccount.Id, user.Id);
-            await _bankAccountCalculationService.UpdateCurrentBalanceForBankAccount(savingsAccount.Id, user.Id);
-            await _bankAccountCalculationService.UpdateCurrentBalanceForBankAccount(investmentAccount.Id, user.Id);
+            await unitOfWork.SaveAsync();
 
             _logger.Information("Data seed completed, login with DemoUser/DemoUser");
         }
 
-        private async Task DeleteCategoriesAndTransactions(IUnitOfWork unitOfWork, SinanceUserEntity user)
+        private async Task DeleteCategoriesAndTransactions(IUnitOfWork unitOfWork)
         {
             _logger.Information("Deleting existing demo categories and transactions");
-            var existingCategories = await unitOfWork.CategoryRepository.FindAll(x => x.UserId == user.Id && !x.IsStandard);
+            var existingCategories = await unitOfWork.CategoryRepository.FindAll(x => !x.IsStandard);
             unitOfWork.CategoryRepository.DeleteRange(existingCategories);
 
-            var existingTransactions = await unitOfWork.TransactionRepository.FindAll(x => x.UserId == user.Id);
+            var existingTransactions = await unitOfWork.TransactionRepository.ListAll();
             unitOfWork.TransactionRepository.DeleteRange(existingTransactions);
             await unitOfWork.SaveAsync();
         }
 
-        private async Task DeleteExistingBankAccounts(IUnitOfWork unitOfWork, SinanceUserEntity user)
+        private async Task DeleteExistingBankAccounts(IUnitOfWork unitOfWork)
         {
             _logger.Information("Deleting existing demo bank accounts");
 
-            var existingBankAccounts = await unitOfWork.BankAccountRepository.FindAll(x => x.UserId == user.Id);
+            var existingBankAccounts = await unitOfWork.BankAccountRepository.ListAll();
             unitOfWork.BankAccountRepository.DeleteRange(existingBankAccounts);
             await unitOfWork.SaveAsync();
         }

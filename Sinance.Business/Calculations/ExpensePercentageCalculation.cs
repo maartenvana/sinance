@@ -1,5 +1,4 @@
 ﻿using Sinance.Business.Constants;
-using Sinance.Business.Services.Authentication;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
 using System;
@@ -11,21 +10,15 @@ namespace Sinance.Business.Calculations
 {
     public class ExpensePercentageCalculation : IExpensePercentageCalculation
     {
-        private readonly IAuthenticationService _authenticationService;
         private readonly Func<IUnitOfWork> _unitOfWork;
 
-        public ExpensePercentageCalculation(
-            Func<IUnitOfWork> unitOfWork,
-            IAuthenticationService authenticationService)
+        public ExpensePercentageCalculation(Func<IUnitOfWork> unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _authenticationService = authenticationService;
         }
 
         public async Task<IEnumerable<KeyValuePair<string, decimal>>> ExpensePercentagePerCategoryNameForMonth(DateTime startDate, DateTime endDate)
         {
-            var currentUserId = await _authenticationService.GetCurrentUserId();
-
             using var unitOfWork = _unitOfWork();
 
             // No need to sort this list, we loop through it by month numbers
@@ -34,13 +27,12 @@ namespace Sinance.Business.Calculations
                 findQuery: item =>
                     item.Date >= startDate &&
                     item.Date <= endDate &&
-                    item.UserId == currentUserId &&
                     item.Amount < 0,
                 includeProperties: new string[] {
                     nameof(TransactionEntity.TransactionCategories)
                 });
 
-            var categories = await unitOfWork.CategoryRepository.FindAll(x => x.UserId == currentUserId);
+            var categories = await unitOfWork.CategoryRepository.ListAll();
 
             var internalCashFlowCategory = categories.Single(x => x.Name == StandardCategoryNames.InternalCashFlowName);
 

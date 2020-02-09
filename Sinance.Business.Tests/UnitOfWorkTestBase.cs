@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
 using Moq.AutoMock;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
@@ -11,12 +10,17 @@ namespace Sinance.Business.Tests
 {
     public class UnitOfWorkTestBase
     {
+        protected IUserIdProvider _userIdProvider;
+
         protected readonly AutoMocker _mocker;
         private readonly DbContextOptions<SinanceContext> _dbContextOptions;
 
         public UnitOfWorkTestBase()
         {
             _mocker = new AutoMocker(Moq.MockBehavior.Strict);
+            _userIdProvider = new TestUserIdProvider();
+
+            _mocker.Use(_userIdProvider);
 
             _dbContextOptions = new DbContextOptionsBuilder<SinanceContext>()
                             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
@@ -27,27 +31,27 @@ namespace Sinance.Business.Tests
 
         protected async Task<bool> EntityExistsById<T>(int id) where T : EntityBase
         {
-            using var context = new SinanceContext(_dbContextOptions);
+            using var context = new SinanceContext(_dbContextOptions, _userIdProvider);
             return await context.Set<T>().AnyAsync(x => x.Id == id);
         }
 
         protected void InsertEntities<T>(IEnumerable<T> bankAccountEntities) where T : EntityBase
         {
-            using var context = new SinanceContext(_dbContextOptions);
+            using var context = new SinanceContext(_dbContextOptions, _userIdProvider);
             context.Set<T>().AddRange(bankAccountEntities);
             context.SaveChanges();
         }
 
         protected void InsertEntities<T>(params T[] bankAccountEntities) where T : EntityBase
         {
-            using var context = new SinanceContext(_dbContextOptions);
+            using var context = new SinanceContext(_dbContextOptions, _userIdProvider);
             context.Set<T>().AddRange(bankAccountEntities);
             context.SaveChanges();
         }
 
         protected void InsertEntity<T>(T bankAccountEntity) where T : EntityBase
         {
-            using var context = new SinanceContext(_dbContextOptions);
+            using var context = new SinanceContext(_dbContextOptions, _userIdProvider);
 
             context.Set<T>().Add(bankAccountEntity);
             context.SaveChanges();
@@ -57,7 +61,7 @@ namespace Sinance.Business.Tests
         {
             _mocker.Use<Func<IUnitOfWork>>(() =>
             {
-                var context = new SinanceContext(_dbContextOptions);
+                var context = new SinanceContext(_dbContextOptions, _userIdProvider);
 
                 return new UnitOfWork(
                     context,

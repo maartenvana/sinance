@@ -31,6 +31,7 @@ namespace Sinance.Business.DataSeeding.Seeds
 
             foreach (var user in allUsers)
             {
+                unitOfWork.Context.OverwriteUserIdProvider(new SeedUserIdProvider(user.Id));
                 await SeedStandardCategoriesForUser(unitOfWork, user.Id);
             }
 
@@ -41,7 +42,7 @@ namespace Sinance.Business.DataSeeding.Seeds
 
         public async Task SeedStandardCategoriesForUser(IUnitOfWork unitOfWork, int userId)
         {
-            var standardCategoriesForUser = await unitOfWork.CategoryRepository.FindAll(x => x.IsStandard && x.UserId == userId);
+            var standardCategoriesForUser = await unitOfWork.CategoryRepository.FindAll(x => x.IsStandard);
 
             CreateOrUpdateCashFlowCategory(unitOfWork, standardCategoriesForUser, userId);
         }

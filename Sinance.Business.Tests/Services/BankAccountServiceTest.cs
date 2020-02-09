@@ -1,12 +1,10 @@
 ﻿using FluentAssertions;
 using Moq;
 using Sinance.Business.Exceptions;
-using Sinance.Business.Services.Authentication;
 using Sinance.Business.Services.BankAccounts;
 using Sinance.Communication.Model.BankAccount;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -24,7 +22,6 @@ namespace Sinance.Business.Tests.Services
         /// </summary>
         public BankAccountServiceTest() : base()
         {
-            _mocker.Use<IAuthenticationService>(x => x.GetCurrentUserId() == Task.FromResult(_defaultUserId));
         }
 
         /// <summary>

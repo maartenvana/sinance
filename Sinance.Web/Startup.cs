@@ -73,6 +73,7 @@ namespace Sinance.Web
 
             builder.RegisterType<HttpContextAccessor>().As<IHttpContextAccessor>();
             builder.RegisterType<AuthenticationService>().As<IAuthenticationService>();
+            builder.RegisterType<UserIdProvider>().As<IUserIdProvider>();
 
             builder.RegisterModule<BusinessModule>();
             builder.RegisterModule<StorageModule>();

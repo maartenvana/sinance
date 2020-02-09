@@ -58,6 +58,7 @@
     <Watch Remove="Model\UpsertCategoryModel.cs" />
     <Watch Remove="Model\UpsertTransactionViewModel.cs" />
     <Watch Remove="Services\AuthenticationService.cs" />
+    <Watch Remove="Services\UserIdProvider.cs" />
     <Watch Remove="ViewComponents\BalanceHistoryGraphViewComponent.cs" />
     <Watch Remove="ViewComponents\ExpensesPerCategoryPieChartViewComponent.cs" />
     <Watch Remove="ViewComponents\YearlyBalanceHistoryGraphViewComponent.cs" />
@@ -80,6 +81,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
     <None Include="wwwroot\Content\bootstrap-theme.css" />
     <None Include="wwwroot\Content\bootstrap-theme.css.map" />
     <None Include="wwwroot\Content\bootstrap-theme.min.css" />

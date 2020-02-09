@@ -1,12 +1,16 @@
 ﻿using Sinance.Business.Calculations.Subcalculations;
+using Sinance.Business.Constants;
 using Sinance.Business.Services.Authentication;
 using Sinance.Business.Services.BankAccounts;
+using Sinance.Business.Services.Categories;
+using Sinance.Business.Services.Transactions;
 using Sinance.Communication.Model.BankAccount;
 using Sinance.Communication.Model.Shared;
 using Sinance.Communication.Model.StandardReport.Yearly;
 using Sinance.Storage;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sinance.Business.Calculations
@@ -14,15 +18,21 @@ namespace Sinance.Business.Calculations
     public class YearlyOverviewCalculation : IYearlyOverviewCalculation
     {
         private readonly IAuthenticationService _authenticationService;
+        private readonly ITransactionService _transactionService;
         private readonly Func<IUnitOfWork> _unitOfWork;
         private readonly IBankAccountService _bankAccountService;
+        private readonly ICategoryService _categoryService;
 
         public YearlyOverviewCalculation(Func<IUnitOfWork> unitOfWork,
+            ICategoryService categoryService,
             IBankAccountService bankAccountService,
+            ITransactionService transactionService,
             IAuthenticationService authenticationService)
         {
             _unitOfWork = unitOfWork;
+            _categoryService = categoryService;
             _bankAccountService = bankAccountService;
+            _transactionService = transactionService;
             _authenticationService = authenticationService;
         }
 
@@ -72,6 +82,15 @@ namespace Sinance.Business.Calculations
             }
 
             result.BalancePerBankAccountType = totalPerBankAccountType;
+
+            var allCategories = await _categoryService.GetAllCategoriesForCurrentUser();
+            var internalCashFlowCategory = allCategories.Single(x => x.Name == StandardCategoryNames.InternalCashFlowName);
+
+            var biggestExpenses = await _transactionService.GetBiggestExpensesForYearForCurrentUser(year, count: 20, skip: 0, excludeCategoryIds: new int[] {
+                internalCashFlowCategory.Id
+            });
+
+            result.BiggestExpenses = biggestExpenses.OrderBy(x => x.Amount).ThenByDescending(x => x.Date).ToList();
 
             return result;
         }

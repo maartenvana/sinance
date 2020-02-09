@@ -82,8 +82,8 @@ namespace Sinance.Storage
             var query = _dbSet
                  .Where(findQuery)
                  .OrderBy(orderByAscending)
-                 .Take(count)
                  .Skip(skip)
+                 .Take(count)
                  .AsNoTracking();
 
             if (includeProperties != null)
@@ -99,8 +99,8 @@ namespace Sinance.Storage
             var query = _dbSet
                 .Where(findQuery)
                 .OrderBy(orderByAscending)
-                .Take(count)
                 .Skip(skip)
+                .Take(count)
                 .AsTracking();
 
             if (includeProperties != null)
@@ -116,8 +116,8 @@ namespace Sinance.Storage
             var query = _dbSet
                 .Where(findQuery)
                 .OrderByDescending(orderByDescending)
-                .Take(count)
                 .Skip(skip)
+                .Take(count)
                 .AsNoTracking();
 
             if (includeProperties != null)

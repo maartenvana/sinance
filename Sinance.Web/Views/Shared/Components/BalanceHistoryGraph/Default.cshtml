@@ -1,0 +1,79 @@
+﻿@model int
+
+<script type="text/javascript">
+    $(function () {
+        CreateHistoryGraph("#historyGraph", @Model);
+    });
+
+    function CreateHistoryGraph(elementId, months) {
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("BalanceHistory", "Graph")",
+            data: { months: months },
+            success: function (response) {
+                $(elementId).highcharts({
+                    chart: {
+                        zoomType: "x"
+                    },
+                    title: {
+                        text: ""
+                    },
+                    xAxis: {
+                        type: "datetime"
+                    },
+                    yAxis: {
+                        title: {
+                            text: ""
+                        }
+                    },
+                    credits: {
+                        enabled: false
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    tooltip: {
+                        formatter: ChartCurrencyFormatter
+                    },
+                    plotOptions: {
+                        area: {
+                            fillColor: {
+                                linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
+                                stops: [
+                                    [0, Highcharts.getOptions().colors[0]],
+                                    [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get("rgba")]
+                                ]
+                            },
+                            marker: {
+                                radius: 2
+                            },
+                            lineWidth: 1,
+                            states: {
+                                hover: {
+                                    lineWidth: 1
+                                }
+                            },
+                            threshold: null
+                        }
+                    },
+                    series: [
+                        {
+                            type: "area",
+                            name: "euro",
+                            data: response.objectData
+                        }
+                    ]
+                });
+            }
+        });
+    }
+</script>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <i class="fa fa-bar-chart-o fa-fw"></i> Balans Historie
+    </div>
+    <div class="panel-body">
+        <div id="historyGraph" style="height: 400px;"></div>
+    </div>
+</div>

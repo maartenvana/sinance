@@ -32,9 +32,9 @@ namespace Sinance.Business.Calculations
             return await CalculateBalanceHistory(startDate, endDate, includeBankAccounts);
         }
 
-        public async Task<List<decimal[]>> BalanceHistoryFromYearInPast(int yearsInPast, IEnumerable<int> includeBankAccounts)
+        public async Task<List<decimal[]>> BalanceHistoryFromMonthsInPast(int monthsInPast, IEnumerable<int> includeBankAccounts)
         {
-            var startDate = DateTime.Now.AddYears(yearsInPast * -1);
+            var startDate = DateTime.Now.AddMonths(monthsInPast * -1);
             var endDate = DateTime.Now;
 
             return await CalculateBalanceHistory(startDate, endDate, includeBankAccounts);

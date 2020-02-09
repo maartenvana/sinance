@@ -6,16 +6,19 @@
     ViewBag.Title = "Jaaroverzicht";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-@{ 
+@{
     var BankAccountTypeEndPieChartData = Model.BalancePerBankAccountType.ToList().Select(x => new
     {
         name = x.Key.ToString(),
         y = x.Value.End.Percentage
     });
+    
+    var expensesStartDate = new DateTime(Model.Year, 1, 1);
+    var expensesEndDate = new DateTime(Model.Year, 12, 31);
 }
 @section scripts
 {
-<script type="text/javascript">
+    <script type="text/javascript">
     $(function () {
         CreateBankAccountTypeEndPieChart();
     });
@@ -59,11 +62,11 @@
             }]
         });
     }
-</script>
+    </script>
 }
 <div class="row">
     <div class="col-lg-12">
-        <h2 class="pull-left">Jaar overzicht</h2>
+        <h2 class="pull-left">Jaar overzicht @Model.Year</h2>
         <h2 class="pull-right"><a asp-action="YearOverview" asp-route-year="@(Model.Year+1)">@(Model.Year + 1)</a></h2><h2 class="pull-right">|@Model.Year|</h2><h2 class="pull-right"><a asp-action="YearOverview" asp-route-year="@(Model.Year-1)">@(Model.Year - 1)</a></h2>
     </div>
 </div>
@@ -118,45 +121,91 @@
     </div>
 </div>
 
-
 <div class="row">
     <div class="col-lg-8">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                Balans per rekening
+        <div class="row">
+            <div class="col-lg-12">
+                @await Component.InvokeAsync("YearlyProfitGraph", new { year = Model.Year, canChangeYear = false })
             </div>
-            <div class="panel-body">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Naam</th>
-                            <th>Start balans</th>
-                            <th>Verschil</th>
-                            <th>Eind balans</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var bankAccountBalance in Model.BalancePerBankAccount)
-                        {
-                            <tr class="@(bankAccountBalance.Value.Difference >= 0 ? "success" : "danger")">
-                                <td>@bankAccountBalance.Key.Name</td>
-                                <td>@bankAccountBalance.Value.Start.ToString("C2")</td>
-                                <td>@bankAccountBalance.Value.Difference.ToString("C2")</td>
-                                <td>@bankAccountBalance.Value.End.ToString("C2")</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
+            <div class="col-lg-12">
+                @await Component.InvokeAsync("YearlyBalanceHistoryGraph", new { year = Model.Year })
+            </div>
+            <div class="col-lg-12">
+                @await Component.InvokeAsync("ExpensesPerCategoryPieChart", new { startDate = expensesStartDate, endDate = expensesEndDate })
+            </div>
+            <div class="col-lg-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        Balans per rekening
+                    </div>
+                    <div class="panel-body">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Naam</th>
+                                    <th>Start balans</th>
+                                    <th>Verschil</th>
+                                    <th>Eind balans</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var bankAccountBalance in Model.BalancePerBankAccount)
+                                {
+                                    <tr class="@(bankAccountBalance.Value.Difference >= 0 ? "success" : "danger")">
+                                        <td>@bankAccountBalance.Key.Name</td>
+                                        <td>@bankAccountBalance.Value.Start.ToString("C2")</td>
+                                        <td>@bankAccountBalance.Value.Difference.ToString("C2")</td>
+                                        <td>@bankAccountBalance.Value.End.ToString("C2")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     <div class="col-lg-4">
-        <div class="panel panel-default">
-            <div class="panel-heading">
-                Balans verdeling (eind)
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        Balans verdeling
+                    </div>
+                    <div class="panel-body">
+                        <div id="bank-account-type-end-chart-container"></div>
+                    </div>
+                </div>
             </div>
-            <div class="panel-body">
-                <div id="bank-account-type-end-chart-container"></div>
+            <div class="col-lg-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading" id="biggestExpensesHeading">
+                        <i class="fa fa-fire"></i> Grootste uitgaves
+                    </div>
+                    <div class="panel-body">
+                        <table class="table table-condensed" aria-describedby="biggestExpensesHeading">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Datum</th>
+                                    <th scope="col">Titel</th>
+                                    <th scope="col" class="amountColumn">Bedrag</th>
+                                    <th scope="col">Omschrijving</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var transaction in Model.BiggestExpenses)
+                                {
+                                    <tr>
+                                        <td style="text-wrap:none;white-space:nowrap;">@transaction.Date.ToString("dd-MM-yyyy")</td>
+                                        <td style="text-wrap:none;white-space:nowrap;">@transaction.Name</td>
+                                        <td style="text-wrap:none;white-space:nowrap;">@transaction.Amount.ToString("C2")</td>
+                                        <td style="word-wrap:break-word;">@(transaction.Description != null && transaction.Description.Length > 40 ? transaction.Description.Substring(0, 40) : transaction.Description)</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

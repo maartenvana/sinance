@@ -17,7 +17,7 @@
                 type: "POST",
                 url: "@Url.Action("BalanceHistory", "Graph")",
                 cache: true,
-                data: { bankAccountIds: [@Model.Account.Id], years: 1 },
+                data: { bankAccountIds: [@Model.Account.Id], months: 12 },
                 success: function(response) {
                     $("#accountGraph").highcharts({
                         chart: {

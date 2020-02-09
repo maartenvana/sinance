@@ -2,6 +2,7 @@
 using Sinance.Business.DataSeeding.Seeds;
 using Sinance.Common.Configuration;
 using Sinance.Storage;
+using System;
 using System.Threading.Tasks;
 
 namespace Sinance.Business.DataSeeding
@@ -13,26 +14,34 @@ namespace Sinance.Business.DataSeeding
         private readonly DemoUserSeed _demoUserSeed;
         private readonly ImportBankSeed _importBankSeed;
         private readonly ILogger _logger;
+        private readonly Func<IUnitOfWork> _unitOfWork;
 
         public DataSeedService(
             ILogger logger,
+            Func<IUnitOfWork> unitOfWork,
             AppSettings appSettings,
             CategorySeed categorySeed,
             DemoUserSeed demoUserSeed,
             ImportBankSeed importBankSeed)
         {
             _logger = logger;
+            _unitOfWork = unitOfWork;
             _appSettings = appSettings;
             _categorySeed = categorySeed;
             _demoUserSeed = demoUserSeed;
             _importBankSeed = importBankSeed;
         }
 
-        public async Task NewUserSeed(IUnitOfWork unitOfWork, int userId)
+        public async Task NewUserSeed(int userId)
         {
             _logger.Information("Seeding new user");
 
+            using var unitOfWork = _unitOfWork();
+            unitOfWork.Context.OverwriteUserIdProvider(new SeedUserIdProvider(userId));
+
             await _categorySeed.SeedStandardCategoriesForUser(unitOfWork, userId);
+
+            await unitOfWork.SaveAsync();
         }
 
         public async Task StartupSeed()

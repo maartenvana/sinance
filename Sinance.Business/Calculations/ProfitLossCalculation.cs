@@ -1,5 +1,4 @@
-﻿using Sinance.Business.Services.Authentication;
-using Sinance.Storage;
+﻿using Sinance.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,26 +8,21 @@ namespace Sinance.Business.Calculations
 {
     public class ProfitLossCalculation : IProfitLossCalculation
     {
-        private readonly IAuthenticationService _authenticationService;
         private readonly Func<IUnitOfWork> _unitOfWork;
 
         public ProfitLossCalculation(
-            Func<IUnitOfWork> unitOfWork,
-            IAuthenticationService authenticationService)
+            Func<IUnitOfWork> unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _authenticationService = authenticationService;
         }
 
         public async Task<IEnumerable<decimal>> CalculateProfitLosstPerMonthForYear(int year)
         {
-            var currentUserId = await _authenticationService.GetCurrentUserId();
-
             using var unitOfWork = _unitOfWork();
 
             // No need to sort this list, we loop through it by month numbers
             var transactionsPerMonth = (await unitOfWork.TransactionRepository
-                .FindAll(item => item.Date.Year == year && item.UserId == currentUserId && item.BankAccount.IncludeInProfitLossGraph))
+                .FindAll(item => item.Date.Year == year && item.BankAccount.IncludeInProfitLossGraph))
                 .GroupBy(item => item.Date.Month)
                 .ToList();
 

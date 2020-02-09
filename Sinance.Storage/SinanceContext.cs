@@ -7,6 +7,8 @@ namespace Sinance.Storage
 {
     public class SinanceContext : DbContext
     {
+        private IUserIdProvider _userIdProvider;
+
         public DbSet<BankAccountEntity> BankAccounts { get; set; }
 
         public DbSet<CategoryEntity> Categories { get; set; }
@@ -31,9 +33,17 @@ namespace Sinance.Storage
         /// <summary>
         /// Default constructors
         /// </summary>
-        public SinanceContext(DbContextOptions options)
+        public SinanceContext(
+            DbContextOptions options,
+            IUserIdProvider userIdProvider)
             : base(options)
         {
+            _userIdProvider = userIdProvider;
+        }
+
+        public void OverwriteUserIdProvider(IUserIdProvider userIdProvider)
+        {
+            _userIdProvider = userIdProvider;
         }
 
         public void Migrate()
@@ -49,7 +59,6 @@ namespace Sinance.Storage
             }
 
             modelBuilder.Entity<BankAccountEntity>().ToTable("BankAccount").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
-
             modelBuilder.Entity<SinanceUserEntity>().ToTable("Users").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
             modelBuilder.Entity<CategoryEntity>().ToTable("Category").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
 
@@ -60,6 +69,12 @@ namespace Sinance.Storage
             modelBuilder.Entity<ImportMappingEntity>().ToTable("ImportMapping").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
             modelBuilder.Entity<CustomReportEntity>().ToTable("CustomReport").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
             modelBuilder.Entity<CustomReportCategoryEntity>().ToTable("CustomReportCategory").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
+
+            modelBuilder.Entity<BankAccountEntity>().HasQueryFilter(x => x.UserId == _userIdProvider.GetCurrentUserId());
+            modelBuilder.Entity<CategoryEntity>().HasQueryFilter(x => x.UserId == _userIdProvider.GetCurrentUserId());
+            modelBuilder.Entity<CategoryMappingEntity>().HasQueryFilter(x => x.UserId == _userIdProvider.GetCurrentUserId());
+            modelBuilder.Entity<TransactionEntity>().HasQueryFilter(x => x.UserId == _userIdProvider.GetCurrentUserId());
+            modelBuilder.Entity<CustomReportEntity>().HasQueryFilter(x => x.UserId == _userIdProvider.GetCurrentUserId());
 
             base.OnModelCreating(modelBuilder);
         }

@@ -1,6 +1,5 @@
 ﻿using Sinance.Business.Exceptions;
 using Sinance.Business.Extensions;
-using Sinance.Business.Services.Authentication;
 using Sinance.Communication.Model.CustomReport;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
@@ -13,41 +12,39 @@ namespace Sinance.Business.Services
 {
     public class CustomReportService : ICustomReportService
     {
-        private readonly IAuthenticationService _sessionService;
         private readonly Func<IUnitOfWork> _unitOfWork;
+        private readonly IUserIdProvider _userIdProvider;
 
-        public CustomReportService(Func<IUnitOfWork> unitOfWork, IAuthenticationService sessionService)
+        public CustomReportService(
+            Func<IUnitOfWork> unitOfWork,
+            IUserIdProvider userIdProvider)
         {
             _unitOfWork = unitOfWork;
-            _sessionService = sessionService;
+            _userIdProvider = userIdProvider;
         }
 
         public async Task<CustomReportModel> CreateCustomReport(CustomReportModel model)
         {
-            var userId = await _sessionService.GetCurrentUserId();
-
             using var unitOfWork = _unitOfWork();
 
-            await ValidateModelCategories(model, userId, unitOfWork);
+            await ValidateModelCategories(model, unitOfWork);
 
-            var entity = model.ToNewEntity(userId);
+            var entity = model.ToNewEntity(_userIdProvider.GetCurrentUserId());
 
             unitOfWork.CustomReportRepository.Insert(entity);
             await unitOfWork.SaveAsync();
 
             // Reselect to get the categories included
-            entity = await FindCustomReportWithCategories(userId, entity.Id, unitOfWork);
+            entity = await FindCustomReportWithCategories(entity.Id, unitOfWork);
 
             return entity.ToDto();
         }
 
         public async Task<CustomReportModel> GetCustomReportByIdForCurrentUser(int customReportId)
         {
-            var userId = await _sessionService.GetCurrentUserId();
-
             using var unitOfWork = _unitOfWork();
 
-            var customReport = await FindCustomReportWithCategories(userId, customReportId, unitOfWork);
+            var customReport = await FindCustomReportWithCategories(customReportId, unitOfWork);
 
             if (customReport == null)
             {
@@ -62,12 +59,9 @@ namespace Sinance.Business.Services
         /// </summary>
         public async Task<List<CustomReportModel>> GetCustomReportsForCurrentUser()
         {
-            var userId = await _sessionService.GetCurrentUserId();
-
             using var unitOfWork = _unitOfWork();
             var customReports = (await unitOfWork.CustomReportRepository
-                .FindAll(
-                    findQuery: item => item.UserId == userId,
+                .ListAll(
                     includeProperties: new string[] {
                         nameof(CustomReportEntity.ReportCategories),
                         $"{nameof(CustomReportEntity.ReportCategories)}.{nameof(CustomReportCategoryEntity.Category)}"
@@ -81,28 +75,26 @@ namespace Sinance.Business.Services
 
         public async Task<CustomReportModel> UpdateCustomReport(CustomReportModel model)
         {
-            var userId = await _sessionService.GetCurrentUserId();
-
             using var unitOfWork = _unitOfWork();
 
-            await ValidateModelCategories(model, userId, unitOfWork);
+            await ValidateModelCategories(model, unitOfWork);
 
-            var entity = await FindCustomReportWithCategories(userId, model.Id, unitOfWork);
+            var entity = await FindCustomReportWithCategories(model.Id, unitOfWork);
 
             entity.UpdateWithModel(model);
             await unitOfWork.SaveAsync();
 
             // Reselect to get the categories included
-            entity = await FindCustomReportWithCategories(userId, model.Id, unitOfWork);
+            entity = await FindCustomReportWithCategories(model.Id, unitOfWork);
 
             return entity.ToDto();
         }
 
-        private static async Task<CustomReportEntity> FindCustomReportWithCategories(int userId, int reportId, IUnitOfWork unitOfWork)
+        private static async Task<CustomReportEntity> FindCustomReportWithCategories(int reportId, IUnitOfWork unitOfWork)
         {
             var report = await unitOfWork.CustomReportRepository
                             .FindSingleTracked(
-                                findQuery: x => x.UserId == userId && x.Id == reportId,
+                                findQuery: x => x.Id == reportId,
                                 includeProperties: new string[] {
                                     nameof(CustomReportEntity.ReportCategories),
                                     $"{nameof(CustomReportEntity.ReportCategories)}.{nameof(CustomReportCategoryEntity.Category)}"
@@ -116,10 +108,10 @@ namespace Sinance.Business.Services
             return report;
         }
 
-        private static async Task ValidateModelCategories(CustomReportModel model, int userId, IUnitOfWork unitOfWork)
+        private static async Task ValidateModelCategories(CustomReportModel model, IUnitOfWork unitOfWork)
         {
             // Validate categories
-            var allCategories = await unitOfWork.CategoryRepository.FindAll(x => x.UserId == userId);
+            var allCategories = await unitOfWork.CategoryRepository.ListAll();
             var allValid = model.Categories.All(x => allCategories.Any(y => y.Id == x.CategoryId));
 
             if (!allValid)

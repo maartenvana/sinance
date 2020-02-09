@@ -1,7 +1,6 @@
 ﻿using Sinance.Business.Exceptions;
 using Sinance.Business.Extensions;
 using Sinance.Business.Handlers;
-using Sinance.Business.Services.Authentication;
 using Sinance.Business.Services.BankAccounts;
 using Sinance.Communication.Model.Import;
 using Sinance.Storage;
@@ -17,25 +16,23 @@ namespace Sinance.Business.Services.Imports
 {
     public class ImportService : IImportService
     {
-        private readonly IAuthenticationService _authenticationService;
         private readonly IBankAccountCalculationService _bankAccountCalculationService;
         private readonly Func<IUnitOfWork> _unitOfWork;
+        private readonly IUserIdProvider _userIdProvider;
 
         public ImportService(
             Func<IUnitOfWork> unitOfWork,
-            IBankAccountCalculationService bankAccountService,
-            IAuthenticationService authenticationService)
+            IUserIdProvider userIdProvider,
+            IBankAccountCalculationService bankAccountService)
         {
             _unitOfWork = unitOfWork;
+            _userIdProvider = userIdProvider;
             _bankAccountCalculationService = bankAccountService;
-            _authenticationService = authenticationService;
         }
 
         public async Task<ImportModel> CreateImportPreview(Stream fileStream, ImportModel model)
         {
-            var userId = await _authenticationService.GetCurrentUserId();
-
-            var importCacheKey = CreateImportCacheKey(userId);
+            var importCacheKey = CreateImportCacheKey(_userIdProvider.GetCurrentUserId());
             SinanceCacheHandler.ClearCache(importCacheKey);
 
             using var unitOfWork = _unitOfWork();
@@ -89,8 +86,7 @@ namespace Sinance.Business.Services.Imports
 
         public async Task<(int skippedTransactions, int savedTransactions)> SaveImport(ImportModel model)
         {
-            var userId = await _authenticationService.GetCurrentUserId();
-
+            var userId = _userIdProvider.GetCurrentUserId();
             var importCacheKey = CreateImportCacheKey(userId);
             var cachedModel = SinanceCacheHandler.RetrieveCache<ImportModel>(importCacheKey);
             if (cachedModel == null)
@@ -99,18 +95,20 @@ namespace Sinance.Business.Services.Imports
             }
 
             using var unitOfWork = _unitOfWork();
-            var bankAccount = await VerifyBankAccount(model, userId, unitOfWork);
+            var bankAccount = await VerifyBankAccount(model, unitOfWork);
 
+#pragma warning disable S1854 // Unused assignments should be removed
             var skippedTransactions = model.ImportRows.Count(item => item.ExistsInDatabase || !item.Import);
-            var savedTransactions = await ImportHandler.SaveImportResultToDatabase(
-                unitOfWork: unitOfWork,
-                bankAccountId: bankAccount.Id,
-                userId: userId,
-                importRows: model.ImportRows,
-                cachedImportRows: cachedModel.ImportRows);
+            var savedTransactions = await ImportHandler.SaveImportResultToDatabase(unitOfWork: unitOfWork,
+                                                                                   bankAccountId: bankAccount.Id,
+                                                                                   userId: userId,
+                                                                                   importRows: model.ImportRows,
+                                                                                   cachedImportRows: cachedModel.ImportRows);
+#pragma warning restore S1854 // Unused assignments should be removed
 
             // Update the current balance of bank account and refresh them
-            await _bankAccountCalculationService.UpdateCurrentBalanceForBankAccount(model.BankAccountId, userId);
+            await _bankAccountCalculationService.UpdateCurrentBalanceForBankAccount(unitOfWork, model.BankAccountId);
+            await unitOfWork.SaveAsync();
 
             // Clear the cache entry
             SinanceCacheHandler.ClearCache(importCacheKey);
@@ -118,9 +116,9 @@ namespace Sinance.Business.Services.Imports
             return (skippedTransactions, savedTransactions);
         }
 
-        private static async Task<BankAccountEntity> VerifyBankAccount(ImportModel model, int userId, IUnitOfWork unitOfWork)
+        private static async Task<BankAccountEntity> VerifyBankAccount(ImportModel model, IUnitOfWork unitOfWork)
         {
-            var bankAccount = await unitOfWork.BankAccountRepository.FindSingle(x => x.Id == model.BankAccountId && x.UserId == userId);
+            var bankAccount = await unitOfWork.BankAccountRepository.FindSingle(x => x.Id == model.BankAccountId);
             if (bankAccount == null)
             {
                 throw new NotFoundException(nameof(BankAccountEntity));

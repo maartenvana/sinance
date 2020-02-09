@@ -8,6 +8,6 @@ namespace Sinance.Business.Services.BankAccounts
     {
         Task<decimal> CalculateCurrentBalanceForBankAccount(IUnitOfWork unitOfWork, BankAccountEntity bankAccount);
 
-        Task UpdateCurrentBalanceForBankAccount(int bankAccountId, int userId);
+        Task UpdateCurrentBalanceForBankAccount(IUnitOfWork unitOfWork, int bankAccountId);
     }
 }

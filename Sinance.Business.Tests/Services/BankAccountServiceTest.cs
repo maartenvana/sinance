@@ -22,6 +22,7 @@ namespace Sinance.Business.Tests.Services
         /// </summary>
         public BankAccountServiceTest() : base()
         {
+            _userIdProvider.CurrentUserId = _defaultUserId;
         }
 
         /// <summary>

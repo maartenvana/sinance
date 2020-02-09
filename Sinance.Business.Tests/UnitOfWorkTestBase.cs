@@ -10,7 +10,7 @@ namespace Sinance.Business.Tests
 {
     public class UnitOfWorkTestBase
     {
-        protected IUserIdProvider _userIdProvider;
+        protected TestUserIdProvider _userIdProvider;
 
         protected readonly AutoMocker _mocker;
         private readonly DbContextOptions<SinanceContext> _dbContextOptions;
@@ -20,7 +20,7 @@ namespace Sinance.Business.Tests
             _mocker = new AutoMocker(Moq.MockBehavior.Strict);
             _userIdProvider = new TestUserIdProvider();
 
-            _mocker.Use(_userIdProvider);
+            _mocker.Use<IUserIdProvider>(_userIdProvider);
 
             _dbContextOptions = new DbContextOptionsBuilder<SinanceContext>()
                             .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())

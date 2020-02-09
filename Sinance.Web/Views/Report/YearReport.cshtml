@@ -100,7 +100,8 @@
                         Balans per rekening
                     </div>
                     <div class="panel-body">
-                        <table class="table" summary="Balans per rekening tabel">
+                        <table class="table">
+                            <caption class="acc-hidden">Balans per rekening tabel</caption>
                             <thead>
                                 <tr>
                                     <th scope="col">Naam</th>
@@ -113,7 +114,7 @@
                                 @foreach (var bankAccountBalance in Model.BalancePerBankAccount)
                                 {
                                     <tr class="@(bankAccountBalance.Value.Difference >= 0 ? "success" : "danger")">
-                                        <td scope="row">@bankAccountBalance.Key.Name</td>
+                                        <td>@bankAccountBalance.Key.Name</td>
                                         <td>@bankAccountBalance.Value.Start.ToString("C2")</td>
                                         <td>@bankAccountBalance.Value.Difference.ToString("C2")</td>
                                         <td>@bankAccountBalance.Value.End.ToString("C2")</td>

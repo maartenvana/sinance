@@ -1,4 +1,5 @@
-﻿using Serilog;
+﻿#pragma warning disable S107 // Methods should not have too many parameters
+using Serilog;
 using Sinance.Business.Constants;
 using Sinance.Business.Services.Authentication;
 using Sinance.Business.Services.BankAccounts;
@@ -376,3 +377,4 @@ namespace Sinance.Business.DataSeeding.Seeds
         }
     }
 }
+#pragma warning restore S107 // Methods should not have too many parameters

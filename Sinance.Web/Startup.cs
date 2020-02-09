@@ -43,6 +43,7 @@ namespace Sinance.Web
             {
                 appBuilder.UseDeveloperExceptionPage();
             }
+
             appBuilder.UseSerilogRequestLogging();
 
             appBuilder.UseStaticFiles();

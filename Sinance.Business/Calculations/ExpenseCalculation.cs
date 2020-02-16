@@ -1,5 +1,4 @@
 ﻿using Sinance.Business.Extensions;
-using Sinance.Business.Services.Authentication;
 using Sinance.Communication.Model.StandardReport.Expense;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
@@ -12,21 +11,16 @@ namespace Sinance.Business.Calculations
 {
     public class ExpenseCalculation : IExpenseCalculation
     {
-        private readonly IAuthenticationService _authenticationService;
         private readonly Func<IUnitOfWork> _unitOfWork;
 
         public ExpenseCalculation(
-            Func<IUnitOfWork> unitOfWork,
-            IAuthenticationService authenticationService)
+            Func<IUnitOfWork> unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _authenticationService = authenticationService;
         }
 
         public async Task<BiMonthlyExpenseReportModel> BiMonthlyExpensePerCategoryReport(DateTime startMonth)
         {
-            var userId = await _authenticationService.GetCurrentUserId();
-
             var nextMonthStart = startMonth.AddMonths(1);
             var nextMonthEnd = nextMonthStart.AddMonths(1).AddDays(-1);
 
@@ -36,12 +30,10 @@ namespace Sinance.Business.Calculations
                  findQuery: item =>
                      item.Date >= startMonth &&
                      item.Date <= nextMonthEnd &&
-                     item.UserId == userId &&
                      item.Amount < 0,
                  includeProperties: nameof(TransactionEntity.TransactionCategories));
 
-            var allCategories = await unitOfWork.CategoryRepository.FindAll(
-                findQuery: item => item.UserId == userId,
+            var allCategories = await unitOfWork.CategoryRepository.ListAll(
                 includeProperties: new string[] {
                     nameof(CategoryEntity.ParentCategory),
                     nameof(CategoryEntity.ChildCategories)
@@ -97,13 +89,11 @@ namespace Sinance.Business.Calculations
             var dateRangeEnd = new DateTime(year, 12, 31);
 
             using var unitOfWork = _unitOfWork();
-            var userId = await _authenticationService.GetCurrentUserId();
 
             var transactions = await unitOfWork.TransactionRepository.FindAll(
                     findQuery: item =>
                         item.Date >= dateRangeStart &&
                         item.Date <= dateRangeEnd &&
-                        item.UserId == userId &&
                         item.Amount < 0 &&
                         item.TransactionCategories.Any(transactionCategory =>
                             categoryIds.Any(reportCategory =>

@@ -24,25 +24,26 @@ namespace Sinance.Storage
 
             builder.RegisterGeneric(typeof(GenericRepository<>)).As(typeof(IGenericRepository<>));
 
-            builder.Register(regContext =>
+            builder.Register(context =>
             {
-                var appSettings = regContext.Resolve<AppSettings>();
+                var appSettings = context.Resolve<AppSettings>();
                 var contextOptionsBuilder = new DbContextOptionsBuilder();
 
                 if (appSettings.Database.LoggingEnabled)
                 {
-                    contextOptionsBuilder.UseLoggerFactory(regContext.Resolve<ILoggerFactory>());
+                    contextOptionsBuilder.UseLoggerFactory(context.Resolve<ILoggerFactory>());
                 }
                 contextOptionsBuilder.UseMySql(appSettings.ConnectionStrings.Sql);
 
                 return contextOptionsBuilder.Options;
             }).SingleInstance();
 
-            builder.Register(regContext =>
+            builder.Register(context =>
             {
-                var options = regContext.Resolve<DbContextOptions>();
+                var options = context.Resolve<DbContextOptions>();
+                var userIdProvider = context.Resolve<IUserIdProvider>();
 
-                return new SinanceContext(options);
+                return new SinanceContext(options, userIdProvider);
             }).AsSelf().InstancePerOwned<IUnitOfWork>();
 
             builder.RegisterType<UnitOfWork>().As<IUnitOfWork>();

@@ -1,6 +1,5 @@
 ﻿using Sinance.Business.Exceptions;
 using Sinance.Business.Extensions;
-using Sinance.Business.Services.Authentication;
 using Sinance.Communication.Model.Category;
 using Sinance.Communication.Model.Import;
 using Sinance.Communication.Model.Transaction;
@@ -15,30 +14,28 @@ namespace Sinance.Business.Services.Categories
 {
     public class CategoryService : ICategoryService
     {
-        private readonly IAuthenticationService _authenticationService;
         private readonly Func<IUnitOfWork> _unitOfWork;
+        private readonly IUserIdProvider _userIdProvider;
 
         public CategoryService(
             Func<IUnitOfWork> unitOfWork,
-            IAuthenticationService authenticationService)
+            IUserIdProvider userIdProvider)
         {
             _unitOfWork = unitOfWork;
-            _authenticationService = authenticationService;
+            _userIdProvider = userIdProvider;
         }
 
         public async Task<CategoryModel> CreateCategoryForCurrentUser(CategoryModel categoryModel)
         {
-            var userId = await _authenticationService.GetCurrentUserId();
-
             using var unitOfWork = _unitOfWork();
-            var category = await unitOfWork.CategoryRepository.FindSingleTracked(item => item.Name == categoryModel.Name && item.UserId == userId);
+            var category = await unitOfWork.CategoryRepository.FindSingleTracked(item => item.Name == categoryModel.Name);
 
             if (category != null)
             {
                 throw new AlreadyExistsException(nameof(CategoryEntity));
             }
 
-            var newCategory = categoryModel.ToNewEntity(userId);
+            var newCategory = categoryModel.ToNewEntity(_userIdProvider.GetCurrentUserId());
 
             unitOfWork.CategoryRepository.Insert(newCategory);
             await unitOfWork.SaveAsync();
@@ -48,14 +45,11 @@ namespace Sinance.Business.Services.Categories
 
         public async Task<List<KeyValuePair<TransactionModel, bool>>> CreateCategoryMappingToTransactionsForUser(CategoryModel category)
         {
-            var userId = await _authenticationService.GetCurrentUserId();
-
             using var unitOfWork = _unitOfWork();
 
-            var allTransactions = await unitOfWork.TransactionRepository.FindAll(item =>
-                item.UserId == userId);
+            var allTransactions = await unitOfWork.TransactionRepository.ListAll();
 
-            var categoryMappings = await unitOfWork.CategoryMappingRepository.FindAll(item => item.UserId == userId && item.CategoryId == category.Id);
+            var categoryMappings = await unitOfWork.CategoryMappingRepository.FindAll(item => item.CategoryId == category.Id);
 
             var mappedTransactions = MapTransactionsWithCategoryMappings(categoryMappings, allTransactions)
                 .Select(item => new KeyValuePair<TransactionModel, bool>(item.ToDto(), true))
@@ -66,11 +60,9 @@ namespace Sinance.Business.Services.Categories
 
         public async Task DeleteCategoryByIdForCurrentUser(int categoryId)
         {
-            var userId = await _authenticationService.GetCurrentUserId();
-
             using var unitOfWork = _unitOfWork();
 
-            var category = await unitOfWork.CategoryRepository.FindSingleTracked(item => item.Id == categoryId && item.UserId == userId);
+            var category = await unitOfWork.CategoryRepository.FindSingleTracked(item => item.Id == categoryId);
             if (category == null)
             {
                 throw new NotFoundException(nameof(CategoryEntity));
@@ -90,23 +82,18 @@ namespace Sinance.Business.Services.Categories
 
         public async Task<List<CategoryModel>> GetAllCategoriesForCurrentUser()
         {
-            var userId = await _authenticationService.GetCurrentUserId();
-
             using var unitOfWork = _unitOfWork();
 
-            var allCategories = await unitOfWork.CategoryRepository.FindAll(item => item.UserId == userId);
+            var allCategories = await unitOfWork.CategoryRepository.ListAll();
 
             return allCategories.ToDto().ToList();
         }
 
         public async Task<CategoryModel> GetCategoryByIdForCurrentUser(int categoryId)
         {
-            var userId = await _authenticationService.GetCurrentUserId();
-
             using var unitOfWork = _unitOfWork();
 
-            var category = await unitOfWork.CategoryRepository.FindSingle(item => item.Id == categoryId &&
-                   item.UserId == userId,
+            var category = await unitOfWork.CategoryRepository.FindSingle(item => item.Id == categoryId,
                    includeProperties: new string[] {
                        nameof(CategoryEntity.ParentCategory),
                        nameof(CategoryEntity.ChildCategories),
@@ -123,21 +110,16 @@ namespace Sinance.Business.Services.Categories
 
         public async Task<List<CategoryModel>> GetPossibleParentCategoriesForCurrentUser(int categoryId)
         {
-            var userId = await _authenticationService.GetCurrentUserId();
-
             using var unitOfWork = _unitOfWork();
 
             var categories = await unitOfWork.CategoryRepository.FindAll(item => item.ParentId == null &&
-                                                                        item.Id != categoryId &&
-                                                                        item.UserId == userId);
+                                                                        item.Id != categoryId);
 
             return categories.ToDto().ToList();
         }
 
         public async Task MapCategoryToTransactionsForCurrentUser(int categoryId, IEnumerable<int> transactionIds)
         {
-            var userId = await _authenticationService.GetCurrentUserId();
-
             using var unitOfWork = _unitOfWork();
 
             var category = await unitOfWork.CategoryRepository.FindSingle(x => x.Id == categoryId);
@@ -147,7 +129,7 @@ namespace Sinance.Business.Services.Categories
             }
 
             var transactions = await unitOfWork.TransactionRepository.FindAllTracked(
-                x => x.UserId == userId && transactionIds.Any(y => y == x.Id),
+                x => transactionIds.Any(y => y == x.Id),
                 includeProperties: nameof(TransactionEntity.TransactionCategories));
 
             foreach (var transaction in transactions)
@@ -168,11 +150,9 @@ namespace Sinance.Business.Services.Categories
 
         public async Task<CategoryModel> UpdateCategoryForCurrentUser(CategoryModel categoryModel)
         {
-            var userId = await _authenticationService.GetCurrentUserId();
-
             using var unitOfWork = _unitOfWork();
 
-            var category = await unitOfWork.CategoryRepository.FindSingleTracked(x => x.Id == categoryModel.Id && x.UserId == userId);
+            var category = await unitOfWork.CategoryRepository.FindSingleTracked(x => x.Id == categoryModel.Id);
 
             if (category == null)
             {

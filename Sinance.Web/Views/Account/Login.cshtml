@@ -28,6 +28,9 @@
     <meta name="description" content="The description of my page" />
 </head>
 <body>
+    <div class="sinance-version pull-left">
+        @await Component.InvokeAsync("VersionNumber")
+    </div>
     @Html.ActionLink("Registreren", "Register", "Account", htmlAttributes: new { @class = "btn btn-sm btn-primary pull-right" })
     <div class="container">
         <div class="row">

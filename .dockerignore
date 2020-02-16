@@ -24,4 +24,5 @@ bin/
 obj/
 
 # .NET Core
-**/Properties/launchSettings.json
+launchSettings.json
+appsettings.development.json

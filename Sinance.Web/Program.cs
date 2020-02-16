@@ -1,8 +1,11 @@
 ﻿using Autofac.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
+using Sinance.Storage;
 using System;
 using System.Globalization;
 
@@ -37,8 +40,13 @@ namespace Sinance.Web
 
             try
             {
+                Log.Information("Building web host");
+                var host = CreateHostBuilder(args).Build();
+
+                CreateOrMigrateDatabase(host);
+
                 Log.Information("Starting web host");
-                CreateHostBuilder(args).Build().Run();
+                host.Run();
                 return 0;
             }
             catch (Exception ex)
@@ -51,5 +59,33 @@ namespace Sinance.Web
                 Log.CloseAndFlush();
             }
         }
+
+        private static void CreateOrMigrateDatabase(IHost host)
+        {
+            using var scope = host.Services.CreateScope();
+
+            var services = scope.ServiceProvider;
+
+            try
+            {
+                var unitOfWorkFunc = services.GetRequiredService<Func<IUnitOfWork>>();
+                using var unitOfWork = unitOfWorkFunc();
+
+                Log.Information("Checking if database needs to be migrated/created");
+                var pendingMigrations = unitOfWork.Context.Database.GetPendingMigrations();
+                foreach (var pendingMigration in pendingMigrations)
+                {
+                    Log.Information("Need to apply migration: {pendingMigration}", pendingMigration);
+                }
+                unitOfWork.Context.Database.Migrate();
+
+                Log.Information("Initializing database completed");
+            }
+            catch (Exception exc)
+            {
+                Log.Error(exc, "An error occurred creating the DB.");
+            }
+        }
+
     }
 }

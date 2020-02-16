@@ -1,5 +1,4 @@
 ﻿using Sinance.Business.Extensions;
-using Sinance.Business.Services.Authentication;
 using Sinance.Communication.Model.StandardReport.Income;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
@@ -12,21 +11,15 @@ namespace Sinance.Business.Calculations
 {
     public class IncomeCalculation : IIncomeCalculation
     {
-        private readonly IAuthenticationService _authenticationService;
         private readonly Func<IUnitOfWork> _unitOfWork;
 
-        public IncomeCalculation(
-            Func<IUnitOfWork> unitOfWork,
-            IAuthenticationService authenticationService)
+        public IncomeCalculation(Func<IUnitOfWork> unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _authenticationService = authenticationService;
         }
 
         public async Task<BiMonthlyIncomeReportModel> BiMonthlyIncomePerCategoryReport(DateTime startMonth)
         {
-            var userId = await _authenticationService.GetCurrentUserId();
-
             var nextMonthStart = startMonth.AddMonths(1);
             var nextMonthEnd = nextMonthStart.AddMonths(1).AddDays(-1);
 
@@ -36,12 +29,10 @@ namespace Sinance.Business.Calculations
                 findQuery: item =>
                     item.Date >= startMonth &&
                     item.Date <= nextMonthEnd &&
-                    item.UserId == userId &&
                     item.Amount > 0,
                 includeProperties: nameof(TransactionEntity.TransactionCategories));
 
-            var allCategories = await unitOfWork.CategoryRepository.FindAll(
-                findQuery: item => item.UserId == userId,
+            var allCategories = await unitOfWork.CategoryRepository.ListAll (
                 includeProperties: new string[]
                 {
                     nameof(CategoryEntity.ParentCategory),

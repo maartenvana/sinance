@@ -1,20 +1,12 @@
 ﻿using Sinance.Business.Exceptions;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
-using System;
 using System.Threading.Tasks;
 
 namespace Sinance.Business.Services.BankAccounts
 {
     public class BankAccountCalculationService : IBankAccountCalculationService
     {
-        private readonly Func<IUnitOfWork> _unitOfWork;
-
-        public BankAccountCalculationService(Func<IUnitOfWork> unitOfWork)
-        {
-            _unitOfWork = unitOfWork;
-        }
-
         public async Task<decimal> CalculateCurrentBalanceForBankAccount(IUnitOfWork unitOfWork, BankAccountEntity bankAccount)
         {
             var transactionSum = await unitOfWork.TransactionRepository.Sum(
@@ -24,11 +16,9 @@ namespace Sinance.Business.Services.BankAccounts
             return bankAccount.StartBalance + transactionSum;
         }
 
-        public async Task UpdateCurrentBalanceForBankAccount(int bankAccountId, int userId)
+        public async Task UpdateCurrentBalanceForBankAccount(IUnitOfWork unitOfWork, int bankAccountId)
         {
-            using var unitOfWork = _unitOfWork();
-
-            var bankAccount = await unitOfWork.BankAccountRepository.FindSingleTracked(x => x.UserId == userId && x.Id == bankAccountId);
+            var bankAccount = await unitOfWork.BankAccountRepository.FindSingleTracked(x => x.Id == bankAccountId);
 
             if (bankAccount == null)
             {
@@ -36,8 +26,6 @@ namespace Sinance.Business.Services.BankAccounts
             }
 
             bankAccount.CurrentBalance = await CalculateCurrentBalanceForBankAccount(unitOfWork, bankAccount);
-
-            await unitOfWork.SaveAsync();
         }
     }
 }

@@ -7,8 +7,6 @@ namespace Sinance.Business.Services.Authentication
     {
         Task<SinanceUserModel> CreateUser(string userName, string password);
 
-        Task<int> GetCurrentUserId();
-
         Task<SinanceUserModel> SignIn(string userName, string password);
     }
 }

@@ -61,9 +61,7 @@ namespace Sinance.Web
                     "default", "{controller=Home}/{action=Index}/{id?}");
             });
 
-            appBuilder
-                .MigrateDatabase()
-                .ApplyDataSeed();
+            appBuilder.ApplyDataSeed();
         }
 
         public void ConfigureContainer(ContainerBuilder builder)
@@ -73,6 +71,7 @@ namespace Sinance.Web
 
             builder.RegisterType<HttpContextAccessor>().As<IHttpContextAccessor>();
             builder.RegisterType<AuthenticationService>().As<IAuthenticationService>();
+            builder.RegisterType<UserIdProvider>().As<IUserIdProvider>();
 
             builder.RegisterModule<BusinessModule>();
             builder.RegisterModule<StorageModule>();

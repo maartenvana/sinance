@@ -1,5 +1,4 @@
-﻿using Sinance.Business.Services.Authentication;
-using Sinance.Business.Services.BankAccounts;
+﻿using Sinance.Business.Services.BankAccounts;
 using Sinance.Storage;
 using System;
 using System.Collections.Generic;
@@ -10,17 +9,14 @@ namespace Sinance.Business.Calculations
 {
     public class BalanceHistoryCalculation : IBalanceHistoryCalculation
     {
-        private readonly IAuthenticationService _authenticationService;
         private readonly IBankAccountService _bankAccountService;
         private readonly Func<IUnitOfWork> _unitOfWork;
 
         public BalanceHistoryCalculation(
             Func<IUnitOfWork> unitOfWork,
-            IAuthenticationService authenticationService,
             IBankAccountService bankAccountService)
         {
             _unitOfWork = unitOfWork;
-            _authenticationService = authenticationService;
             _bankAccountService = bankAccountService;
         }
 
@@ -55,9 +51,7 @@ namespace Sinance.Business.Calculations
             decimal accountBalance = 0;
             using var unitOfWork = _unitOfWork();
 
-            var userId = await _authenticationService.GetCurrentUserId();
             var transactions = (await unitOfWork.TransactionRepository.FindAll(x => bankAccountsIdFilter.Any(y => y == x.BankAccountId) &&
-                                    x.UserId == userId &&
                                     x.Date >= startDate &&
                                     x.Date <= endDate))
                                     .OrderBy(item => item.Date)

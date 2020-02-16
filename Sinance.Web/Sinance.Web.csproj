@@ -61,6 +61,7 @@
     <Watch Remove="Services\UserIdProvider.cs" />
     <Watch Remove="ViewComponents\BalanceHistoryGraphViewComponent.cs" />
     <Watch Remove="ViewComponents\ExpensesPerCategoryPieChartViewComponent.cs" />
+    <Watch Remove="ViewComponents\VersionNumberViewComponent.cs" />
     <Watch Remove="ViewComponents\YearlyBalanceHistoryGraphViewComponent.cs" />
     <Watch Remove="ViewComponents\YearlyProfitGraphViewComponent.cs" />
   </ItemGroup>

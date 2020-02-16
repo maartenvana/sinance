@@ -12,7 +12,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
-    <title>Finances - Login</title>
+    <title>Sinance - Login</title>
 
     <link href="~/Content/jquery-ui.css" rel="stylesheet">
     <link href="~/Content/bootstrap-theme.css" rel="stylesheet">
@@ -61,6 +61,10 @@
                             </fieldset>
                         }
                     </div>
+                </div>
+
+                <div class="sinance-version text-center">
+                    <span>Version: </span>@await Component.InvokeAsync("VersionNumber")
                 </div>
             </div>
         </div>

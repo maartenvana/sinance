@@ -67,7 +67,9 @@ namespace Sinance.Web
         public void ConfigureContainer(ContainerBuilder builder)
         {
             var appSettings = _configuration.Get<AppSettings>();
+
             builder.RegisterInstance(appSettings);
+            builder.RegisterInstance(_configuration);
 
             builder.RegisterType<HttpContextAccessor>().As<IHttpContextAccessor>();
             builder.RegisterType<AuthenticationService>().As<IAuthenticationService>();

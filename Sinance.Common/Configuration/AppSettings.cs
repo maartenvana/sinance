@@ -5,5 +5,7 @@
         public ConnectionStrings ConnectionStrings { get; set; }
 
         public Database Database { get; set; }
+
+        public string SinanceVersion { get; set; }
     }
 }

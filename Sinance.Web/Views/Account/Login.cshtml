@@ -12,7 +12,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
-    <title>Finances - Login</title>
+    <title>Sinance - Login</title>
 
     <link href="~/Content/jquery-ui.css" rel="stylesheet">
     <link href="~/Content/bootstrap-theme.css" rel="stylesheet">
@@ -28,9 +28,6 @@
     <meta name="description" content="The description of my page" />
 </head>
 <body>
-    <div class="sinance-version pull-left">
-        @await Component.InvokeAsync("VersionNumber")
-    </div>
     @Html.ActionLink("Registreren", "Register", "Account", htmlAttributes: new { @class = "btn btn-sm btn-primary pull-right" })
     <div class="container">
         <div class="row">
@@ -64,6 +61,10 @@
                             </fieldset>
                         }
                     </div>
+                </div>
+
+                <div class="sinance-version text-center">
+                    <span>Version: </span>@await Component.InvokeAsync("VersionNumber")
                 </div>
             </div>
         </div>

@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Sinance.Business.DataSeeding;
-using Sinance.Storage;
-using System;
 using System.Threading.Tasks;
 
 namespace Sinance.Web.Extensions
@@ -21,14 +19,5 @@ namespace Sinance.Web.Extensions
             return appBuilder;
         }
 
-        public static IApplicationBuilder MigrateDatabase(this IApplicationBuilder appBuilder)
-        {
-            var unitOfWorkFunc = appBuilder.ApplicationServices.GetRequiredService<Func<IUnitOfWork>>();
-            using var unitOfWork = unitOfWorkFunc();
-
-            unitOfWork.Context.Migrate();
-
-            return appBuilder;
-        }
     }
 }

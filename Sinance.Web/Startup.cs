@@ -61,9 +61,7 @@ namespace Sinance.Web
                     "default", "{controller=Home}/{action=Index}/{id?}");
             });
 
-            appBuilder
-                .MigrateDatabase()
-                .ApplyDataSeed();
+            appBuilder.ApplyDataSeed();
         }
 
         public void ConfigureContainer(ContainerBuilder builder)

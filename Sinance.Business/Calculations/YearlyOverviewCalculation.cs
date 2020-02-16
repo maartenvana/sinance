@@ -16,10 +16,10 @@ namespace Sinance.Business.Calculations
 {
     public class YearlyOverviewCalculation : IYearlyOverviewCalculation
     {
-        private readonly ITransactionService _transactionService;
-        private readonly Func<IUnitOfWork> _unitOfWork;
         private readonly IBankAccountService _bankAccountService;
         private readonly ICategoryService _categoryService;
+        private readonly ITransactionService _transactionService;
+        private readonly Func<IUnitOfWork> _unitOfWork;
 
         public YearlyOverviewCalculation(Func<IUnitOfWork> unitOfWork,
             ICategoryService categoryService,
@@ -58,13 +58,13 @@ namespace Sinance.Business.Calculations
 
                 result.BalancePerBankAccount.Add(bankAccount, new YearBalance(bankAccountStartBalance, bankAccountEndBalance));
 
-                if(!totalPerBankAccountType.ContainsKey(bankAccount.AccountType))
+                if (!totalPerBankAccountType.ContainsKey(bankAccount.AccountType))
                 {
                     totalPerBankAccountType.Add(bankAccount.AccountType, new YearAmountAndPercentage(
                         start: new AmountAndPercentage(bankAccountStartBalance, bankAccountStartBalance / totalStartBalance * 100),
                         end: new AmountAndPercentage(bankAccountEndBalance, bankAccountEndBalance / totalEndBalance * 100))
                     );
-                } 
+                }
                 else
                 {
                     totalPerBankAccountType[bankAccount.AccountType].Start.Amount += bankAccountStartBalance;

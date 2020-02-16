@@ -86,6 +86,5 @@ namespace Sinance.Web
                 Log.Error(exc, "An error occurred creating the DB.");
             }
         }
-
     }
 }

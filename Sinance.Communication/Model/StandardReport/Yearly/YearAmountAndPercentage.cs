@@ -4,6 +4,12 @@ namespace Sinance.Communication.Model.StandardReport.Yearly
 {
     public class YearAmountAndPercentage
     {
+        public AmountAndPercentage Difference { get; private set; }
+
+        public AmountAndPercentage End { get; private set; }
+
+        public AmountAndPercentage Start { get; private set; }
+
         public YearAmountAndPercentage(AmountAndPercentage start, AmountAndPercentage end)
         {
             Start = start;
@@ -11,10 +17,5 @@ namespace Sinance.Communication.Model.StandardReport.Yearly
 
             Difference = new AmountAndPercentage(End.Amount - Start.Amount, End.Percentage - Start.Percentage);
         }
-
-        public AmountAndPercentage Start { get; private set; }
-        public AmountAndPercentage End { get; private set; }
-
-        public AmountAndPercentage Difference { get; private set; }
     }
 }

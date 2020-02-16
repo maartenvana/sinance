@@ -10,9 +10,8 @@ namespace Sinance.Business.Tests
 {
     public class UnitOfWorkTestBase
     {
-        protected TestUserIdProvider _userIdProvider;
-
         protected readonly AutoMocker _mocker;
+        protected TestUserIdProvider _userIdProvider;
         private readonly DbContextOptions<SinanceContext> _dbContextOptions;
 
         public UnitOfWorkTestBase()

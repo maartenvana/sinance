@@ -12,13 +12,13 @@ namespace Sinance.Business.Services.Transactions
 
         Task DeleteTransactionForCurrentUser(int transactionId);
 
+        Task<List<TransactionModel>> GetBiggestExpensesForYearForCurrentUser(int year, int count, int skip, params int[] excludeCategoryIds);
+
         Task<TransactionModel> GetTransactionByIdForCurrentUser(int transactionId);
 
         Task<List<TransactionModel>> GetTransactionsForBankAccountForCurrentUser(int bankAccountId, int count, int skip);
 
         Task<List<TransactionModel>> GetTransactionsForMonthForCurrentUser(int year, int month);
-
-        Task<List<TransactionModel>> GetBiggestExpensesForYearForCurrentUser(int year, int count, int skip, params int[] excludeCategoryIds);
 
         Task<TransactionModel> OverwriteTransactionCategoriesForCurrentUser(int transactionId, int categoryId);
 

@@ -32,7 +32,7 @@ namespace Sinance.Business.Calculations
                     item.Amount > 0,
                 includeProperties: nameof(TransactionEntity.TransactionCategories));
 
-            var allCategories = await unitOfWork.CategoryRepository.ListAll (
+            var allCategories = await unitOfWork.CategoryRepository.ListAll(
                 includeProperties: new string[]
                 {
                     nameof(CategoryEntity.ParentCategory),

@@ -4,6 +4,13 @@ namespace Sinance.Storage.Migrations
 {
     public partial class StandardImportBanks : Migration
     {
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropColumn(
+                name: "IsStandard",
+                table: "ImportBank");
+        }
+
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<bool>(
@@ -11,13 +18,6 @@ namespace Sinance.Storage.Migrations
                 table: "ImportBank",
                 nullable: false,
                 defaultValue: false);
-        }
-
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropColumn(
-                name: "IsStandard",
-                table: "ImportBank");
         }
     }
 }

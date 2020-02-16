@@ -23,8 +23,8 @@ namespace Sinance.Controllers
         private readonly ICategoryService _categoryService;
         private readonly ICustomReportService _customReportService;
         private readonly IExpenseCalculation _expenseCalculation;
-        private readonly IYearlyOverviewCalculation _yearlyOverviewCalculation;
         private readonly IIncomeCalculation _incomeCalculation;
+        private readonly IYearlyOverviewCalculation _yearlyOverviewCalculation;
 
         public ReportController(
             ICategoryService categoryService,
@@ -59,13 +59,6 @@ namespace Sinance.Controllers
                 AvailableCategories = availableCategories,
                 CustomReport = new CustomReportModel()
             });
-        }
-
-        public async Task<IActionResult> YearOverview(int? year)
-        {
-            var report = await _yearlyOverviewCalculation.CalculateForYear(year.GetValueOrDefault(DateTime.Now.Year));
-
-            return View("YearReport", report);
         }
 
         /// <summary>
@@ -179,6 +172,13 @@ namespace Sinance.Controllers
             }
 
             return RedirectToAction("CustomReport", new { reportId = model.CustomReport.Id });
+        }
+
+        public async Task<IActionResult> YearOverview(int? year)
+        {
+            var report = await _yearlyOverviewCalculation.CalculateForYear(year.GetValueOrDefault(DateTime.Now.Year));
+
+            return View("YearReport", report);
         }
     }
 }

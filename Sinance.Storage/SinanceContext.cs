@@ -41,14 +41,14 @@ namespace Sinance.Storage
             _userIdProvider = userIdProvider;
         }
 
-        public void OverwriteUserIdProvider(IUserIdProvider userIdProvider)
-        {
-            _userIdProvider = userIdProvider;
-        }
-
         public void Migrate()
         {
             Database.Migrate();
+        }
+
+        public void OverwriteUserIdProvider(IUserIdProvider userIdProvider)
+        {
+            _userIdProvider = userIdProvider;
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

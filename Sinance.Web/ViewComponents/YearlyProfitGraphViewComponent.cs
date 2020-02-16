@@ -20,8 +20,7 @@ namespace Sinance.Web.ViewComponents
 
     public class YearlyProfitGraphViewComponentModel
     {
-        public int InitialYear { get; set; }
-
         public bool CanChangeYear { get; set; }
+        public int InitialYear { get; set; }
     }
 }

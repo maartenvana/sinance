@@ -14,8 +14,8 @@ namespace Sinance.Business.Services.Transactions
     public class TransactionService : ITransactionService
     {
         private readonly IBankAccountCalculationService _bankAccountCalculationService;
-        private readonly IUserIdProvider _userIdProvider;
         private readonly Func<IUnitOfWork> _unitOfWork;
+        private readonly IUserIdProvider _userIdProvider;
 
         public TransactionService(
             Func<IUnitOfWork> unitOfWork,
@@ -32,7 +32,7 @@ namespace Sinance.Business.Services.Transactions
             using var unitOfWork = _unitOfWork();
 
             var transaction = await unitOfWork.TransactionRepository.FindSingleTracked(
-                item => item.Id == transactionId, 
+                item => item.Id == transactionId,
                 includeProperties: nameof(TransactionEntity.TransactionCategories));
 
             if (transaction == null)
@@ -97,6 +97,26 @@ namespace Sinance.Business.Services.Transactions
             await unitOfWork.SaveAsync();
         }
 
+        public async Task<List<TransactionModel>> GetBiggestExpensesForYearForCurrentUser(int year, int count, int skip, params int[] excludeCategoryIds)
+        {
+            using var unitOfWork = _unitOfWork();
+
+            excludeCategoryIds ??= new int[] { };
+
+            var transactions = await unitOfWork.TransactionRepository.FindTopAscending(findQuery: x =>
+                        x.TransactionCategories.All(x => !excludeCategoryIds.Any(y => y == x.CategoryId)) &&
+                        x.Date.Year == year,
+                        orderByAscending: x => x.Amount,
+                        count: count,
+                        skip: skip,
+                        includeProperties: new string[] {
+                            nameof(TransactionEntity.TransactionCategories),
+                            $"{nameof(TransactionEntity.TransactionCategories)}.{nameof(TransactionCategoryEntity.Category)}"
+                            });
+
+            return transactions.ToDto().ToList();
+        }
+
         public async Task<TransactionModel> GetTransactionByIdForCurrentUser(int transactionId)
         {
             using var unitOfWork = _unitOfWork();
@@ -124,27 +144,6 @@ namespace Sinance.Business.Services.Transactions
                                         nameof(TransactionEntity.TransactionCategories),
                                         $"{nameof(TransactionEntity.TransactionCategories)}.{nameof(TransactionCategoryEntity.Category)}"
                                     });
-
-            return transactions.ToDto().ToList();
-        }
-
-
-        public async Task<List<TransactionModel>> GetBiggestExpensesForYearForCurrentUser(int year, int count, int skip, params int[] excludeCategoryIds)
-        {
-            using var unitOfWork = _unitOfWork();
-
-            excludeCategoryIds ??= new int[] { };
-
-            var transactions = await unitOfWork.TransactionRepository.FindTopAscending(findQuery: x =>
-                        x.TransactionCategories.All(x => !excludeCategoryIds.Any(y => y == x.CategoryId)) &&
-                        x.Date.Year == year,
-                        orderByAscending: x => x.Amount,
-                        count: count,
-                        skip: skip,
-                        includeProperties: new string[] {
-                            nameof(TransactionEntity.TransactionCategories),
-                            $"{nameof(TransactionEntity.TransactionCategories)}.{nameof(TransactionCategoryEntity.Category)}"
-                            });
 
             return transactions.ToDto().ToList();
         }

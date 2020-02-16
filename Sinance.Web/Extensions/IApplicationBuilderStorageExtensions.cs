@@ -18,6 +18,5 @@ namespace Sinance.Web.Extensions
 
             return appBuilder;
         }
-
     }
 }

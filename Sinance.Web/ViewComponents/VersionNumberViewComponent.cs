@@ -23,7 +23,7 @@ namespace Sinance.Web.ViewComponents
             var sourceBranch = _configurationRoot["SOURCE_BRANCH"];
 
             if (!string.IsNullOrWhiteSpace(sourceBranch) &&
-                sourceBranch != "master") 
+                sourceBranch != "master")
             {
                 version += $"-{sourceBranch}";
             }

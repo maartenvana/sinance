@@ -3,6 +3,12 @@ using System;
 
 namespace Sinance.Web.ViewComponents
 {
+    public class ExpensesPerCategoryPieChartModel
+    {
+        public DateTime EndDate { get; set; }
+        public DateTime StartDate { get; set; }
+    }
+
     public class ExpensesPerCategoryPieChartViewComponent : ViewComponent
     {
         public ExpensesPerCategoryPieChartViewComponent()
@@ -17,12 +23,5 @@ namespace Sinance.Web.ViewComponents
                 EndDate = endDate
             });
         }
-    }
-
-    public class ExpensesPerCategoryPieChartModel
-    {
-        public DateTime StartDate { get; set; }
-
-        public DateTime EndDate { get; set; }
     }
 }

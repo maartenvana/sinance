@@ -12,6 +12,7 @@ namespace Sinance.Storage
 
             return new SinanceContext(optionsBuilder.Options, new DesignTimeDbUserIdProvider());
         }
+
         private class DesignTimeDbUserIdProvider : IUserIdProvider
         {
             public int GetCurrentUserId()
@@ -20,6 +21,4 @@ namespace Sinance.Storage
             }
         }
     }
-
-    
 }

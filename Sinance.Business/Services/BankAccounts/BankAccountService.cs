@@ -12,9 +12,9 @@ namespace Sinance.Business.Services.BankAccounts
 {
     public class BankAccountService : IBankAccountService
     {
-        private readonly IUserIdProvider _userIdProvider;
         private readonly IBankAccountCalculationService _bankAccountCalculationService;
         private readonly Func<IUnitOfWork> _unitOfWork;
+        private readonly IUserIdProvider _userIdProvider;
 
         public BankAccountService(
             Func<IUnitOfWork> unitOfWork,

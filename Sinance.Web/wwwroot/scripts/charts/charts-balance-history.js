@@ -1,6 +1,7 @@
-﻿function CreateBalanceHistoryGraph(elementId, data) {
+﻿function CreateBalanceHistoryGraph(elementId, series) {
     $(elementId).highcharts({
         chart: {
+            type: "area",
             zoomType: "x"
         },
         title: {
@@ -21,35 +22,32 @@
             enabled: false
         },
         tooltip: {
-            formatter: ChartCurrencyFormatter
+            shared: true,
+            formatter: function () {
+                var tooltipContent = new Date(this.x).toLocaleDateString() + "<br>";
+
+                for (var i = 0; i < this.points.length; i++) {
+                    tooltipContent += this.points[i].series.name + " <b>€ " + Highcharts.numberFormat(this.points[i].y, 2) + "</b><br>";
+                }
+
+                if (this.points.length > 1) {
+                    tooltipContent += "Total <b>€ " + Highcharts.numberFormat(this.points[0].total, 2) + "</b>";
+                }
+
+                return tooltipContent;
+            },
         },
         plotOptions: {
             area: {
-                fillColor: {
-                    linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-                    stops: [
-                        [0, Highcharts.getOptions().colors[0]],
-                        [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get("rgba")]
-                    ]
-                },
-                marker: {
-                    radius: 2
-                },
+                stacking: 'normal',
+                lineColor: '#666666',
                 lineWidth: 1,
-                states: {
-                    hover: {
-                        lineWidth: 1
-                    }
-                },
-                threshold: null
+                marker: {
+                    lineWidth: 1,
+                    lineColor: '#666666'
+                }
             }
         },
-        series: [
-            {
-                type: "area",
-                name: "euro",
-                data: data
-            }
-        ]
+        series
     });
 }

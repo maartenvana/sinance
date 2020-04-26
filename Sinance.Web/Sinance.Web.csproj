@@ -144,8 +144,6 @@
     <None Include="wwwroot\fonts\glyphicons-halflings-regular.woff2" />
     <None Include="wwwroot\scripts\colpick.js" />
     <None Include="wwwroot\scripts\generalHelper.js" />
-    <None Include="wwwroot\scripts\highcharts-3d.js" />
-    <None Include="wwwroot\scripts\highcharts.min.js" />
     <None Include="wwwroot\scripts\sb-admin-2.js" />
     <None Include="wwwroot\scripts\_references.js" />
   </ItemGroup>

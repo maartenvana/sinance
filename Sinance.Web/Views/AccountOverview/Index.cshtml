@@ -12,67 +12,6 @@
         var action = "";
 
         $(function() {
-            $.ajax(
-            {
-                type: "POST",
-                url: "@Url.Action("BalanceHistory", "Graph")",
-                cache: true,
-                data: { bankAccountIds: [@Model.Account.Id], months: 12 },
-                success: function(response) {
-                    $("#accountGraph").highcharts({
-                        chart: {
-                            zoomType: "x"
-                        },
-                        title: {
-                            text: ""
-                        },
-                        xAxis: {
-                            type: "datetime"
-                        },
-                        yAxis: {
-                            title: {
-                                text: ""
-                            }
-                        },
-                        credits: {
-                            enabled: false
-                        },
-                        legend: {
-                            enabled: false
-                        },
-                        plotOptions: {
-                            area: {
-                                fillColor: {
-                                    linearGradient: { x1: 0, y1: 0, x2: 0, y2: 1 },
-                                    stops: [
-                                        [0, Highcharts.getOptions().colors[0]],
-                                        [1, Highcharts.Color(Highcharts.getOptions().colors[0]).setOpacity(0).get("rgba")]
-                                    ]
-                                },
-                                marker: {
-                                    radius: 2
-                                },
-                                lineWidth: 1,
-                                states: {
-                                    hover: {
-                                        lineWidth: 1
-                                    }
-                                },
-                                threshold: null
-                            }
-                        },
-                        tooltip: {
-                            formatter: ChartCurrencyFormatter
-                        },
-                        series: [{
-                                type: "area",
-                                name: "euro",
-                                data: response.objectData
-                        }]
-                    });
-                }
-            });
-
             $("body").popover({
                 content: function() {
                     return $("#CategoryList").html();
@@ -175,7 +114,7 @@
         Historie
     </div>
     <div class="panel-body">
-        <div id="accountGraph" style="height:200px;"></div>
+        @await Component.InvokeAsync("BalanceHistoryGraph", new { months = 12, grouped = false, filter = new int[] { Model.Account.Id } })
     </div>
 </div>
 

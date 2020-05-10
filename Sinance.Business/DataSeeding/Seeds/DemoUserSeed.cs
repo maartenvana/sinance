@@ -113,7 +113,6 @@ namespace Sinance.Business.DataSeeding.Seeds
             var bankAccount = new BankAccountEntity
             {
                 AccountType = bankAccountType,
-                IncludeInProfitLossGraph = true,
                 StartBalance = 3000,
                 Name = name,
                 User = user

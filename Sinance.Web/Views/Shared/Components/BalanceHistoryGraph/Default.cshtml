@@ -1,15 +1,17 @@
-﻿@model int
+﻿@using Sinance.Communication.Model.Graph
+@model List<BalanceHistoryRecord>
+
+@{ 
+    var seriesData = Newtonsoft.Json.JsonConvert.SerializeObject(Model.Select(x => new
+    {
+        name = x.AccountType.ToString(),
+        data = x.BalanceHistory
+    }));
+}
 
 <script type="text/javascript">
     $(function () {
-        $.ajax({
-            type: "POST",
-            url: "@Url.Action("BalanceHistory", "Graph")",
-            data: { months: @Model },
-            success: function (response) {
-                CreateBalanceHistoryGraph("#historyGraph", response.objectData);
-            }
-        });
+        CreateBalanceHistoryGraph("#historyGraph", @Html.Raw(seriesData));
     });
 </script>
 <script src="/scripts/charts/charts-balance-history.js"></script>

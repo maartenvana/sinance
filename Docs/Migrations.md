@@ -1,9 +1,11 @@
 # Adding a migration
 ```
-dotnet ef migrations add <migrationname>
+cd Sinance.Storage
+dotnet ef --startup-project ../Sinance.Web migrations add <migrationname> -c SinanceContext
 ```
 
 # Removing the last migration
 ```
+cd Sinance.Storage
 dotnet ef migrations remove
 ```

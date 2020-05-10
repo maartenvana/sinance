@@ -1,16 +1,34 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Sinance.Business.Calculations;
+using Sinance.Communication.Model.Graph;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Sinance.Web.ViewComponents
 {
     public class YearlyBalanceHistoryGraphViewComponent : ViewComponent
     {
-        public YearlyBalanceHistoryGraphViewComponent()
+        private readonly IBalanceHistoryCalculation balanceHistoryCalculation;
+
+        public YearlyBalanceHistoryGraphViewComponent(IBalanceHistoryCalculation balanceHistoryCalculation)
         {
+            this.balanceHistoryCalculation = balanceHistoryCalculation;
         }
 
-        public IViewComponentResult Invoke(int year)
+        public async Task<IViewComponentResult> InvokeAsync(int year, bool grouped, int[] filter)
         {
-            return View(year);
+            List<BalanceHistoryRecord> balanceHistoryRecords;
+
+            if (grouped)
+            {
+                balanceHistoryRecords = await balanceHistoryCalculation.BalanceHistoryForYearGroupedByType(year, filter);
+            }
+            else
+            {
+                balanceHistoryRecords = await balanceHistoryCalculation.BalanceHistoryForYear(year, filter);
+            }
+
+            return View(balanceHistoryRecords);
         }
     }
 }

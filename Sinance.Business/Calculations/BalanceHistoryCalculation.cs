@@ -1,4 +1,5 @@
 ﻿using Sinance.Business.Services.BankAccounts;
+using Sinance.Communication.Model.Graph;
 using Sinance.Storage;
 using System;
 using System.Collections.Generic;
@@ -20,20 +21,72 @@ namespace Sinance.Business.Calculations
             _bankAccountService = bankAccountService;
         }
 
-        public async Task<List<decimal[]>> BalanceHistoryForYear(int year, IEnumerable<int> includeBankAccounts)
+        public async Task<List<BalanceHistoryRecord>> BalanceHistoryForYear(int year, IEnumerable<int> includeBankAccounts)
         {
             var startDate = new DateTime(year, 1, 1);
             var endDate = new DateTime(year, 12, 31, 23, 59, 59, 999);
 
-            return await CalculateBalanceHistory(startDate, endDate, includeBankAccounts);
+            return new List<BalanceHistoryRecord>
+            {
+                new BalanceHistoryRecord
+                {
+                    BalanceHistory = await CalculateBalanceHistory(startDate, endDate, includeBankAccounts)
+                }
+            };
         }
 
-        public async Task<List<decimal[]>> BalanceHistoryFromMonthsInPast(int monthsInPast, IEnumerable<int> includeBankAccounts)
+        public async Task<List<BalanceHistoryRecord>> BalanceHistoryForYearGroupedByType(int year, IEnumerable<int> includeBankAccounts)
+        {
+            var startDate = new DateTime(year, 1, 1);
+            var endDate = new DateTime(year, 12, 31, 23, 59, 59, 999);
+
+            return await GetBalanceHistoryRecordsGroupedByType(includeBankAccounts, startDate, endDate);
+        }
+
+        public async Task<List<BalanceHistoryRecord>> BalanceHistoryFromMonthsInPastGroupedByType(int monthsInPast, IEnumerable<int> includeBankAccounts)
         {
             var startDate = DateTime.Now.AddMonths(monthsInPast * -1);
             var endDate = DateTime.Now;
 
-            return await CalculateBalanceHistory(startDate, endDate, includeBankAccounts);
+            return await GetBalanceHistoryRecordsGroupedByType(includeBankAccounts, startDate, endDate);
+        }
+
+        private async Task<List<BalanceHistoryRecord>> GetBalanceHistoryRecordsGroupedByType(IEnumerable<int> includeBankAccounts, DateTime startDate, DateTime endDate)
+        {
+            var userBankAccounts = await _bankAccountService.GetActiveBankAccountsForCurrentUser();
+
+            // This might seem backwards, but this way we validate if the bankaccounts given are our own
+            var bankAccounts = includeBankAccounts.Any() ? userBankAccounts.Where(item => includeBankAccounts.Any(y => y == item.Id)).ToList() : userBankAccounts;
+
+            var groupedBankAccounts = bankAccounts.GroupBy(x => x.AccountType);
+
+            var groupedBalanceHistoryRecords = new List<BalanceHistoryRecord>();
+            foreach (var bankAccountGroup in groupedBankAccounts)
+            {
+                var balanceHistory = await CalculateBalanceHistory(startDate, endDate, bankAccountGroup.Select(x => x.Id));
+
+                groupedBalanceHistoryRecords.Add(new BalanceHistoryRecord
+                {
+                    AccountType = bankAccountGroup.Key,
+                    BalanceHistory = balanceHistory,
+                });
+            }
+
+            return groupedBalanceHistoryRecords;
+        }
+
+        public async Task<List<BalanceHistoryRecord>> BalanceHistoryFromMonthsInPast(int monthsInPast, IEnumerable<int> includeBankAccounts)
+        {
+            var startDate = DateTime.Now.AddMonths(monthsInPast * -1);
+            var endDate = DateTime.Now;
+
+            return new List<BalanceHistoryRecord>
+            {
+                new BalanceHistoryRecord 
+                {
+                    BalanceHistory = await CalculateBalanceHistory(startDate, endDate, includeBankAccounts),
+                }
+            };
         }
 
         private async Task<List<decimal[]>> CalculateBalanceHistory(DateTime startDate, DateTime endDate, IEnumerable<int> bankAccountIds)
@@ -65,18 +118,36 @@ namespace Sinance.Business.Calculations
             // Group by the date part, discard the time
             var transactionsPerDate = transactions.GroupBy(item => item.Date.Date).ToList();
 
-            // Add the beginning of the year transaction if there were previous transactions
-            if (accountBalance > bankAccounts.Sum(item => item.StartBalance) && transactionsPerDate.First().Key.Month != 1 &&
-                transactionsPerDate.First().Key.Day != 1)
+            var firstDay = startDate.Date;
+            var currentGroupingIndex = 0;
+            for (int dayIndex = 0; dayIndex <= totalDays; dayIndex++)
             {
-                sumPerDates.Add(new[]
+                var currentDay = firstDay.AddDays(dayIndex);
+
+                if (currentGroupingIndex < transactionsPerDate.Count &&
+                    transactionsPerDate[currentGroupingIndex].Key == currentDay)
                 {
-                    Convert.ToDecimal((startDate.Date - DateTimeOffset.UnixEpoch).TotalMilliseconds),
-                    accountBalance
-                });
+                    accountBalance = transactionsPerDate[currentGroupingIndex].Sum(item => item.Amount) + accountBalance;
+
+                    sumPerDates.Add(new[]
+                    {
+                        Convert.ToDecimal(((currentDay - DateTimeOffset.UnixEpoch).TotalMilliseconds)),
+                        accountBalance
+                    });
+
+                    currentGroupingIndex++;
+                }
+                else
+                {
+                    sumPerDates.Add(new[]
+                    {
+                        Convert.ToDecimal(((currentDay - DateTimeOffset.UnixEpoch).TotalMilliseconds)),
+                        accountBalance
+                    });
+                }
             }
 
-            foreach (var groupedTransactions in transactionsPerDate)
+            /*foreach (var groupedTransactions in transactionsPerDate)
             {
                 accountBalance = groupedTransactions.Sum(item => item.Amount) + accountBalance;
 
@@ -85,7 +156,7 @@ namespace Sinance.Business.Calculations
                     Convert.ToDecimal((groupedTransactions.Key - DateTimeOffset.UnixEpoch).TotalMilliseconds),
                     accountBalance
                 });
-            }
+            }*/
 
             return sumPerDates;
         }

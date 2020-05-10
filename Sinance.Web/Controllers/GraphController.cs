@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Sinance.Business.Calculations;
 using Sinance.Business.Services;
 using Sinance.Communication;
+using Sinance.Communication.Model.BankAccount;
 using Sinance.Web;
 using Sinance.Web.Helper;
 using Sinance.Web.Model;
@@ -159,6 +160,42 @@ namespace Sinance.Controllers
                 });
             }
         }
+
+
+        /// <summary>
+        /// Calculates the profit per month for the given year
+        /// </summary>
+        /// <param name="year">Number of the year to calculate for</param>
+        /// <returns>Data for display in a graph</returns>
+        [HttpPost]
+        public async Task<IActionResult> ProfitPerMonthForYearGrouped(int year)
+        {
+            var profitPerMonth = await _profitLossCalculation.CalculateProfitLosstPerMonthForYearGrouped(year);
+
+            var series = profitPerMonth.Select(x => new 
+            {
+                name = Enum.GetName(typeof(BankAccountType), x.AccountType),
+                data = x.ProfitPerMonth.AsEnumerable(),
+                type = "column"
+            }).ToList();
+
+            series.Add(new
+            {
+                name = "Total",
+                data = profitPerMonth.SelectMany(x => x.ProfitPerMonth)
+                                        .Select((v, i) => new { Value = v, Index = i % profitPerMonth.First().ProfitPerMonth.Count})
+                                        .GroupBy(x => x.Index)
+                                        .Select(y => y.Sum(z => z.Value)),
+                type = "line"
+            });
+
+            return Json(new SinanceJsonResult
+            {
+                Success = true,
+                ObjectData = series
+            });
+        }
+        
 
         /// <summary>
         /// Calculates the profit per month for the given year

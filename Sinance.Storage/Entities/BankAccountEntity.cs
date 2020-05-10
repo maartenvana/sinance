@@ -26,11 +26,6 @@ namespace Sinance.Storage.Entities
         public bool Disabled { get; set; }
 
         /// <summary>
-        /// If the account should be included in profit/loss graphs
-        /// </summary>
-        public bool IncludeInProfitLossGraph { get; set; }
-
-        /// <summary>
         /// Name
         /// </summary>
         [Required]

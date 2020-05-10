@@ -94,7 +94,7 @@
                 @await Component.InvokeAsync("YearlyProfitGraph", new { year = DateTime.Now.Year, canChangeYear = true })
             </div>
             <div class="col-lg-12">
-                @await Component.InvokeAsync("BalanceHistoryGraph", new { months = 12 })
+                @await Component.InvokeAsync("BalanceHistoryGraph", new { months = 12, grouped = true, filter = new int[] { } })
             </div>
         </div>
     </div>

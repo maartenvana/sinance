@@ -12,7 +12,6 @@ namespace Sinance.Business.Extensions
                 AccountType = bankAccountEntity.AccountType,
                 CurrentBalance = bankAccountEntity.CurrentBalance,
                 Disabled = bankAccountEntity.Disabled,
-                IncludeInProfitLossGraph = bankAccountEntity.IncludeInProfitLossGraph,
                 StartBalance = bankAccountEntity.StartBalance,
                 Name = bankAccountEntity.Name,
                 Id = bankAccountEntity.Id
@@ -27,7 +26,6 @@ namespace Sinance.Business.Extensions
                 AccountType = model.AccountType,
                 CurrentBalance = model.StartBalance,
                 Disabled = model.Disabled,
-                IncludeInProfitLossGraph = model.IncludeInProfitLossGraph,
                 StartBalance = model.StartBalance,
                 Name = model.Name,
                 UserId = userId
@@ -37,7 +35,6 @@ namespace Sinance.Business.Extensions
         public static BankAccountEntity UpdateFromModel(this BankAccountEntity bankAccount, BankAccountModel model)
         {
             bankAccount.Name = model.Name;
-            bankAccount.IncludeInProfitLossGraph = model.IncludeInProfitLossGraph;
             bankAccount.StartBalance = model.StartBalance;
             bankAccount.AccountType = model.AccountType;
             bankAccount.Disabled = model.Disabled;

@@ -50,10 +50,6 @@
                     @Html.LabelFor(item => item.Disabled):
                     @Html.CheckBoxFor(item => item.Disabled, new { @class = "form-control" })
                     @Html.ValidationMessageFor(item => item.Disabled)
-                    <br />
-                    @Html.LabelFor(item => item.IncludeInProfitLossGraph):
-                    @Html.CheckBoxFor(item => item.IncludeInProfitLossGraph, new { @class = "form-control" })
-                    @Html.ValidationMessageFor(item => item.IncludeInProfitLossGraph)
                 </div>
                 <div class="panel-footer">
                     <button type="submit" class="btn btn-success" value="Save">Opslaan</button>

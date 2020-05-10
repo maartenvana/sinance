@@ -36,7 +36,6 @@ namespace Sinance.Business.Tests.Services
             {
                 AccountType = BankAccountType.Checking,
                 Disabled = true,
-                IncludeInProfitLossGraph = true,
                 Name = "BankAccountName",
                 StartBalance = 1000
             };
@@ -66,7 +65,6 @@ namespace Sinance.Business.Tests.Services
             {
                 AccountType = BankAccountType.Checking,
                 Disabled = true,
-                IncludeInProfitLossGraph = true,
                 Name = "BankAccountName",
                 StartBalance = startBalance
             };
@@ -91,7 +89,6 @@ namespace Sinance.Business.Tests.Services
             {
                 AccountType = BankAccountType.Checking,
                 Disabled = true,
-                IncludeInProfitLossGraph = true,
                 Name = "BankAccountName",
                 StartBalance = 1000
             };
@@ -107,7 +104,6 @@ namespace Sinance.Business.Tests.Services
                 x.AccountType == bankAccountModel.AccountType &&
                 x.CurrentBalance == bankAccountModel.StartBalance &&
                 x.Disabled == bankAccountModel.Disabled &&
-                x.IncludeInProfitLossGraph == bankAccountModel.IncludeInProfitLossGraph &&
                 x.Name == bankAccountModel.Name &&
                 x.StartBalance == bankAccountModel.StartBalance);
         }
@@ -187,7 +183,6 @@ namespace Sinance.Business.Tests.Services
                 CurrentBalance = 100,
                 AccountType = BankAccountType.Checking,
                 Disabled = false,
-                IncludeInProfitLossGraph = false,
                 UserId = _defaultUserId
             };
 
@@ -197,7 +192,6 @@ namespace Sinance.Business.Tests.Services
                 CurrentBalance = 100,
                 AccountType = BankAccountType.Checking,
                 Disabled = true,
-                IncludeInProfitLossGraph = false,
                 UserId = _defaultUserId
             };
 
@@ -208,7 +202,6 @@ namespace Sinance.Business.Tests.Services
                 StartBalance = 200,
                 AccountType = BankAccountType.Savings,
                 Disabled = false,
-                IncludeInProfitLossGraph = true,
                 UserId = _defaultUserId
             };
 
@@ -228,7 +221,6 @@ namespace Sinance.Business.Tests.Services
                 x.CurrentBalance == checkingAccount.CurrentBalance &&
                 x.Disabled == checkingAccount.Disabled &&
                 x.Id == checkingAccount.Id &&
-                x.IncludeInProfitLossGraph == checkingAccount.IncludeInProfitLossGraph &&
                 x.Name == checkingAccount.Name &&
                 x.StartBalance == checkingAccount.StartBalance);
 
@@ -237,7 +229,6 @@ namespace Sinance.Business.Tests.Services
                 x.CurrentBalance == savingsAccount.CurrentBalance &&
                 x.Disabled == savingsAccount.Disabled &&
                 x.Id == savingsAccount.Id &&
-                x.IncludeInProfitLossGraph == savingsAccount.IncludeInProfitLossGraph &&
                 x.Name == savingsAccount.Name &&
                 x.StartBalance == savingsAccount.StartBalance);
         }
@@ -266,7 +257,6 @@ namespace Sinance.Business.Tests.Services
                 CurrentBalance = 100,
                 AccountType = BankAccountType.Checking,
                 Disabled = false,
-                IncludeInProfitLossGraph = false,
                 UserId = _defaultUserId
             };
 
@@ -276,7 +266,6 @@ namespace Sinance.Business.Tests.Services
                 CurrentBalance = 100,
                 AccountType = BankAccountType.Checking,
                 Disabled = true,
-                IncludeInProfitLossGraph = false,
                 UserId = _defaultUserId
             };
 
@@ -296,7 +285,6 @@ namespace Sinance.Business.Tests.Services
                 x.CurrentBalance == checkingAccount.CurrentBalance &&
                 x.Disabled == checkingAccount.Disabled &&
                 x.Id == checkingAccount.Id &&
-                x.IncludeInProfitLossGraph == checkingAccount.IncludeInProfitLossGraph &&
                 x.Name == checkingAccount.Name &&
                 x.StartBalance == checkingAccount.StartBalance);
 
@@ -305,7 +293,6 @@ namespace Sinance.Business.Tests.Services
                 x.CurrentBalance == disabledCheckingAccount.CurrentBalance &&
                 x.Disabled == disabledCheckingAccount.Disabled &&
                 x.Id == disabledCheckingAccount.Id &&
-                x.IncludeInProfitLossGraph == disabledCheckingAccount.IncludeInProfitLossGraph &&
                 x.Name == disabledCheckingAccount.Name &&
                 x.StartBalance == disabledCheckingAccount.StartBalance);
         }
@@ -336,7 +323,6 @@ namespace Sinance.Business.Tests.Services
                 AccountType = BankAccountType.Checking,
                 Id = bankAccountId,
                 Disabled = true,
-                IncludeInProfitLossGraph = true,
                 CurrentBalance = 100,
                 StartBalance = 100,
                 Name = "BankAccount",
@@ -358,7 +344,6 @@ namespace Sinance.Business.Tests.Services
                 x.CurrentBalance == bankAccountEntity.StartBalance &&
                 x.Disabled == bankAccountEntity.Disabled &&
                 x.Id == bankAccountEntity.Id &&
-                x.IncludeInProfitLossGraph == bankAccountEntity.IncludeInProfitLossGraph &&
                 x.Name == bankAccountEntity.Name &&
                 x.StartBalance == bankAccountEntity.StartBalance);
         }
@@ -371,7 +356,6 @@ namespace Sinance.Business.Tests.Services
             {
                 AccountType = BankAccountType.Checking,
                 Disabled = true,
-                IncludeInProfitLossGraph = true,
                 CurrentBalance = 100,
                 StartBalance = 100,
                 Name = "BankAccount",
@@ -398,7 +382,6 @@ namespace Sinance.Business.Tests.Services
                 Id = 1,
                 AccountType = BankAccountType.Checking,
                 Disabled = true,
-                IncludeInProfitLossGraph = true,
                 Name = "BankAccountName",
                 StartBalance = 100
             };
@@ -413,13 +396,13 @@ namespace Sinance.Business.Tests.Services
         }
 
         [Theory]
-        [InlineData("ChangeAll", BankAccountType.Savings, 200, true, true)]
-        [InlineData("ChangeAccountType", BankAccountType.Savings, 100, false, false)]
-        [InlineData("ChangeStartBalance", BankAccountType.Checking, 1000, false, false)]
-        [InlineData("ChangeDisabled", BankAccountType.Checking, 100, true, false)]
-        [InlineData("ChangeIncludedInProfitLossGraph", BankAccountType.Checking, 100, false, true)]
+        [InlineData("ChangeAll", BankAccountType.Savings, 200, true)]
+        [InlineData("ChangeAccountType", BankAccountType.Savings, 100, false)]
+        [InlineData("ChangeStartBalance", BankAccountType.Checking, 1000, false)]
+        [InlineData("ChangeDisabled", BankAccountType.Checking, 100, true)]
+        [InlineData("ChangeIncludedInProfitLossGraph", BankAccountType.Checking, 100, false)]
         public async Task UpdateBankAccountForCurrentUser_AccountExists_UpdatesBankAccount(
-            string name, BankAccountType bankAccountType, decimal startBalance, bool disabled, bool includedInProfitLossGraph)
+            string name, BankAccountType bankAccountType, decimal startBalance, bool disabled)
         {
             // Arrange
             var bankAccountModel = new BankAccountModel
@@ -427,7 +410,6 @@ namespace Sinance.Business.Tests.Services
                 Id = 1,
                 AccountType = bankAccountType,
                 Disabled = disabled,
-                IncludeInProfitLossGraph = includedInProfitLossGraph,
                 Name = name,
                 StartBalance = startBalance
             };
@@ -437,7 +419,6 @@ namespace Sinance.Business.Tests.Services
                 AccountType = BankAccountType.Checking,
                 Disabled = false,
                 CurrentBalance = 100,
-                IncludeInProfitLossGraph = true,
                 StartBalance = 100,
                 Name = "BankAccountName",
                 UserId = _defaultUserId
@@ -464,7 +445,6 @@ namespace Sinance.Business.Tests.Services
                 x.AccountType == bankAccountModel.AccountType &&
                 x.CurrentBalance == bankAccountModel.StartBalance &&
                 x.Disabled == bankAccountModel.Disabled &&
-                x.IncludeInProfitLossGraph == bankAccountModel.IncludeInProfitLossGraph &&
                 x.Name == bankAccountModel.Name &&
                 x.StartBalance == bankAccountModel.StartBalance);
 
@@ -481,7 +461,6 @@ namespace Sinance.Business.Tests.Services
                 Id = 1,
                 AccountType = BankAccountType.Checking,
                 Disabled = true,
-                IncludeInProfitLossGraph = true,
                 Name = "BankAccountName",
                 StartBalance = 100
             };
@@ -519,7 +498,6 @@ namespace Sinance.Business.Tests.Services
                 AccountType = BankAccountType.Checking,
                 Disabled = false,
                 CurrentBalance = 100,
-                IncludeInProfitLossGraph = true,
                 StartBalance = 100,
                 Name = "BankAccountName",
                 UserId = _defaultUserId + 1

@@ -47,7 +47,7 @@ namespace Sinance.Controllers
             var internalCashFlowCategory = allCategories.Single(x => x.Name == StandardCategoryNames.InternalCashFlowName);
 
             // No need to sort this list, we loop through it by month numbers
-            var totalProfitLossLastMonth = transactions.Where(x => bankAccounts.Single(y => y.Id == x.BankAccountId).IncludeInProfitLossGraph).Sum(x => x.Amount);
+            var totalProfitLossLastMonth = transactions.Sum(x => x.Amount);
 
             var totalIncomeLastMonth = transactions.Where(x =>
                         (!x.Categories.Any() || x.Categories.Any(x => x.CategoryId != internalCashFlowCategory.Id)) && // Cashflow

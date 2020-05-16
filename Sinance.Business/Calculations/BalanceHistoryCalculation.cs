@@ -67,7 +67,7 @@ namespace Sinance.Business.Calculations
 
                 groupedBalanceHistoryRecords.Add(new BalanceHistoryRecord
                 {
-                    AccountType = bankAccountGroup.Key,
+                    AccountTypeGroup = bankAccountGroup.Key,
                     BalanceHistory = balanceHistory,
                 });
             }

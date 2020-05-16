@@ -1,4 +1,4 @@
-﻿function CreateProfitPerYearGraph(elementId, series) {
+﻿function CreateProfitHistoryPerMonthGraph(elementId, series) {
     $(elementId).highcharts({
         chart: {
             type: "column",
@@ -14,7 +14,7 @@
             }
         },
         xAxis: {
-            categories: ["Jan", "Feb", "Maa", "Apr", "Mei", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dec"]
+            type: "datetime"
         },
         credits: {
             enabled: false

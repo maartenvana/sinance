@@ -9,6 +9,6 @@ namespace Sinance.Communication.Model.Graph
     {
         public List<decimal[]> BalanceHistory { get; set; }
         
-        public BankAccountType? AccountType { get; set; }
+        public BankAccountType? AccountTypeGroup { get; set; }
     }
 }

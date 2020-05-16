@@ -30,7 +30,7 @@ namespace Sinance.Business
             // Calculations
             builder.RegisterType<BalanceHistoryCalculation>().As<IBalanceHistoryCalculation>();
             builder.RegisterType<ExpensePercentageCalculation>().As<IExpensePercentageCalculation>();
-            builder.RegisterType<ProfitLossCalculation>().As<IProfitLossCalculation>();
+            builder.RegisterType<ProfitLossCalculation>().As<IProfitCalculation>();
             builder.RegisterType<ExpenseCalculation>().As<IExpenseCalculation>();
             builder.RegisterType<IncomeCalculation>().As<IIncomeCalculation>();
             builder.RegisterType<YearlyOverviewCalculation>().As<IYearlyOverviewCalculation>();

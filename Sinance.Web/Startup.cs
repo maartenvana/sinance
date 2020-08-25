@@ -94,6 +94,7 @@ namespace Sinance.Web
                 });
 
             var mvc = services.AddControllersWithViews();
+
             services.AddRazorPages();
 
             if (_environment.EnvironmentName == Environments.Development)

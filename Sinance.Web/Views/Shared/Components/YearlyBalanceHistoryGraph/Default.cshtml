@@ -4,7 +4,7 @@
 @{
     var seriesData = Newtonsoft.Json.JsonConvert.SerializeObject(Model.Select(x => new
     {
-        name = x.AccountType.ToString(),
+        name = x.AccountTypeGroup.ToString(),
         data = x.BalanceHistory
     }));
 }

@@ -1,0 +1,17 @@
+﻿@model List<GraphSeriesEntry<decimal[]>>
+
+<script type="text/javascript">
+    $(function () {
+        CreateProfitHistoryPerMonthGraph("#profitGraph", @Html.Raw(JsonConvert.SerializeObject(Model)));
+    });
+</script>
+<script src="~/scripts/charts/charts-profit-history.js"></script>
+
+<div class="panel panel-default">
+    <div class="panel-heading">
+        <em class="fa fa-bar-chart-o fa-fw"></em> Winst/Verlies
+    </div>
+    <div class="panel-body">
+        <div id="profitGraph" style="height: 400px;"></div>
+    </div>
+</div>

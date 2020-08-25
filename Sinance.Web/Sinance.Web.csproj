@@ -54,6 +54,7 @@
     <Watch Remove="Model\AccountOverviewViewModel.cs" />
     <Watch Remove="Model\CustomGraphReportUpsertModel.cs" />
     <Watch Remove="Model\DashboardViewModel.cs" />
+    <Watch Remove="Model\GraphSeriesEntry.cs" />
     <Watch Remove="Model\LoginViewModel.cs" />
     <Watch Remove="Model\ManageUserViewModel.cs" />
     <Watch Remove="Model\MonthYearSelectionModel.cs" />
@@ -65,9 +66,9 @@
     <Watch Remove="Services\UserIdProvider.cs" />
     <Watch Remove="ViewComponents\BalanceHistoryGraphViewComponent.cs" />
     <Watch Remove="ViewComponents\ExpensesPerCategoryPieChartViewComponent.cs" />
+    <Watch Remove="ViewComponents\ProfitGraphViewComponent.cs" />
     <Watch Remove="ViewComponents\VersionNumberViewComponent.cs" />
     <Watch Remove="ViewComponents\YearlyBalanceHistoryGraphViewComponent.cs" />
-    <Watch Remove="ViewComponents\YearlyProfitGraphViewComponent.cs" />
   </ItemGroup>
 
   <ItemGroup>

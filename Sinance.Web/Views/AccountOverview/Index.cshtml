@@ -109,14 +109,7 @@
     </div>
 </div>
 
-<div class="panel panel-default">
-    <div class="panel-heading">
-        Historie
-    </div>
-    <div class="panel-body">
-        @await Component.InvokeAsync("BalanceHistoryGraph", new { months = 12, grouped = false, filter = new int[] { Model.Account.Id } })
-    </div>
-</div>
+@await Component.InvokeAsync("BalanceHistoryGraph", new { months = 12, grouped = false, filter = new int[] { Model.Account.Id } })
 
 <div class="panel panel-default">
     <div class="panel-heading clearfix">

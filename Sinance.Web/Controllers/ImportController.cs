@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Serilog;
 using Sinance.Business.Exceptions;
 using Sinance.Business.Services.BankAccounts;
 using Sinance.Business.Services.Imports;
@@ -49,18 +50,24 @@ namespace Sinance.Controllers
 
                 return View("ImportResult", model);
             }
-            catch (NotFoundException)
+            catch (NotFoundException exc)
             {
+                Log.Error(exc, "Exception during Import");
+
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, message: Resources.BankAccountNotFound);
                 return RedirectToAction("Index");
             }
-            catch (ImportFileException)
+            catch (ImportFileException exc)
             {
+                Log.Error(exc, "Exception during Import");
+
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, message: Resources.ErrorWhileProcessingImport);
                 return RedirectToAction("Index");
             }
-            catch (Exception)
+            catch (Exception exc)
             {
+                Log.Error(exc, "Exception during Import");
+
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, message: Resources.Error);
                 return RedirectToAction("Index");
             }

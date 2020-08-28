@@ -135,7 +135,7 @@ namespace Sinance.Business.DataSeeding.Seeds
         {
             var importBank = await InsertOrUpdateImportBank(unitOfWork, new ImportBankEntity
             {
-                Delimiter = ",",
+                Delimiter = ";",
                 ImportContainsHeader = true,
                 IsStandard = true,
                 Name = "ING"

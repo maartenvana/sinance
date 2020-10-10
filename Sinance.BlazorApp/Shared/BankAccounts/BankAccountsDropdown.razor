@@ -1,0 +1,42 @@
+﻿@inject Sinance.BlazorApp.Business.Services.IBankAccountService bankAccountService
+@using Sinance.BlazorApp.Business.Model.BankAccount 
+
+<select @bind="BankAccount">
+    <option></option>
+    @foreach (var bankAccount in BankAccounts)
+    {
+        <option value="@bankAccount.Id">@bankAccount.Name</option>
+    }
+</select>
+
+@code {
+    private int? _bankAccount;
+
+    [Parameter]
+    public int? BankAccount {
+        get { return _bankAccount; }
+        set
+        {
+            if (_bankAccount != value)
+            {
+                _bankAccount = value;
+                if (BankAccountChanged.HasDelegate)
+                {
+                    BankAccountChanged.InvokeAsync(value);
+                }
+            }
+        }
+    }
+
+    [Parameter]
+    public EventCallback<int?> BankAccountChanged { get; set; }
+
+    public List<BankAccountModel> BankAccounts { get; set; }
+
+    protected override void OnInitialized()
+    {
+        BankAccounts = bankAccountService.GetAllBankAccounts();
+
+        base.OnInitialized();
+    }
+}

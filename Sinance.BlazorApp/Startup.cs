@@ -35,6 +35,8 @@ namespace Sinance.BlazorApp
                 .EnableSensitiveDataLogging());
 
             services.AddTransient<ITransactionService, TransactionService>();
+            services.AddTransient<IBankAccountService, BankAccountService>();
+            services.AddTransient<ICategoryService, CategoryService>();
 
             services.AddRazorPages();
             services.AddServerSideBlazor();

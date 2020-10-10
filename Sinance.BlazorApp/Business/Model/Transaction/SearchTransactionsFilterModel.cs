@@ -7,11 +7,11 @@ namespace Sinance.BlazorApp.Business.Model.Transaction
 {
     public class SearchTransactionsFilterModel
     {
+        public string Name { get; set; }
+
         public int? BankAccountId { get; set; }
 
-        public List<int> Categories { get; set; } = new List<int>();
-
-        public bool NoCategory { get; set; }
+        public int? Category { get; set; }
 
         public int Page { get; set; }
 

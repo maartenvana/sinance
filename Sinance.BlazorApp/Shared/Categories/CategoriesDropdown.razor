@@ -1,0 +1,44 @@
+﻿@inject Sinance.BlazorApp.Business.Services.ICategoryService categoryService
+@using Sinance.BlazorApp.Business.Model.Category
+
+<select @bind="Category">
+    <option></option>
+    <option value="-1">No Category</option>
+    @foreach (var Category in Categorys)
+    {
+        <option value="@Category.Id">@Category.Name</option>
+    }
+</select>
+
+@code {
+    private int? _Category;
+
+    [Parameter]
+    public int? Category
+    {
+        get { return _Category; }
+        set
+        {
+            if (_Category != value)
+            {
+                _Category = value;
+                if (CategoryChanged.HasDelegate)
+                {
+                    CategoryChanged.InvokeAsync(value);
+                }
+            }
+        }
+    }
+
+    [Parameter]
+    public EventCallback<int?> CategoryChanged { get; set; }
+
+    public List<CategoryModel> Categorys { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Categorys = categoryService.GetAllCategories();
+
+        base.OnInitialized();
+    }
+}

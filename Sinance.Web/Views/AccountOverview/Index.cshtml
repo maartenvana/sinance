@@ -117,8 +117,25 @@
         <button data-toggle="modal" data-target="#overviewModal" onclick="action='add';" type="button" class="btn btn-primary pull-right"><span class="glyphicon glyphicon-plus"></span></button>
     </div>
     <div class="panel-body">
-        <div>
-            @await Html.PartialAsync("TransactionsEditTable", Model.Transactions)
+        <div class="row">
+            <div class="col-xs-12">
+                <h2>Filter</h2>
+                <div class="row">
+                    <div class="col-xs-12">
+
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12">
+                        <button type="submit">Filter</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-12">
+                @await Html.PartialAsync("TransactionsEditTable", Model.Transactions)
+            </div>
         </div>
     </div>
 </div>

@@ -27,7 +27,7 @@ namespace Sinance.Storage
             builder.Register(context =>
             {
                 var appSettings = context.Resolve<AppSettings>();
-                var contextOptionsBuilder = new DbContextOptionsBuilder();
+                var contextOptionsBuilder = new DbContextOptionsBuilder<SinanceContext>();
 
                 if (appSettings.Database.LoggingEnabled)
                 {
@@ -40,7 +40,7 @@ namespace Sinance.Storage
 
             builder.Register(context =>
             {
-                var options = context.Resolve<DbContextOptions>();
+                var options = context.Resolve<DbContextOptions<SinanceContext>>();
                 var userIdProvider = context.Resolve<IUserIdProvider>();
 
                 return new SinanceContext(options, userIdProvider);

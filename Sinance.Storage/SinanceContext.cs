@@ -34,7 +34,7 @@ namespace Sinance.Storage
         /// Default constructors
         /// </summary>
         public SinanceContext(
-            DbContextOptions options,
+            DbContextOptions<SinanceContext> options,
             IUserIdProvider userIdProvider)
             : base(options)
         {

@@ -183,8 +183,8 @@ namespace Sinance.Controllers
 
             var availableCategories = new List<SelectListItem>{
                     new SelectListItem {
-                        Text = Resources.NoMainCategory,
-                        Value = "0",
+                        Text = null,
+                        Value = null,
                         Selected = category.ParentId == null
                     }
                 };

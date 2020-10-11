@@ -30,6 +30,9 @@ namespace Sinance.BlazorApp.Business.Services
             if (!string.IsNullOrWhiteSpace(filter.Name))
                 query = query.Where(x => x.Name.ToLower().Contains(filter.Name.ToLower()));
 
+            if (!string.IsNullOrWhiteSpace(filter.Description))
+                query = query.Where(x => x.Description.ToLower().Contains(filter.Description.ToLower()));
+
             if (filter.BankAccountId != null)
                 query = query.Where(x => x.BankAccountId == filter.BankAccountId);
 

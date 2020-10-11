@@ -1,7 +1,7 @@
 ﻿@inject Sinance.BlazorApp.Business.Services.IBankAccountService bankAccountService
 @using Sinance.BlazorApp.Business.Model.BankAccount 
 
-<select @bind="BankAccount">
+<select class="form-control" @bind="BankAccount">
     <option></option>
     @foreach (var bankAccount in BankAccounts)
     {

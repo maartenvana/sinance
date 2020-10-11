@@ -1,7 +1,7 @@
 ﻿@inject Sinance.BlazorApp.Business.Services.ICategoryService categoryService
 @using Sinance.BlazorApp.Business.Model.Category
 
-<select @bind="Category">
+<select class="form-control" @bind="Category">
     <option></option>
     <option value="-1">No Category</option>
     @foreach (var Category in Categorys)

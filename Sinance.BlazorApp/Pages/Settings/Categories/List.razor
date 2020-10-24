@@ -1,7 +1,7 @@
-﻿@page "/Categories"
+﻿@page "/Settings/Categories"
 @inject Sinance.BlazorApp.Business.Services.ICategoryService categoryService
 @using Sinance.BlazorApp.Business.Model.Category
-@using Sinance.BlazorApp.Pages.Categories.Components
+@using Sinance.BlazorApp.Pages.Settings.Categories.Components
 
 <BodyContent Title="Categories">
     <div class="container-fluid">
@@ -9,6 +9,7 @@
                 <table class="table table-hover">
                     <thead>
                         <tr>
+                            <th>Short</th>
                             <th>Name</th>
                             <th>Color</th>
                             <th></th>

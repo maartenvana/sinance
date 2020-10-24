@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Sinance.Storage;
 
 namespace Sinance.Storage.Migrations
 {
     [DbContext(typeof(SinanceContext))]
-    partial class SinanceContextModelSnapshot : ModelSnapshot
+    [Migration("20201024121415_CategoryShortName")]
+    partial class CategoryShortName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -36,7 +38,7 @@ namespace Sinance.Storage.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("varchar(255)");
+                        .HasColumnType("longtext");
 
                     b.Property<decimal>("StartBalance")
                         .HasColumnType("decimal(65,30)");
@@ -45,9 +47,6 @@ namespace Sinance.Storage.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
 
                     b.HasIndex("UserId");
 
@@ -80,21 +79,15 @@ namespace Sinance.Storage.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("ShortName")
-                        .HasColumnType("varchar(4)")
-                        .HasMaxLength(4);
+                        .HasColumnType("varchar(3)")
+                        .HasMaxLength(3);
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Name")
-                        .IsUnique();
-
                     b.HasIndex("ParentId");
-
-                    b.HasIndex("ShortName")
-                        .IsUnique();
 
                     b.HasIndex("UserId");
 

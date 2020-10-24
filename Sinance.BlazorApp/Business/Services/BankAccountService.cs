@@ -26,5 +26,14 @@ namespace Sinance.BlazorApp.Business.Services
 
             return bankAccountEntities.ToDto().ToList();
         }
+
+        public List<BankAccountModel> GetAllActiveBankAccounts()
+        {
+            using var context = this.dbContextFactory.CreateDbContext();
+
+            var bankAccountEntities = context.BankAccounts.Where(x => x.Disabled == false).ToList();
+
+            return bankAccountEntities.ToDto().ToList();
+        }
     }
 }

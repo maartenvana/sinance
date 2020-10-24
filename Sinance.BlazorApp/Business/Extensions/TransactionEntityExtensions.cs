@@ -22,7 +22,8 @@ namespace Sinance.BlazorApp.Business.Extensions
                 Name = entity.Name,
                 Amount = entity.Amount,
                 Date = entity.Date,
-                CategoryName = entity.Category?.Name
+                CategoryColorCode = entity.Category?.ColorCode,
+                CategoryShortName = entity.Category?.ShortName
             };
         }
     }

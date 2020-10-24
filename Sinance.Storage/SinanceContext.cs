@@ -76,6 +76,11 @@ namespace Sinance.Storage
             modelBuilder.Entity<TransactionEntity>().HasQueryFilter(x => x.UserId == _userIdProvider.GetCurrentUserId());
             modelBuilder.Entity<CustomReportEntity>().HasQueryFilter(x => x.UserId == _userIdProvider.GetCurrentUserId());
 
+            modelBuilder.Entity<CategoryEntity>().HasIndex(x => x.ShortName).IsUnique(true);
+            modelBuilder.Entity<CategoryEntity>().HasIndex(x => x.Name).IsUnique(true);
+
+            modelBuilder.Entity<BankAccountEntity>().HasIndex(x => x.Name).IsUnique(true);
+
             base.OnModelCreating(modelBuilder);
         }
     }

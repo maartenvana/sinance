@@ -26,6 +26,10 @@ app {
     align-items: center;
 }
 
+.pointer:hover {
+    cursor:pointer;
+}
+
 .main {
     flex: 1;
 }
@@ -179,5 +183,37 @@ app {
     .sidebar .collapse {
         /* Never collapse the sidebar for wide screens */
         display: block;
+    }
+}
+
+.table-transactions {
+}
+
+.table-transactions .amount {
+    text-align:right;
+}
+
+    .table-transactions .date {
+        width: 110px;
+    }
+
+    .table-transactions .category {
+        width: 100px;
+        text-align:center;
+    }
+
+
+@media (min-width: 768px) {
+    .table-transactions {
+    }
+
+        .table-transactions td.description {
+            max-width: 700px;
+        }
+}
+
+@media (max-width: 768px) {
+    .table-transactions .description {
+        display: none;
     }
 }

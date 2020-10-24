@@ -13,6 +13,8 @@ namespace Sinance.BlazorApp.Business.Model.Category
 
         public string Name { get; set; }
 
+        public string ShortName { get; set; }
+
         public string ColorCode { get; set; }
     }
 }

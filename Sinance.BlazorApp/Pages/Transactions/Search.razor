@@ -51,7 +51,19 @@
 
         </div>
         <div class="card shadow mb-4">
-            <TransactionTable Transactions="Transactions" PageSize="PageSize" OnLoadMore="LoadMoreTransactions"></TransactionTable>
+            @if (Transactions.Any())
+            {
+                <TransactionTable Transactions="Transactions"></TransactionTable>
+            }
+
+            @if(Loading)
+            {
+                <LoadingAnimation></LoadingAnimation>
+            } 
+            else if(MoreTransactionsAvailable)
+            {
+                <button class="btn btn-block btn-primary" @onclick="LoadMoreTransactions">Load More</button>
+            }
         </div>
     </div>
 </BodyContent>
@@ -61,7 +73,11 @@
 
     public List<TransactionModel> Transactions { get; set; }
 
-    public int PageSize = 500;
+    public int PageSize = 100;
+
+    public bool MoreTransactionsAvailable = false;
+
+    public bool Loading = true;
 
     protected override async Task OnInitializedAsync()
     {
@@ -80,16 +96,34 @@
     public async Task DoSearch()
     {
         Transactions = new List<TransactionModel>();
+        MoreTransactionsAvailable = false;
         await LoadMoreTransactions();
     }
 
     public async Task LoadMoreTransactions()
     {
-        if (Transactions.Any())
-        {
-            FilterModel.Page++;
-        }
+        Loading = true;
 
-        Transactions.AddRange(await transactionService.SearchTransactionsPaged(FilterModel));
+        try
+        {
+            if (Transactions.Any())
+            {
+                FilterModel.Page++;
+            }
+
+            var foundTransactions = await transactionService.SearchTransactionsPaged(FilterModel);
+
+            MoreTransactionsAvailable = foundTransactions.Count == PageSize;
+
+            Transactions.AddRange(foundTransactions);
+        }
+        catch(Exception)
+        {
+            // TODO: Show alert!
+        }
+        finally
+        {
+            Loading = false;
+        }
     }
 }

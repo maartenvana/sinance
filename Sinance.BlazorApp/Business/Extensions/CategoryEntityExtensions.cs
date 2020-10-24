@@ -18,6 +18,7 @@ namespace Sinance.BlazorApp.Business.Extensions
             {
                 Id = entity.Id,
                 Name = entity.Name,
+                ShortName = entity.ShortName,
                 ParentId = entity.ParentId,
                 ColorCode = entity.ColorCode
             };

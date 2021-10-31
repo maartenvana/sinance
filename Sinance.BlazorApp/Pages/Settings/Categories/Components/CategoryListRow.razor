@@ -1,0 +1,46 @@
+﻿@using Sinance.BlazorApp.Business.Model.Category;
+@inject NavigationManager navigationManager
+
+<tr>
+    <td>
+        @Category.ShortName
+    </td>
+    <td>
+        @LevelPrefix()@Category.Name
+    </td>
+    <td><div style="width: 50px; height: 20px; background-color: @Category.ColorCode;"></div></td>
+    <td>
+        <button class="btn btn-default" @onclick="() => GoEditCategory(Category)">Edit</button>
+        <button class="btn btn-danger" @onclick="() => PromptDeleteCategory(Category)">Delete</button>
+    </td>
+</tr>
+
+@code {
+    [Parameter]
+    public CategoryModel Category { get; set; }
+
+    [Parameter]
+    public int Level { get; set; } = 0;
+
+    public string LevelPrefix()
+    {
+        var stringBuilder = new System.Text.StringBuilder();
+        @for (int i = 0; i < Level; i++)
+        {
+            stringBuilder.Append("-");
+        }
+        stringBuilder.Append(" ");
+
+        return stringBuilder.ToString();
+    }
+
+    public void GoEditCategory(CategoryModel category)
+    {
+        navigationManager.NavigateTo($"/Categories/Upsert?categoryId={category.Id}");
+    }
+
+    public void PromptDeleteCategory(CategoryModel category)
+    {
+        // nope
+    }
+}

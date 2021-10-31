@@ -64,6 +64,11 @@ namespace Sinance.Storage.Entities
         [StringLength(255)]
         public string Name { get; set; }
 
+
+        public CategoryEntity Category { get; set; }
+
+        public int? CategoryId { get; set; }
+
         /// <summary>
         /// Transaction categories
         /// </summary>

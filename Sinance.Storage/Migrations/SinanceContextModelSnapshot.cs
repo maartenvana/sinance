@@ -36,7 +36,7 @@ namespace Sinance.Storage.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("longtext");
+                        .HasColumnType("varchar(255)");
 
                     b.Property<decimal>("StartBalance")
                         .HasColumnType("decimal(65,30)");
@@ -45,6 +45,9 @@ namespace Sinance.Storage.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
 
                     b.HasIndex("UserId");
 
@@ -76,12 +79,22 @@ namespace Sinance.Storage.Migrations
                     b.Property<int?>("ParentId")
                         .HasColumnType("int");
 
+                    b.Property<string>("ShortName")
+                        .HasColumnType("varchar(4)")
+                        .HasMaxLength(4);
+
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
+                    b.HasIndex("Name")
+                        .IsUnique();
+
                     b.HasIndex("ParentId");
+
+                    b.HasIndex("ShortName")
+                        .IsUnique();
 
                     b.HasIndex("UserId");
 
@@ -277,6 +290,9 @@ namespace Sinance.Storage.Migrations
                     b.Property<int>("BankAccountId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("CategoryId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime(6)");
 
@@ -299,6 +315,8 @@ namespace Sinance.Storage.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("BankAccountId");
+
+                    b.HasIndex("CategoryId");
 
                     b.HasIndex("UserId");
 
@@ -397,6 +415,10 @@ namespace Sinance.Storage.Migrations
                         .HasForeignKey("BankAccountId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.HasOne("Sinance.Storage.Entities.CategoryEntity", "Category")
+                        .WithMany()
+                        .HasForeignKey("CategoryId");
 
                     b.HasOne("Sinance.Storage.Entities.SinanceUserEntity", "User")
                         .WithMany()

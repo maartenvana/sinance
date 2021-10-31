@@ -5,14 +5,11 @@
 trigger:
 - master
 
-resources:
-- repo: self
-
 variables:
 - name: sonarProjectKey
-  value: 'pondresnl_Pondres.Omnia.Control'
+  value: 'maartenvana_sinance'
 - name: sonarProjectName
-  value: 'Pondres.Omnia.Control'
+  value: 'sinance'
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -27,7 +24,7 @@ stages:
     - task: SonarCloudPrepare@1
       inputs:
         SonarCloud: 'SonarCloud'
-        organization: 'pondresnl'
+        organization: 'maartenvana'
         scannerMode: 'MSBuild'
         projectKey: '$(sonarProjectKey)'
         projectName: '$(sonarProjectName)'

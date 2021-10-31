@@ -33,7 +33,7 @@ namespace Sinance.Storage
                 {
                     contextOptionsBuilder.UseLoggerFactory(context.Resolve<ILoggerFactory>());
                 }
-                contextOptionsBuilder.UseMySql(appSettings.ConnectionStrings.Sql);
+                contextOptionsBuilder.UseMySql(appSettings.ConnectionStrings.Sql, new MySqlServerVersion("5.7"));
 
                 return contextOptionsBuilder.Options;
             }).SingleInstance();

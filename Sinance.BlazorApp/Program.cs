@@ -25,9 +25,6 @@ namespace Sinance.BlazorApp
 
         public static int Main(string[] args)
         {
-            CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("nl-NL");
-            CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("nl-NL");
-
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                 .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Information)
@@ -67,7 +64,7 @@ namespace Sinance.BlazorApp
 
             try
             {
-                var contextFactory = services.GetRequiredService<IDbContextFactory<SinanceContext>>();
+                var contextFactory = services.GetRequiredService<Storage.IDbContextFactory<SinanceContext>>();
                 using var context = contextFactory.CreateDbContext();
 
                 Log.Information("Seeding data");
@@ -98,7 +95,7 @@ namespace Sinance.BlazorApp
 
             try
             {
-                var contextFactory = services.GetRequiredService<IDbContextFactory<SinanceContext>>();
+                var contextFactory = services.GetRequiredService<Storage.IDbContextFactory<SinanceContext>>();
                 using var context = contextFactory.CreateDbContext();
 
                 Log.Information("Checking if database needs to be migrated/created");

@@ -1,0 +1,110 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+- master
+
+resources:
+- repo: self
+
+variables:
+- name: tag
+  value: '$(Build.BuildNumber)'
+- group: DockerBuild - Nuget PAT TOKEN
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+- stage: Build
+  displayName: Build and Publish
+  jobs:  
+  - job: BuildAndTest
+    displayName: Build and Test .NET projects
+    steps:
+    - task: DotNetCoreCLI@2
+      displayName: Restore
+      inputs:
+        command: 'restore'
+        projects: '**/*.csproj'
+        feedsToUse: 'select'
+        vstsFeed: '534b90ef-0e1b-475a-8b29-f869c9ffb2fd/202483c3-5d54-4aec-a875-a4bd78523c18'
+        verbosityRestore: minimal
+    - task: DotNetCoreCLI@2
+      displayName: Build
+      inputs:
+        command: 'build'
+        projects: '**/*.csproj'
+        arguments: '--no-restore -v q'
+    - task: DotNetCoreCLI@2
+      displayName: Test
+      inputs:
+        command: 'test'
+        projects: '**/*.UnitTests.csproj'
+        arguments: '--no-build'
+  - job: BuildandPublish
+    displayName: Build and Publish
+    steps:
+    - task: replacetokens@3
+      inputs:
+        rootDirectory: '$(Build.SourcesDirectory)/Deploy/Control'
+        targetFiles: '**/*.yml'
+        encoding: 'auto'
+        writeBOM: false
+        actionOnMissing: 'fail'
+        keepToken: false
+        tokenPrefix: '#{'
+        tokenSuffix: '}#'
+        useLegacyPattern: false
+        enableTelemetry: true
+    - task: PublishBuildArtifacts@1
+      displayName: Publish deployment files
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)/Deploy/Control'
+        ArtifactName: 'ControlKubeDeploy'
+        publishLocation: 'Container'
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'TestContainerRegistry'
+        repository: 'omnia-control'
+        command: 'build'
+        Dockerfile: '$(Build.SourcesDirectory)/Pondres.Omnia.Control/Dockerfile'
+        buildContext: '$(Build.SourcesDirectory)'
+        tags: |
+          latest
+          $(tag)
+        arguments: '--build-arg FEED_ACCESSTOKEN=$(FEED_ACCESSTOKEN)'
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'TestContainerRegistry'
+        repository: 'omnia-control'
+        command: 'push'
+        tags: |
+          latest
+          $(tag)
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'ProdContainerRegistry'
+        repository: 'omnia-control'
+        command: 'build'
+        Dockerfile: '$(Build.SourcesDirectory)/Pondres.Omnia.Control/Dockerfile'
+        buildContext: '$(Build.SourcesDirectory)'
+        tags: |
+          latest
+          $(tag)
+        arguments: '--build-arg FEED_ACCESSTOKEN=$(FEED_ACCESSTOKEN)'
+    - task: Docker@2
+      inputs:
+        containerRegistry: 'ProdContainerRegistry'
+        repository: 'omnia-control'
+        command: 'push'
+        tags: |
+          latest
+          $(tag)
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: Provisioning'
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)/Deploy/Provisioning'
+        ArtifactName: Provisioning

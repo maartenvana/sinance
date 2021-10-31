@@ -2,6 +2,7 @@
 using Sinance.Business.Calculations;
 using Sinance.Communication.Model.BankAccount;
 using Sinance.Web.Model;
+using Sinance.Business.Extensions;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,8 +21,12 @@ namespace Sinance.Web.ViewComponents
         public async Task<IViewComponentResult> InvokeAsync(DateTime startDate, DateTime endDate, bool grouped)
         {
             var profitPerMonth = grouped ? 
-                await profitLossCalculation.CalculateMonthlyProfitGrouped(startDate, endDate) : 
-                await profitLossCalculation.CalculateMonthlyProfit(startDate, endDate);
+                await profitLossCalculation.CalculateMonthlyProfitGrouped(
+                    startDate.BeginningOfMonth(), 
+                    endDate.EndOfTheMonth()) : 
+                await profitLossCalculation.CalculateMonthlyProfit(
+                    startDate.BeginningOfMonth(), 
+                    endDate.EndOfTheMonth());
 
             var series = profitPerMonth.Select(x => new GraphSeriesEntry<decimal[]>
             {

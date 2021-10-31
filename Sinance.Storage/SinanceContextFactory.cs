@@ -7,8 +7,10 @@ namespace Sinance.Storage
     {
         public SinanceContext CreateDbContext(string[] args)
         {
+            var connectionString = "server=localhost;port=3307;database=SinanceDev;user=root;password=my-secret-pw;";
+
             var optionsBuilder = new DbContextOptionsBuilder<SinanceContext>();
-            optionsBuilder.UseMySql("server=localhost;port=3307;database=SinanceDev;user=root;password=my-secret-pw;");
+            optionsBuilder.UseMySql(connectionString, ServerVersion.AutoDetect(connectionString));
 
             return new SinanceContext(optionsBuilder.Options, new DesignTimeDbUserIdProvider());
         }

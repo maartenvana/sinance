@@ -1,9 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Sinance.BlazorApp.Business.Extensions;
 using Sinance.BlazorApp.Business.Model.Transaction;
-using Sinance.BlazorApp.Storage;
 using Sinance.Storage;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,9 +10,9 @@ namespace Sinance.BlazorApp.Business.Services
 {
     public class TransactionService : ITransactionService
     {
-        private readonly IDbContextFactory<SinanceContext> dbContextFactory;
+        private readonly Storage.IDbContextFactory<SinanceContext> dbContextFactory;
 
-        public TransactionService(IDbContextFactory<SinanceContext> dbContextFactory)
+        public TransactionService(Storage.IDbContextFactory<SinanceContext> dbContextFactory)
         {
             this.dbContextFactory = dbContextFactory;
         }
@@ -47,7 +45,6 @@ namespace Sinance.BlazorApp.Business.Services
                     query = query.Where(x => x.CategoryId == filter.Category);
                 }
             }
-                
 
             var transactionEntities = await query
                 .OrderByDescending(x => x.Date)

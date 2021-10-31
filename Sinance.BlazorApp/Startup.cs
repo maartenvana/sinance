@@ -30,8 +30,8 @@ namespace Sinance.BlazorApp
             var appSettings = Configuration.Get<AppSettings>();
             services.AddSingleton(appSettings);
 
-            services.AddDbContextFactory<SinanceContext>(opt => opt
-                .UseMySql(appSettings.ConnectionStrings.Sql)
+            services.AddDatabase<SinanceContext>(opt => opt
+                .UseMySql(appSettings.ConnectionStrings.Sql, new MySqlServerVersion("5.7"))
                 .EnableSensitiveDataLogging());
 
             services.AddTransient<ITransactionService, TransactionService>();

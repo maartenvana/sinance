@@ -115,7 +115,7 @@ namespace Sinance.Business.Handlers
 
             using (var streamReader = new StreamReader(fileStream))
             {
-                using var csv = new CsvReader(streamReader, new Configuration
+                using var csv = new CsvReader(streamReader, new CsvConfiguration(cultureInfo: CultureInfo.CurrentCulture)
                 {
                     Delimiter = importBank.Delimiter
                 });

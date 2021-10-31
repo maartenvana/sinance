@@ -16,7 +16,7 @@ namespace Sinance.BlazorApp.Extensions
         /// <param name="optionsAction">Optional access to the <see cref="DbContextOptions{TContext}"/>.</param>
         /// <param name="contextAndOptionsLifetime">Set the <see cref="ServiceLifetime"/> of the factory and options.</param>
         /// <returns>The registered <see cref="IServiceCollection"/>.</returns>
-        public static IServiceCollection AddDbContextFactory<TContext>(
+        public static IServiceCollection AddDatabase<TContext>(
             this IServiceCollection collection,
             Action<DbContextOptionsBuilder> optionsAction = null,
             ServiceLifetime contextAndOptionsLifetime = ServiceLifetime.Singleton)
@@ -24,7 +24,7 @@ namespace Sinance.BlazorApp.Extensions
         {
             // instantiate with the correctly scoped provider
             collection.Add(new ServiceDescriptor(
-                typeof(IDbContextFactory<TContext>),
+                typeof(Storage.IDbContextFactory<TContext>),
                 sp => new DbContextFactory<TContext>(sp),
                 contextAndOptionsLifetime));
 

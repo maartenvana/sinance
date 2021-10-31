@@ -1,0 +1,25 @@
+version: '3.4'
+
+services:
+  sinance.blazorapp:
+    image: ${DOCKER_REGISTRY-}sinanceblazorapp
+    build:
+      context: .
+      dockerfile: Sinance.BlazorApp/Dockerfile
+    environment:
+      - ConnectionStrings__SQL=server=mysql;port=3306;database=Sinance_Blazor;user=root;password=development;
+
+  sinance.web:
+    image: ${DOCKER_REGISTRY-}sinanceweb
+    build:
+      context: .
+      dockerfile: Sinance.Web/Dockerfile
+    environment:
+      - Database__SeedDemoData=true
+      - Database__OverrideSeedDemoData=true
+      - ConnectionStrings__SQL=server=mysql;port=3306;database=Sinance_Legacy;user=root;password=development;
+
+  mysql:
+    image: mysql:5.7
+    environment:
+    - MYSQL_ROOT_PASSWORD=development

@@ -9,5 +9,8 @@ namespace Sinance.Business.Extensions
 
         public static DateTime BeginningOfMonth(this DateTime date) =>
             new DateTime(date.Year, date.Month, 1).Date;
+
+        public static DateTime EndOfTheMonth(this DateTime date) =>
+            new DateTime(date.Year, date.Month, 1, 0, 0, 0, 0).AddMonths(1).AddMilliseconds(-1);
     }
 }

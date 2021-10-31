@@ -47,5 +47,5 @@ stages:
         Dockerfile: '$(Build.SourcesDirectory)/Sinance.Web/Dockerfile'
         buildContext: '$(Build.SourcesDirectory)'
         tags: |
-          $(Build.BuildId)
+          $(tag)
           latest

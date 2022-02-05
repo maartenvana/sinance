@@ -6,7 +6,7 @@
     <ProjectGuid>b615a314-15a6-46ec-bd1e-04a50b864b76</ProjectGuid>
     <DockerLaunchAction>LaunchBrowser</DockerLaunchAction>
     <DockerServiceUrl>{Scheme}://localhost:{ServicePort}</DockerServiceUrl>
-    <DockerServiceName>sinance.blazorapp</DockerServiceName>
+    <DockerServiceName>sinance.web</DockerServiceName>
   </PropertyGroup>
   <ItemGroup>
     <None Include="docker-compose.override.yml">

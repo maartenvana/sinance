@@ -18,10 +18,6 @@ namespace Sinance.Storage
 
         IGenericRepository<CustomReportEntity> CustomReportRepository { get; }
 
-        IGenericRepository<ImportBankEntity> ImportBankRepository { get; }
-
-        IGenericRepository<ImportMappingEntity> ImportMappingRepository { get; }
-
         IGenericRepository<TransactionCategoryEntity> TransactionCategoryRepository { get; }
 
         IGenericRepository<TransactionEntity> TransactionRepository { get; }

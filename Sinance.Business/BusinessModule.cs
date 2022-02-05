@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Identity;
 using Sinance.Business.Calculations;
 using Sinance.Business.DataSeeding;
 using Sinance.Business.DataSeeding.Seeds;
+using Sinance.Business.Handlers;
+using Sinance.Business.Import;
 using Sinance.Business.Services;
 using Sinance.Business.Services.BankAccounts;
 using Sinance.Business.Services.Categories;
@@ -27,6 +29,9 @@ namespace Sinance.Business
             builder.RegisterType<CategoryMappingService>().As<ICategoryMappingService>();
             builder.RegisterType<ImportService>().As<IImportService>();
 
+            // Handlers
+            builder.RegisterType<BankFileImportHandler>().As<IBankFileImportHandler>();
+
             // Calculations
             builder.RegisterType<BalanceHistoryCalculation>().As<IBalanceHistoryCalculation>();
             builder.RegisterType<ExpensePercentageCalculation>().As<IExpensePercentageCalculation>();
@@ -44,10 +49,14 @@ namespace Sinance.Business
             // Storage
             builder.RegisterModule<StorageModule>();
 
+            // Bank imports
+            builder.RegisterType<AbnAmroTxtFileImporter>().As<IBankFileImporter>();
+            builder.RegisterType<IngBankCsvFileImporter>().As<IBankFileImporter>();
+            builder.RegisterType<RabobankCsvFileImporter>().As<IBankFileImporter>();
+
             // Data seeding
             builder.RegisterType<DataSeedService>().As<IDataSeedService>();
             builder.RegisterType<DemoUserSeed>().AsSelf();
-            builder.RegisterType<ImportBankSeed>().AsSelf();
             builder.RegisterType<CategorySeed>().AsSelf();
         }
     }

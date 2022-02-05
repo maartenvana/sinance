@@ -22,10 +22,6 @@ namespace Sinance.Storage
 
         public IGenericRepository<CustomReportEntity> CustomReportRepository { get; }
 
-        public IGenericRepository<ImportBankEntity> ImportBankRepository { get; }
-
-        public IGenericRepository<ImportMappingEntity> ImportMappingRepository { get; }
-
         public IGenericRepository<TransactionCategoryEntity> TransactionCategoryRepository { get; }
 
         public IGenericRepository<TransactionEntity> TransactionRepository { get; }
@@ -40,8 +36,6 @@ namespace Sinance.Storage
             IGenericRepository<CategoryMappingEntity> categoryMappingRepository,
             IGenericRepository<CustomReportCategoryEntity> customReportCategorieRepository,
             IGenericRepository<CustomReportEntity> customReportRepository,
-            IGenericRepository<ImportBankEntity> importBankRepository,
-            IGenericRepository<ImportMappingEntity> importMappingRepository,
             IGenericRepository<TransactionCategoryEntity> transactionCategorieRepository,
             IGenericRepository<TransactionEntity> transactionRepository)
         {
@@ -52,8 +46,6 @@ namespace Sinance.Storage
             CategoryMappingRepository = categoryMappingRepository;
             CustomReportCategoryRepository = customReportCategorieRepository;
             CustomReportRepository = customReportRepository;
-            ImportBankRepository = importBankRepository;
-            ImportMappingRepository = importMappingRepository;
             TransactionCategoryRepository = transactionCategorieRepository;
             TransactionRepository = transactionRepository;
         }

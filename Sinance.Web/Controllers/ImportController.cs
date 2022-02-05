@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Serilog;
 using Sinance.Business.Exceptions;
+using Sinance.Business.Import;
 using Sinance.Business.Services.BankAccounts;
 using Sinance.Business.Services.Imports;
 using Sinance.Communication.Model.Import;
@@ -10,6 +11,7 @@ using Sinance.Web;
 using Sinance.Web.Helper;
 using Sinance.Web.Model;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
@@ -23,13 +25,16 @@ namespace Sinance.Controllers
     public class ImportController : Controller
     {
         private readonly IBankAccountService _bankAccountService;
+        private readonly IEnumerable<IBankFileImporter> _bankFileImporters;
         private readonly IImportService _importService;
 
         public ImportController(
             IImportService importService,
+            IEnumerable<IBankFileImporter> bankFileImporters,
             IBankAccountService bankAccountService)
         {
             _importService = importService;
+            _bankFileImporters = bankFileImporters;
             _bankAccountService = bankAccountService;
         }
 
@@ -79,11 +84,17 @@ namespace Sinance.Controllers
         /// <returns>ActionResult for user</returns>
         public async Task<IActionResult> Index()
         {
-            var importBanks = await _importService.GetImportBanks();
+            var bankAccounts = await _bankAccountService.GetActiveBankAccountsForCurrentUser();
+            var importBanks = _bankFileImporters.Select(bankFileImporter => new ImportBankModel
+            {
+                Id = bankFileImporter.Id,
+                Name = bankFileImporter.FriendlyName
+            }).ToList();
 
             return View("Index", new ImportModel
             {
-                AvailableImportBanks = importBanks.ToList()
+                AvailableImportBanks = importBanks,
+                AvailableAccounts = bankAccounts
             });
         }
 
@@ -118,19 +129,6 @@ namespace Sinance.Controllers
                 }
                 return RedirectToAction("Index", "Home");
             }
-        }
-
-        /// <summary>
-        /// Starts the import for the given bank account type
-        /// </summary>
-        /// <returns></returns>
-        [HttpPost]
-        public async Task<IActionResult> StartImport(ImportModel model)
-        {
-            var bankAccounts = await _bankAccountService.GetActiveBankAccountsForCurrentUser();
-            model.AvailableAccounts = bankAccounts;
-
-            return View("StartImport", model);
         }
     }
 }

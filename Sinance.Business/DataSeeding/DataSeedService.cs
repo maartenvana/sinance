@@ -12,7 +12,6 @@ namespace Sinance.Business.DataSeeding
         private readonly AppSettings _appSettings;
         private readonly CategorySeed _categorySeed;
         private readonly DemoUserSeed _demoUserSeed;
-        private readonly ImportBankSeed _importBankSeed;
         private readonly ILogger _logger;
         private readonly Func<IUnitOfWork> _unitOfWork;
 
@@ -21,15 +20,13 @@ namespace Sinance.Business.DataSeeding
             Func<IUnitOfWork> unitOfWork,
             AppSettings appSettings,
             CategorySeed categorySeed,
-            DemoUserSeed demoUserSeed,
-            ImportBankSeed importBankSeed)
+            DemoUserSeed demoUserSeed)
         {
             _logger = logger;
             _unitOfWork = unitOfWork;
             _appSettings = appSettings;
             _categorySeed = categorySeed;
             _demoUserSeed = demoUserSeed;
-            _importBankSeed = importBankSeed;
         }
 
         public async Task NewUserSeed(int userId)
@@ -54,8 +51,6 @@ namespace Sinance.Business.DataSeeding
 
                 await _demoUserSeed.SeedData(_appSettings.Database.OverrideSeedDemoData);
             }
-
-            await _importBankSeed.SeedData();
 
             await _categorySeed.SeedStandardCategoriesForAllUsers();
 

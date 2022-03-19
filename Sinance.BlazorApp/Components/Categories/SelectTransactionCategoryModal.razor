@@ -1,0 +1,82 @@
+﻿@using Sinance.BlazorApp.Business.Model.Category
+@using Sinance.BlazorApp.Business.Model.Transaction
+@using Sinance.BlazorApp.Business.Services
+@inject ICategoryService categoryService
+
+<BSModal @ref="modal" DataId="modal1">
+    <Header>Assign Category</Header>
+    <Content>
+        @if (transactions.Any())
+        {
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>
+                            @{
+                                var distinctCategoryCount = transactions.Select(x => x.CategoryId).Distinct().Count();
+                            }
+
+                            @if(distinctCategoryCount == 1)
+                            {
+                                if(transactions.First().CategoryId != null)
+                                {
+                                    <span>@allCategories.First(x => x.Id == transactions.First().CategoryId.Value).Name</span>
+                                }
+                                else
+                                {
+                                    <span>No category</span>
+                                }
+                            }
+                            else
+                            {
+                                <span>Mixed categories</span>
+                            }
+                        </th>
+                    </tr>
+                </thead>
+                <thead></thead>
+                <tbody>
+                    <tr>
+                        <td>No category</td>
+                    </tr>
+                    @foreach (var category in allCategories)
+                    {
+                        <tr>
+                            <td @onclick="() => AssignCategoryAsync(category)">@category.Name</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </Content>
+    <Footer></Footer>
+</BSModal>
+
+@code {
+    private List<TransactionModel> transactions { get; set; } = new();
+
+    private List<CategoryModel> allCategories { get; set; } = new();
+
+    [Parameter]
+    public EventCallback<List<TransactionModel>> OnTransactionsUpdated { get; set; }
+
+    private BSModal modal { get; set; }
+
+    public async Task OpenForTransactionsAsync(List<TransactionModel> transactions)
+    {
+        this.transactions = transactions;
+
+        allCategories = categoryService.GetAllCategories().OrderBy(x => x.Name).ToList();
+
+        await modal.ShowAsync();
+    }
+
+    public async Task AssignCategoryAsync(CategoryModel category)
+    {
+        var newTransactions = categoryService.AssignCategoryToTransactions(category, transactions);
+
+        await OnTransactionsUpdated.InvokeAsync(newTransactions);
+
+        await modal.HideAsync();
+    }
+}

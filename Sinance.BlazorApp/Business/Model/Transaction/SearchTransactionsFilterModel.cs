@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Sinance.BlazorApp.Business.Model.Transaction
+﻿namespace Sinance.BlazorApp.Business.Model.Transaction
 {
     public class SearchTransactionsFilterModel
     {
@@ -17,6 +12,6 @@ namespace Sinance.BlazorApp.Business.Model.Transaction
 
         public int Page { get; set; }
 
-        public int PageSize { get; set; }
+        public int PageSize { get; set; } = SinanceDefaults.TransactionPageSize;
     }
 }

@@ -1,8 +1,33 @@
 ﻿@page "/BankAccount/{Id:int}"
+@using Sinance.BlazorApp.Business.Model.Transaction
 
 <h3>Bank Account @Id</h3>
+
+<TransactionsPanel FilterModel=FilterModel @ref=transactionsPanel />
 
 @code {
     [Parameter]
     public int Id { get; set; }
+
+    public SearchTransactionsFilterModel FilterModel;
+
+    private TransactionsPanel transactionsPanel;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+    }
+
+    protected override void OnParametersSet()
+    {
+        FilterModel = new SearchTransactionsFilterModel
+        {
+            BankAccountId = Id
+        };
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await transactionsPanel.ReloadAsync();
+    }
 }

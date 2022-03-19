@@ -9,7 +9,7 @@
                 Filter
             </div>
             <div class="card-body">
-                <EditForm Model="@FilterModel" OnValidSubmit="DoSearch">
+                <EditForm Model="@FilterModel" OnValidSubmit="DoSearchAsync">
                     <DataAnnotationsValidator />
                     <ValidationSummary />
 
@@ -50,80 +50,26 @@
             </div>
 
         </div>
-        <div class="card shadow mb-4">
-            @if (Transactions.Any())
-            {
-                <TransactionTable Transactions="Transactions"></TransactionTable>
-            }
 
-            @if(Loading)
-            {
-                <LoadingAnimation></LoadingAnimation>
-            } 
-            else if(MoreTransactionsAvailable)
-            {
-                <button class="btn btn-block btn-primary" @onclick="LoadMoreTransactions">Load More</button>
-            }
-        </div>
+        <TransactionsPanel FilterModel=FilterModel @ref=transactionsPanel />
     </div>
 </BodyContent>
 
 @code {
-    public SearchTransactionsFilterModel FilterModel;
+    private TransactionsPanel transactionsPanel;
 
-    public List<TransactionModel> Transactions { get; set; }
+    public SearchTransactionsFilterModel FilterModel = new SearchTransactionsFilterModel();
 
-    public int PageSize = 100;
-
-    public bool MoreTransactionsAvailable = false;
-
-    public bool Loading = true;
-
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        FilterModel = new SearchTransactionsFilterModel
-        {
-            Page = 0,
-            PageSize = PageSize
-        };
-        Transactions = new List<TransactionModel>();
+        if (!firstRender)
+            return;
 
-        await DoSearch();
-
-        base.OnInitialized();
+        await transactionsPanel.ReloadAsync();
     }
 
-    public async Task DoSearch()
+    public async Task DoSearchAsync()
     {
-        Transactions = new List<TransactionModel>();
-        MoreTransactionsAvailable = false;
-        await LoadMoreTransactions();
-    }
-
-    public async Task LoadMoreTransactions()
-    {
-        Loading = true;
-
-        try
-        {
-            if (Transactions.Any())
-            {
-                FilterModel.Page++;
-            }
-
-            var foundTransactions = await transactionService.SearchTransactionsPaged(FilterModel);
-
-            MoreTransactionsAvailable = foundTransactions.Count == PageSize;
-
-            Transactions.AddRange(foundTransactions);
-        }
-        catch(Exception)
-        {
-            // TODO: Show alert!
-        }
-        finally
-        {
-            Loading = false;
-        }
+        await transactionsPanel.ReloadAsync();
     }
 }

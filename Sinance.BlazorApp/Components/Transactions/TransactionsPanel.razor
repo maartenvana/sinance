@@ -1,0 +1,98 @@
+﻿@inject Sinance.BlazorApp.Business.Services.ITransactionService transactionService
+@inject IUserErrorService userErrorService
+@using Sinance.BlazorApp.Business.Model.Transaction
+
+<div class="card shadow mb-4">
+    <div class="card-header">
+        <button class="btn btn-primary" @onclick="OpenCategorySelectionModalForSelected">Set Category</button>
+    </div>
+    <div class="card-body">
+        @if (Transactions.Any())
+        {
+            <TransactionTable Rows="Transactions"
+                          OnShowTransactionCategorySelection=OpenCategoryModalForSingle></TransactionTable>
+
+            <SelectTransactionCategoryModal @ref="selectTransactionCategoryModal"
+                                        OnTransactionsUpdated="TransactionsUpdated"></SelectTransactionCategoryModal>
+        }
+        @if (Loading)
+        {
+            <LoadingAnimation></LoadingAnimation>
+        }
+        else if (MoreTransactionsAvailable)
+        {
+            <button class="btn btn-block btn-primary" @onclick="LoadMoreTransactionsAsync">Load More</button>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public SearchTransactionsFilterModel FilterModel { get; set; } = new SearchTransactionsFilterModel();
+
+    public List<SelectableTableRow<TransactionModel>> Transactions { get; set; } = new List<SelectableTableRow<TransactionModel>>();
+
+    private SelectTransactionCategoryModal selectTransactionCategoryModal;
+
+    public bool MoreTransactionsAvailable = false;
+
+    public bool Loading = true;
+
+    public async Task ReloadAsync()
+    {
+        MoreTransactionsAvailable = false;
+        
+        Transactions = new List<SelectableTableRow<TransactionModel>>();
+
+        await LoadMoreTransactionsAsync();
+    }
+
+    public async void OpenCategorySelectionModalForSelected()
+    {
+        var selectedTransactions = Transactions.Where(x => x.IsSelected).Select(x => x.RowData).ToList();
+
+        await selectTransactionCategoryModal.OpenForTransactionsAsync(selectedTransactions);
+    }
+
+    public async void OpenCategoryModalForSingle(TransactionModel transaction)
+    {
+        await selectTransactionCategoryModal.OpenForTransactionsAsync(new List<TransactionModel> { transaction });
+    }
+
+    public void TransactionsUpdated(List<TransactionModel> newTransactions)
+    {
+        foreach (var newTransaction in newTransactions)
+        {
+            var currentTransaction = Transactions.Single(x => x.RowData.Id == newTransaction.Id);
+            currentTransaction.RowData = newTransaction;
+        }
+    }
+
+    public async Task LoadMoreTransactionsAsync()
+    {
+        Loading = true;
+
+        try
+        {
+            if (Transactions.Any())
+            {
+                FilterModel.Page++;
+            }
+
+            var foundTransactions = await transactionService.SearchTransactionsPaged(FilterModel);
+
+            MoreTransactionsAvailable = foundTransactions.Count == FilterModel.PageSize;
+
+            Transactions.AddRange(foundTransactions.ToSelectableTableRows());
+        }
+        catch (Exception)
+        {
+            userErrorService.ShowErrorToUser("Exception during transaction retrieval");
+        }
+        finally
+        {
+            Loading = false;
+            StateHasChanged();
+        }
+    }
+}

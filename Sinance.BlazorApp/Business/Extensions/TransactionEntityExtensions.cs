@@ -1,11 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
-using Sinance.BlazorApp.Business.Model.Transaction;
+﻿using Sinance.BlazorApp.Business.Model.Transaction;
 using Sinance.Storage.Entities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.Xml;
-using System.Threading.Tasks;
 
 namespace Sinance.BlazorApp.Business.Extensions
 {
@@ -18,12 +14,14 @@ namespace Sinance.BlazorApp.Business.Extensions
         {
             return new TransactionModel
             {
+                Id = entity.Id,
                 Description = entity.Description,
                 Name = entity.Name,
                 Amount = entity.Amount,
                 Date = entity.Date,
                 CategoryColorCode = entity.Category?.ColorCode,
-                CategoryShortName = entity.Category?.ShortName
+                CategoryShortName = entity.Category?.ShortName,
+                CategoryId = entity.Category?.Id
             };
         }
     }

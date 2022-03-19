@@ -1,6 +1,6 @@
 ﻿using Sinance.Storage;
 
-namespace Sinance.BlazorApp.Services
+namespace Sinance.BlazorApp.Providers
 {
     public class UserIdProvider : IUserIdProvider
     {

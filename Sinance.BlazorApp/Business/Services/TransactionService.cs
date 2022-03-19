@@ -48,6 +48,7 @@ namespace Sinance.BlazorApp.Business.Services
 
             var transactionEntities = await query
                 .OrderByDescending(x => x.Date)
+                .ThenBy(x => x.Name)
                 .Skip(filter.Page * filter.PageSize)
                 .Take(filter.PageSize)
                 .ToListAsync();

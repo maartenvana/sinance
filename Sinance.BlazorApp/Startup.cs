@@ -5,10 +5,17 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Sinance.Storage;
 using Microsoft.EntityFrameworkCore;
-using Sinance.BlazorApp.Services;
+using Sinance.BlazorApp.Providers;
 using Sinance.BlazorApp.Extensions;
 using Sinance.Common.Configuration;
 using Sinance.BlazorApp.Business.Services;
+using Blazored.Toast;
+using BlazorStrap;
+using Sinance.BlazorApp.Services;
+using System.Linq;
+using System.Net.Http;
+using Microsoft.AspNetCore.Components;
+using System;
 
 namespace Sinance.BlazorApp
 {
@@ -35,11 +42,30 @@ namespace Sinance.BlazorApp
                 .EnableSensitiveDataLogging());
 
             services.AddTransient<ITransactionService, TransactionService>();
+            services.AddTransient<IUserErrorService, UserErrorService>();
             services.AddTransient<IBankAccountService, BankAccountService>();
             services.AddTransient<ICategoryService, CategoryService>();
 
             services.AddRazorPages();
             services.AddServerSideBlazor();
+
+            services.AddBlazoredToast();
+            services.AddBlazorStrap();
+
+            // Server Side Blazor doesn't register HttpClient by default
+            if (!services.Any(x => x.ServiceType == typeof(HttpClient)))
+            {
+                // Setup HttpClient for server side in a client side compatible fashion
+                services.AddScoped<HttpClient>(s =>
+                {
+                    // Creating the URI helper needs to wait until the JS Runtime is initialized, so defer it.
+                    var navman = s.GetRequiredService<NavigationManager>();
+                    return new HttpClient
+                    {
+                        BaseAddress = new Uri(navman.BaseUri)
+                    };
+                });
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -3,56 +3,53 @@
 @using Sinance.BlazorApp.Business.Model.Transaction
 
 <BodyContent Title="Transaction Search">
-    <div class="container-fluid">
-        <div class="card shadow mb-4">
-            <div class="card-header">
-                Filter
-            </div>
-            <div class="card-body">
-                <EditForm Model="@FilterModel" OnValidSubmit="DoSearchAsync">
-                    <DataAnnotationsValidator />
-                    <ValidationSummary />
-
-                    <div class="row">
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="name">Name</label>
-                                <input type="text" id="name" class="form-control border-1 small" placeholder="Name" @bind="FilterModel.Name">
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="name">Description</label>
-                                <input type="text" id="name" class="form-control border-1 small" placeholder="Description" @bind="FilterModel.Description">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="name">Category</label>
-                                <CategoriesDropdown @bind-Category="FilterModel.Category"></CategoriesDropdown>
-                            </div>
-                        </div>
-                        <div class="col">
-                            <div class="form-group">
-                                <label for="name">Bank Account</label>
-                                <BankAccountsDropdown @bind-BankAccount="FilterModel.BankAccountId"></BankAccountsDropdown>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-12 pt-2">
-                            <button class="btn btn-primary float-right" type="submit">Search</button>
-                        </div>
-                    </div>
-                </EditForm>
-            </div>
-
+    <div class="card shadow mb-4">
+        <div class="card-header">
+            Filter
         </div>
+        <div class="card-body">
+            <EditForm Model="@FilterModel" OnValidSubmit="SearchAsync">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
 
-        <TransactionsPanel FilterModel=FilterModel @ref=transactionsPanel />
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="name">Name</label>
+                            <input type="text" id="name" class="form-control border-1 small" placeholder="Name" @bind="FilterModel.Name">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="name">Description</label>
+                            <input type="text" id="name" class="form-control border-1 small" placeholder="Description" @bind="FilterModel.Description">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="name">Category</label>
+                            <CategoriesDropdown @bind-Category="FilterModel.Category"></CategoriesDropdown>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <div class="form-group">
+                            <label for="name">Bank Account</label>
+                            <BankAccountsDropdown @bind-BankAccount="FilterModel.BankAccountId"></BankAccountsDropdown>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 pt-2">
+                        <button class="btn btn-primary float-right" type="submit">Search</button>
+                    </div>
+                </div>
+            </EditForm>
+        </div>
     </div>
+
+    <TransactionsPanel FilterModel=FilterModel @ref=transactionsPanel />
 </BodyContent>
 
 @code {
@@ -65,11 +62,11 @@
         if (!firstRender)
             return;
 
-        await transactionsPanel.ReloadAsync();
+        await transactionsPanel.RefreshAsync();
     }
 
-    public async Task DoSearchAsync()
+    public async Task SearchAsync()
     {
-        await transactionsPanel.ReloadAsync();
+        await transactionsPanel.RefreshAsync();
     }
 }

@@ -2,10 +2,8 @@
 using Sinance.BlazorApp.Business.Model.BankAccount;
 using Sinance.BlazorApp.Storage;
 using Sinance.Storage;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Sinance.BlazorApp.Business.Services
 {
@@ -34,6 +32,15 @@ namespace Sinance.BlazorApp.Business.Services
             var bankAccountEntities = context.BankAccounts.Where(x => x.Disabled == false).ToList();
 
             return bankAccountEntities.ToDto().ToList();
+        }
+
+        public BankAccountModel GetBankAccount(int id)
+        {
+            using var context = this.dbContextFactory.CreateDbContext();
+
+            var bankAccountEntity = context.BankAccounts.Single(x => x.Id == id);
+
+            return bankAccountEntity.ToDto();
         }
     }
 }

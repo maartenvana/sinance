@@ -1,0 +1,124 @@
+﻿@inject IUserErrorService userErrorService
+
+@typeparam TRowDataType where TRowDataType : class
+
+<table class="table @TableCss">
+    <thead>
+        <tr>
+            <th>
+                <input type="checkbox" style=" transform: scale(1.5); " @bind="allSelected" @onclick="() => ToggleSelectAll()" />
+            </th>
+            @HeaderTemplate
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var row in Rows)
+        {
+            <tr>
+                <td>
+                    <input type="checkbox" style=" transform: scale(1.5); " @bind="row.IsSelected" @onclick:stopPropagation="true" />
+                </td>
+                @RowTemplate(row)
+            </tr>
+        }
+    </tbody>
+</table>
+
+
+@if (loading)
+{
+            
+}
+@if (!loading && canLoadMore)
+{
+    <button class="btn btn-block btn-primary" @onclick="LoadMoreRowsAsync">Load More</button>
+}
+
+@code {
+    private bool allSelected;
+    private bool canLoadMore;
+    private bool loading;
+
+    [Parameter]
+    public int Page { get; set; }
+
+    [Parameter]
+    public int PageSize { get; set; }
+
+    [Parameter]
+    public string TableCss { get; set; }
+
+    [Parameter]
+    public List<SelectableTableRow<TRowDataType>> Rows { get; set; } = new List<SelectableTableRow<TRowDataType>>();
+
+    [Parameter]
+    public RenderFragment<SelectableTableRow<TRowDataType>> RowTemplate { get; set; }
+
+    [Parameter]
+    public RenderFragment HeaderTemplate { get; set; }
+
+    [Parameter]
+    public Func<int, int, Task<List<TRowDataType>>> LoadMoreFunc { get; set; }
+
+    [Parameter]
+    public Func<TRowDataType, string> RowIdFunc { get; set; }
+
+    public List<TRowDataType> SelectedRows => Rows.Where(x => x.IsSelected).Select(x => x.RowData).ToList();
+
+    private void ToggleSelectAll()
+    {
+        allSelected = !allSelected;
+
+        foreach(var row in Rows)
+        {
+            row.IsSelected = allSelected;
+        }
+    }
+
+
+    public void UpdateRowData(string rowId, TRowDataType updatedRowData)
+    {
+        var row = Rows.Single(x => x.RowId == rowId);
+        row.RowData = updatedRowData;
+    }
+
+    public async Task RefreshAsync()
+    {
+        Page = 0;
+        Rows = new List<SelectableTableRow<TRowDataType>>();
+        await LoadMoreRowsAsync();
+    }
+
+    private async Task LoadMoreRowsAsync()
+    {
+        loading = true;
+        StateHasChanged();
+
+        try
+        {
+            var newRows = await LoadMoreFunc(Page, PageSize);
+
+            var newSelectableRows = newRows.Select(x => new SelectableTableRow<TRowDataType>
+                {
+                    IsSelected = allSelected,
+                    RowData = x,
+                    RowId = RowIdFunc(x)
+                }).ToList();
+
+            Rows.AddRange(newSelectableRows);
+
+            canLoadMore = newRows.Count == PageSize;
+
+            Page++;
+        }
+        catch(Exception)
+        {
+            userErrorService.ShowErrorToUser("Exception trying to load data rows");
+        }
+        finally
+        {
+            loading = false;
+            StateHasChanged();
+        }
+    }
+}

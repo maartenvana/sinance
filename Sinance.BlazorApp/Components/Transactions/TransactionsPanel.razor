@@ -1,97 +1,113 @@
 ﻿@inject Sinance.BlazorApp.Business.Services.ITransactionService transactionService
 @inject IUserErrorService userErrorService
 @using Sinance.BlazorApp.Business.Model.Transaction
+@using Sinance.BlazorApp.Components.Core.PagingTable
+@using System.Globalization
 
 <div class="card shadow mb-4">
     <div class="card-header">
         <button class="btn btn-primary" @onclick="OpenCategorySelectionModalForSelected">Set Category</button>
     </div>
-    <div class="card-body">
-        @if (Transactions.Any())
-        {
-            <TransactionTable Rows="Transactions"
-                          OnShowTransactionCategorySelection=OpenCategoryModalForSingle></TransactionTable>
+    <div class="card-body no-padding">
+            <SelectablePagingTable 
+                @ref=table
+                Page="FilterModel.Page"
+                PageSize="FilterModel.PageSize"
+                TRowDataType="TransactionModel" 
+                LoadMoreFunc="LoadMoreTransactionsAsync"
+                RowIdFunc="GetTransactionId">
+                <HeaderTemplate>
+                    <th class="date">Date</th>
+                    <th class="category">Type</th>
+                    <th class="name">Name</th>
+                    <th class="amount">Amount</th>
+                    <th class="description">Description</th>
+                </HeaderTemplate>
+                <RowTemplate Context="row">
+                    <td class="date">
+                        @row.RowData.Date.ToShortDateString()
+                    </td>
+                    <td class="category">
+                        @if (row.RowData.CategoryShortName != null)
+                        {
+                            <span 
+                                class="badge badge-secondary pointer" 
+                                style="background-color: @row.RowData.CategoryColorCode" 
+                                @onclick="async () => await OpenCategoryModalForSingle(row.RowData)">
+                                @row.RowData.CategoryShortName
+                            </span>
+                        }
+                        else
+                        {
+                            <span 
+                                class="badge badge-secondary pointer" 
+                                @onclick="async () => await OpenCategoryModalForSingle(row.RowData)">
+                                <span class="oi oi-plus"></span>
+                            </span>
+                        }
+                    </td>
+                    <td class="name">
+                        @row.RowData.Name
+                    </td>
+                    <td class="amount">
+                        <span class="badge badge-@(row.RowData.Amount > 0 ? "success" : "danger")">
+                            @row.RowData.Amount.ToString("C2", CultureInfo.CurrentCulture)
+                        </span>
+                    </td>
+                    <td class="description">
+                        @row.RowData.Description
+                    </td>
+                </RowTemplate>
+            </SelectablePagingTable>
 
             <SelectTransactionCategoryModal @ref="selectTransactionCategoryModal"
-                                        OnTransactionsUpdated="TransactionsUpdated"></SelectTransactionCategoryModal>
-        }
-        @if (Loading)
-        {
-            <LoadingAnimation></LoadingAnimation>
-        }
-        else if (MoreTransactionsAvailable)
-        {
-            <button class="btn btn-block btn-primary" @onclick="LoadMoreTransactionsAsync">Load More</button>
-        }
+                OnTransactionsUpdated="TransactionsUpdated"></SelectTransactionCategoryModal>
     </div>
 </div>
 
 @code {
     [Parameter]
-    public SearchTransactionsFilterModel FilterModel { get; set; } = new SearchTransactionsFilterModel();
-
-    public List<SelectableTableRow<TransactionModel>> Transactions { get; set; } = new List<SelectableTableRow<TransactionModel>>();
+    public SearchTransactionsFilterModel FilterModel { get; set; } = new();
 
     private SelectTransactionCategoryModal selectTransactionCategoryModal;
 
-    public bool MoreTransactionsAvailable = false;
+    private SelectablePagingTable<TransactionModel> table;
 
-    public bool Loading = true;
+    public async Task RefreshAsync() => await table.RefreshAsync();
 
-    public async Task ReloadAsync()
-    {
-        MoreTransactionsAvailable = false;
-        
-        Transactions = new List<SelectableTableRow<TransactionModel>>();
+    public string GetTransactionId(TransactionModel model) => model.Id.ToString();
 
-        await LoadMoreTransactionsAsync();
-    }
+    public async void OpenCategorySelectionModalForSelected() =>
+        await selectTransactionCategoryModal.OpenForTransactionsAsync(table.SelectedRows);
 
-    public async void OpenCategorySelectionModalForSelected()
-    {
-        var selectedTransactions = Transactions.Where(x => x.IsSelected).Select(x => x.RowData).ToList();
-
-        await selectTransactionCategoryModal.OpenForTransactionsAsync(selectedTransactions);
-    }
-
-    public async void OpenCategoryModalForSingle(TransactionModel transaction)
-    {
+    public async Task OpenCategoryModalForSingle(TransactionModel transaction) =>
         await selectTransactionCategoryModal.OpenForTransactionsAsync(new List<TransactionModel> { transaction });
-    }
 
     public void TransactionsUpdated(List<TransactionModel> newTransactions)
     {
         foreach (var newTransaction in newTransactions)
         {
-            var currentTransaction = Transactions.Single(x => x.RowData.Id == newTransaction.Id);
-            currentTransaction.RowData = newTransaction;
+            table.UpdateRowData(newTransaction.Id.ToString(), newTransaction);
         }
     }
 
-    public async Task LoadMoreTransactionsAsync()
+    public async Task<List<TransactionModel>> LoadMoreTransactionsAsync(int page, int pageSize)
     {
-        Loading = true;
-
         try
         {
-            if (Transactions.Any())
-            {
-                FilterModel.Page++;
-            }
+            FilterModel.PageSize = pageSize;
+            FilterModel.Page = page;
 
-            var foundTransactions = await transactionService.SearchTransactionsPaged(FilterModel);
-
-            MoreTransactionsAvailable = foundTransactions.Count == FilterModel.PageSize;
-
-            Transactions.AddRange(foundTransactions.ToSelectableTableRows());
+            return await transactionService.SearchTransactionsPaged(FilterModel);
         }
         catch (Exception)
         {
             userErrorService.ShowErrorToUser("Exception during transaction retrieval");
+
+            return new List<TransactionModel>();
         }
         finally
         {
-            Loading = false;
             StateHasChanged();
         }
     }

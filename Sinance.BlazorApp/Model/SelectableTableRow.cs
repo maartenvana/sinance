@@ -1,8 +1,10 @@
 ﻿namespace Sinance.BlazorApp.Model
 {
-    public class SelectableTableRow<T> where T : class
+    public class SelectableTableRow<TRowDataType> where TRowDataType : class
     {
-        public T RowData { get; set; }
+        public string RowId { get; set; }
+
+        public TRowDataType RowData { get; set; }
 
         public bool IsSelected { get; set; }
     }

@@ -14,6 +14,10 @@ a, .btn-link {
     border-color: #1861ac;
 }
 
+.card-body.no-padding {
+    padding: 0;
+}
+
 .content {
     padding-top: 1.1rem;
 }

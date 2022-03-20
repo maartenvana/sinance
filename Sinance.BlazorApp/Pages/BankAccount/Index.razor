@@ -1,9 +1,12 @@
 ﻿@page "/BankAccount/{Id:int}"
+@using Sinance.BlazorApp.Business.Model.BankAccount
 @using Sinance.BlazorApp.Business.Model.Transaction
+@using Sinance.BlazorApp.Business.Services
+@inject IBankAccountService bankAccountService
 
-<h3>Bank Account @Id</h3>
-
-<TransactionsPanel FilterModel=FilterModel @ref=transactionsPanel />
+<BodyContent Title="@bankAccount.Name">
+    <TransactionsPanel FilterModel=FilterModel @ref=transactionsPanel />
+</BodyContent>
 
 @code {
     [Parameter]
@@ -13,8 +16,12 @@
 
     private TransactionsPanel transactionsPanel;
 
+    private BankAccountModel bankAccount;
+
     protected override void OnInitialized()
     {
+        bankAccount = bankAccountService.GetBankAccount(Id);
+
         base.OnInitialized();
     }
 
@@ -28,6 +35,6 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await transactionsPanel.ReloadAsync();
+        await transactionsPanel.RefreshAsync();
     }
 }

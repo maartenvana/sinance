@@ -1,4 +1,6 @@
-﻿namespace Sinance.BlazorApp.Business.Model.Transaction
+﻿using Sinance.BlazorApp.Business.Model.Category;
+
+namespace Sinance.BlazorApp.Business.Model.Transaction
 {
     public class SearchTransactionsFilterModel
     {
@@ -8,7 +10,7 @@
 
         public int? BankAccountId { get; set; }
 
-        public int? Category { get; set; }
+        public int? CategoryId { get; set; } = CategoryModel.All.Id;
 
         public int Page { get; set; }
 

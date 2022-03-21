@@ -1,12 +1,25 @@
 ﻿@inject Sinance.BlazorApp.Business.Services.ITransactionService transactionService
-@inject IUserErrorService userErrorService
+@inject IUserNotificationService userNotificationService
 @using Sinance.BlazorApp.Business.Model.Transaction
+@using Sinance.BlazorApp.Components.Categories.Model
 @using Sinance.BlazorApp.Components.Core.PagingTable
 @using System.Globalization
 
 <div class="card shadow mb-4">
     <div class="card-header">
-        <button class="btn btn-primary" @onclick="OpenCategorySelectionModalForSelected">Set Category</button>
+        <ul class="nav nav-pills card-header-pills">
+          <li class="nav-item">
+            <button class="nav-link"
+                @onclick="OpenCategorySelectionModalForSelected" >Set Category</button>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">Link</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link disabled">Disabled</a>
+          </li>
+    </ul>
+
     </div>
     <div class="card-body no-padding">
             <SelectablePagingTable 
@@ -15,6 +28,7 @@
                 PageSize="FilterModel.PageSize"
                 TRowDataType="TransactionModel" 
                 LoadMoreFunc="LoadMoreTransactionsAsync"
+                TableCss="transaction-table"
                 RowIdFunc="GetTransactionId">
                 <HeaderTemplate>
                     <th class="date">Date</th>
@@ -24,10 +38,10 @@
                     <th class="description">Description</th>
                 </HeaderTemplate>
                 <RowTemplate Context="row">
-                    <td class="date">
+                    <td class="date" width="100">
                         @row.RowData.Date.ToShortDateString()
                     </td>
-                    <td class="category">
+                    <td class="category" width=75>
                         @if (row.RowData.CategoryShortName != null)
                         {
                             <span 
@@ -41,6 +55,7 @@
                         {
                             <span 
                                 class="badge badge-secondary pointer" 
+                                style="color: black"
                                 @onclick="async () => await OpenCategoryModalForSingle(row.RowData)">
                                 <span class="oi oi-plus"></span>
                             </span>
@@ -50,7 +65,7 @@
                         @row.RowData.Name
                     </td>
                     <td class="amount">
-                        <span class="badge badge-@(row.RowData.Amount > 0 ? "success" : "danger")">
+                        <span class="badge bg-@(row.RowData.Amount > 0 ? "success" : "danger")">
                             @row.RowData.Amount.ToString("C2", CultureInfo.CurrentCulture)
                         </span>
                     </td>
@@ -77,18 +92,29 @@
 
     public string GetTransactionId(TransactionModel model) => model.Id.ToString();
 
-    public async void OpenCategorySelectionModalForSelected() =>
-        await selectTransactionCategoryModal.OpenForTransactionsAsync(table.SelectedRows);
+    public async void OpenCategorySelectionModalForSelected()
+    {
+        if(table.SelectedRows.Any())
+        {
+            await selectTransactionCategoryModal.OpenForTransactionsAsync(table.SelectedRows);
+        }
+        else
+        {
+            userNotificationService.ShowError("No transactions selected");
+        }
+    }
 
     public async Task OpenCategoryModalForSingle(TransactionModel transaction) =>
         await selectTransactionCategoryModal.OpenForTransactionsAsync(new List<TransactionModel> { transaction });
 
-    public void TransactionsUpdated(List<TransactionModel> newTransactions)
+    public void TransactionsUpdated(TransactionsCategoryUpdatedEvent eventModel)
     {
-        foreach (var newTransaction in newTransactions)
+        foreach (var newTransaction in eventModel.Transactions)
         {
             table.UpdateRowData(newTransaction.Id.ToString(), newTransaction);
         }
+
+        userNotificationService.ShowSuccess($"Updated {eventModel.Transactions.Count} transaction(s) categories");
     }
 
     public async Task<List<TransactionModel>> LoadMoreTransactionsAsync(int page, int pageSize)
@@ -102,7 +128,7 @@
         }
         catch (Exception)
         {
-            userErrorService.ShowErrorToUser("Exception during transaction retrieval");
+            userNotificationService.ShowError("Exception during transaction retrieval");
 
             return new List<TransactionModel>();
         }

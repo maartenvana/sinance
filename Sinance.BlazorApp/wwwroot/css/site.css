@@ -14,6 +14,22 @@ a, .btn-link {
     border-color: #1861ac;
 }
 
+form.hide-validity .form-control.modified.valid {
+    outline:none;
+}
+
+.transaction-table .amount {
+    text-align: right;
+}
+
+.transaction-table td.category .badge {
+    width:100%;
+}
+
+.pointer:hover {
+    cursor: pointer
+}
+
 .card-body.no-padding {
     padding: 0;
 }

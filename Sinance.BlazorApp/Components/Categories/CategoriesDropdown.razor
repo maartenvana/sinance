@@ -1,44 +1,58 @@
 ﻿@inject Sinance.BlazorApp.Business.Services.ICategoryService categoryService
 @using Sinance.BlazorApp.Business.Model.Category
+@using System.Diagnostics.CodeAnalysis
 
-<select class="form-control" @bind="Category">
-    <option></option>
-    <option value="-1">No Category</option>
-    @foreach (var Category in Categorys)
+@inherits InputSelect<int?>
+
+<InputSelect class="form-control" @bind-Value="CurrentValueAsString">
+    @if(IncludeAllOption)
     {
-        <option value="@Category.Id">@Category.Name</option>
+        <option value="@CategoryModel.All.Id">All</option>
     }
-</select>
+    <option value="">No Category</option>
+    @foreach(var category in Categories)
+    {
+        <option value="@category.Id">@category.Name</option>
+    }
+</InputSelect>
 
 @code {
-    private int? _Category;
-
     [Parameter]
-    public int? Category
-    {
-        get { return _Category; }
-        set
-        {
-            if (_Category != value)
-            {
-                _Category = value;
-                if (CategoryChanged.HasDelegate)
-                {
-                    CategoryChanged.InvokeAsync(value);
-                }
-            }
-        }
-    }
+    public bool IncludeAllOption { get; set; }
 
-    [Parameter]
-    public EventCallback<int?> CategoryChanged { get; set; }
+    public string SelectedCategoryId { get; set; }
 
-    public List<CategoryModel> Categorys { get; set; }
+    public List<CategoryModel> Categories { get; set; }
 
     protected override void OnInitialized()
     {
-        Categorys = categoryService.GetAllCategories().OrderBy(x => x.Name).ToList();
+        Categories = categoryService.GetAllCategories().OrderBy(x => x.Name).ToList();
+    }
 
-        base.OnInitialized();
+    protected override string FormatValueAsString(int? value)
+    {
+        return value?.ToString() ?? "0";
+    }
+
+    protected override bool TryParseValueFromString(string value, [MaybeNullWhen(false)] out int? result, [NotNullWhen(false)] out string validationErrorMessage)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            validationErrorMessage = null;
+            result = null;
+        }
+        else if (int.TryParse(value, out var categoryId))
+        {
+            validationErrorMessage = null;
+
+            result = categoryId;
+        }
+        else
+        {
+            validationErrorMessage = "Selected value is not an int";
+            result = null;
+        }
+
+        return true;
     }
 }

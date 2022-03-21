@@ -1,9 +1,10 @@
 ﻿@using Sinance.BlazorApp.Business.Model.Category
 @using Sinance.BlazorApp.Business.Model.Transaction
 @using Sinance.BlazorApp.Business.Services
+@using Sinance.BlazorApp.Components.Categories.Model
 @inject ICategoryService categoryService
 
-<EditForm Model="@UpdateModel" OnValidSubmit="AssignCategoryAsync">
+<EditForm Model="@UpdateModel" OnValidSubmit="AssignCategoryAsync" class="hide-validity">
     <BSModal @ref="modal" DataId="modal1">
         <Header>Assign Category</Header>
         <Content>
@@ -14,13 +15,13 @@
                 <div class="col">
                     <div class="form-group">
                         <label for="name">Category</label>
-                        <CategoriesDropdown @bind-Category="UpdateModel.CategoryId"></CategoriesDropdown>
+                        <CategoriesDropdown @bind-Value="UpdateModel.CategoryId"></CategoriesDropdown>
                     </div>
                 </div>
             </div>
         </Content>
         <Footer Context="modal">
-            <button class="btn btn-default" Color="BSColor.Secondary" @onclick="modal.HideAsync">Close</button>
+            <button class="btn btn-default" Color="BSColor.Secondary" @onclick="modal.HideAsync" type="button">Close</button>
             <button class="btn btn-primary" type="submit">Save changes</button>
         </Footer>
     </BSModal>
@@ -32,26 +33,25 @@
     private UpdateFormModel UpdateModel { get; set; } = new();
 
     [Parameter]
-    public EventCallback<List<TransactionModel>> OnTransactionsUpdated { get; set; }
+    public EventCallback<TransactionsCategoryUpdatedEvent> OnTransactionsUpdated { get; set; }
 
     private BSModal modal { get; set; }
 
     public async Task OpenForTransactionsAsync(List<TransactionModel> transactions)
     {
+        UpdateModel.CategoryId = transactions.First().CategoryId;
         this.transactions = transactions;
-
-        UpdateModel.CategoryId = null;
 
         await modal.ShowAsync();
     }
 
     public async Task AssignCategoryAsync()
     {
-        UpdateModel.CategoryId = UpdateModel.CategoryId == -1 ? null : UpdateModel.CategoryId;
-
         var newTransactions = categoryService.AssignCategoryToTransactions(UpdateModel.CategoryId, transactions);
 
-        await OnTransactionsUpdated.InvokeAsync(newTransactions);
+        await OnTransactionsUpdated.InvokeAsync(new TransactionsCategoryUpdatedEvent{
+            Transactions = newTransactions
+        });
 
         await modal.HideAsync();
     }

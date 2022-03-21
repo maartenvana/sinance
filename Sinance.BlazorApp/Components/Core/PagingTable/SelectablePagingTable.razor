@@ -1,4 +1,4 @@
-﻿@inject IUserErrorService userErrorService
+﻿@inject IUserNotificationService userNotificationService
 
 @typeparam TRowDataType where TRowDataType : class
 
@@ -113,7 +113,7 @@
         }
         catch(Exception)
         {
-            userErrorService.ShowErrorToUser("Exception trying to load data rows");
+            userNotificationService.ShowError("Exception trying to load data rows");
         }
         finally
         {

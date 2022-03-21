@@ -37,7 +37,7 @@
 
     protected override void OnInitialized()
     {
-        Categorys = categoryService.GetAllCategories();
+        Categorys = categoryService.GetAllCategories().OrderBy(x => x.Name).ToList();
 
         base.OnInitialized();
     }

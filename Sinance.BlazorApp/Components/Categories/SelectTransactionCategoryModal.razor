@@ -3,59 +3,33 @@
 @using Sinance.BlazorApp.Business.Services
 @inject ICategoryService categoryService
 
-<BSModal @ref="modal" DataId="modal1">
-    <Header>Assign Category</Header>
-    <Content>
-        @if (transactions.Any())
-        {
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>
-                            @{
-                                var distinctCategoryCount = transactions.Select(x => x.CategoryId).Distinct().Count();
-                            }
+<EditForm Model="@UpdateModel" OnValidSubmit="AssignCategoryAsync">
+    <BSModal @ref="modal" DataId="modal1">
+        <Header>Assign Category</Header>
+        <Content>
+            <DataAnnotationsValidator />
+            <ValidationSummary />
 
-                            @if(distinctCategoryCount == 1)
-                            {
-                                if(transactions.First().CategoryId != null)
-                                {
-                                    <span>@allCategories.First(x => x.Id == transactions.First().CategoryId.Value).Name</span>
-                                }
-                                else
-                                {
-                                    <span>No category</span>
-                                }
-                            }
-                            else
-                            {
-                                <span>Mixed categories</span>
-                            }
-                        </th>
-                    </tr>
-                </thead>
-                <thead></thead>
-                <tbody>
-                    <tr>
-                        <td>No category</td>
-                    </tr>
-                    @foreach (var category in allCategories)
-                    {
-                        <tr>
-                            <td @onclick="() => AssignCategoryAsync(category)">@category.Name</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        }
-    </Content>
-    <Footer></Footer>
-</BSModal>
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        <label for="name">Category</label>
+                        <CategoriesDropdown @bind-Category="UpdateModel.CategoryId"></CategoriesDropdown>
+                    </div>
+                </div>
+            </div>
+        </Content>
+        <Footer Context="modal">
+            <button class="btn btn-default" Color="BSColor.Secondary" @onclick="modal.HideAsync">Close</button>
+            <button class="btn btn-primary" type="submit">Save changes</button>
+        </Footer>
+    </BSModal>
+</EditForm>
 
 @code {
-    private List<TransactionModel> transactions { get; set; } = new();
+    private List<TransactionModel> transactions;
 
-    private List<CategoryModel> allCategories { get; set; } = new();
+    private UpdateFormModel UpdateModel { get; set; } = new();
 
     [Parameter]
     public EventCallback<List<TransactionModel>> OnTransactionsUpdated { get; set; }
@@ -66,17 +40,26 @@
     {
         this.transactions = transactions;
 
-        allCategories = categoryService.GetAllCategories().OrderBy(x => x.Name).ToList();
+        UpdateModel.CategoryId = null;
 
         await modal.ShowAsync();
     }
 
-    public async Task AssignCategoryAsync(CategoryModel category)
+    public async Task AssignCategoryAsync()
     {
-        var newTransactions = categoryService.AssignCategoryToTransactions(category, transactions);
+        UpdateModel.CategoryId = UpdateModel.CategoryId == -1 ? null : UpdateModel.CategoryId;
+
+        var newTransactions = categoryService.AssignCategoryToTransactions(UpdateModel.CategoryId, transactions);
 
         await OnTransactionsUpdated.InvokeAsync(newTransactions);
 
         await modal.HideAsync();
+    }
+
+    protected class UpdateFormModel
+    {
+        public int? CategoryId { get; set; }
+
+        public bool CreateAutoMapping { get; set; }
     }
 }

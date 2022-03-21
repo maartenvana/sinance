@@ -71,7 +71,7 @@ namespace Sinance.BlazorApp
 
                 var allTransactions = context.Transactions
                     .Include(x => x.TransactionCategories)
-                    .Where(x => x.TransactionCategories.Any()).ToList();
+                    .Where(x => x.CategoryId == null && x.TransactionCategories.Any()).ToList();
                 foreach (var transaction in allTransactions)
                 {
                     transaction.CategoryId = transaction.TransactionCategories.First().CategoryId;

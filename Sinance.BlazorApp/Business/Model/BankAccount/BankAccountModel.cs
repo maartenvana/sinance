@@ -8,7 +8,9 @@ namespace Sinance.BlazorApp.Business.Model.BankAccount
         public int Id { get; set; }
 
         public string Name { get; set; }
-        public BankAccountType Type { get; internal set; }
-        public bool Disabled { get; internal set; }
+        public BankAccountType Type { get; set; }
+        public bool Disabled { get; set; }
+
+        public static BankAccountModel All => new() { Id = -1, Name = "All" };
     }
 }

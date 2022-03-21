@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Sinance.BlazorApp.Business.Extensions;
+using Sinance.BlazorApp.Business.Model.BankAccount;
 using Sinance.BlazorApp.Business.Model.Category;
 using Sinance.BlazorApp.Business.Model.Transaction;
 using Sinance.Storage;
@@ -32,13 +33,11 @@ namespace Sinance.BlazorApp.Business.Services
             if (!string.IsNullOrWhiteSpace(filter.Description))
                 query = query.Where(x => x.Description.ToLower().Contains(filter.Description.ToLower()));
 
-            if (filter.BankAccountId != null)
+            if (filter.BankAccountId != BankAccountModel.All.Id)
                 query = query.Where(x => x.BankAccountId == filter.BankAccountId);
 
             if (filter.CategoryId != CategoryModel.All.Id)
-            {
                 query = query.Where(x => x.CategoryId == filter.CategoryId);
-            }
 
             var transactionEntities = await query
                 .OrderByDescending(x => x.Date)

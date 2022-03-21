@@ -1,4 +1,5 @@
-﻿using Sinance.BlazorApp.Business.Model.Category;
+﻿using Sinance.BlazorApp.Business.Model.BankAccount;
+using Sinance.BlazorApp.Business.Model.Category;
 
 namespace Sinance.BlazorApp.Business.Model.Transaction
 {
@@ -8,7 +9,7 @@ namespace Sinance.BlazorApp.Business.Model.Transaction
 
         public string Description { get; set; }
 
-        public int? BankAccountId { get; set; }
+        public int? BankAccountId { get; set; } = BankAccountModel.All.Id;
 
         public int? CategoryId { get; set; } = CategoryModel.All.Id;
 

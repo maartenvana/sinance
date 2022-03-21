@@ -1,35 +1,25 @@
 ﻿@inject Sinance.BlazorApp.Business.Services.IBankAccountService bankAccountService
 @using Sinance.BlazorApp.Business.Model.BankAccount 
+@using System.Diagnostics.CodeAnalysis
 
-<select class="form-control" @bind="BankAccount">
-    <option></option>
-    @foreach (var bankAccount in BankAccounts)
+@inherits InputSelect<int?>
+
+<InputSelect class="form-control" @bind-Value="CurrentValueAsString">
+    @if(IncludeAllOption)
+    {
+        <option value="@BankAccountModel.All.Id">All</option>
+    }
+    @foreach(var bankAccount in BankAccounts)
     {
         <option value="@bankAccount.Id">@bankAccount.Name</option>
     }
-</select>
+</InputSelect>
 
 @code {
-    private int? _bankAccount;
-
     [Parameter]
-    public int? BankAccount {
-        get { return _bankAccount; }
-        set
-        {
-            if (_bankAccount != value)
-            {
-                _bankAccount = value;
-                if (BankAccountChanged.HasDelegate)
-                {
-                    BankAccountChanged.InvokeAsync(value);
-                }
-            }
-        }
-    }
-
-    [Parameter]
-    public EventCallback<int?> BankAccountChanged { get; set; }
+    public bool IncludeAllOption { get; set; }
+    
+    public string SelectedBankAccountId { get; set; }
 
     public List<BankAccountModel> BankAccounts { get; set; }
 
@@ -38,5 +28,32 @@
         BankAccounts = bankAccountService.GetAllBankAccounts();
 
         base.OnInitialized();
+    }
+    
+    protected override string FormatValueAsString(int? value)
+    {
+        return value?.ToString() ?? "0";
+    }
+
+    protected override bool TryParseValueFromString(string value, [MaybeNullWhen(false)] out int? result, [NotNullWhen(false)] out string validationErrorMessage)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            validationErrorMessage = null;
+            result = null;
+        }
+        else if (int.TryParse(value, out var bankAccountId))
+        {
+            validationErrorMessage = null;
+
+            result = bankAccountId;
+        }
+        else
+        {
+            validationErrorMessage = "Selected value is not an int";
+            result = null;
+        }
+
+        return true;
     }
 }

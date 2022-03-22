@@ -3,22 +3,46 @@ using Sinance.BlazorApp.Business.Extensions;
 using Sinance.BlazorApp.Business.Model.Category;
 using Sinance.BlazorApp.Business.Model.Transaction;
 using Sinance.BlazorApp.Storage;
+using Sinance.Communication.Model.Import;
 using Sinance.Storage;
+using Sinance.Storage.Entities;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Sinance.BlazorApp.Business.Services
 {
     public class CategoryService : ICategoryService
     {
         private readonly IDbContextFactory<SinanceContext> dbContextFactory;
+        private readonly IUserIdProvider userIdProvider;
 
-        public CategoryService(IDbContextFactory<SinanceContext> dbContextFactory)
+        public CategoryService(
+            IDbContextFactory<SinanceContext> dbContextFactory,
+            IUserIdProvider userIdProvider)
         {
             this.dbContextFactory = dbContextFactory;
+            this.userIdProvider = userIdProvider;
         }
 
-        public List<TransactionModel> AssignCategoryToTransactions(int? categoryId, List<TransactionModel> transactions)
+        public async Task CreateAutoCategoryMappingAsync(int categoryId, ColumnType columnType, string columnValue)
+        {
+            using var context = dbContextFactory.CreateDbContext();
+
+            var mappingEntity = new CategoryMappingEntity
+            {
+                CategoryId = categoryId,
+                ColumnTypeId = columnType,
+                MatchValue = columnValue,
+                UserId = userIdProvider.GetCurrentUserId()
+            };
+
+            context.CategoryMappings.Add(mappingEntity);
+
+            await context.SaveChangesAsync();
+        }
+
+        public async Task<List<TransactionModel>> AssignCategoryToTransactionsAsync(int? categoryId, List<TransactionModel> transactions)
         {
             using var context = dbContextFactory.CreateDbContext();
 
@@ -33,7 +57,7 @@ namespace Sinance.BlazorApp.Business.Services
                 transactionEntity.CategoryId = categoryId;
             }
 
-            context.SaveChanges();
+            await context.SaveChangesAsync();
 
             return transactionEntities.ToDto().ToList();
         }
@@ -53,9 +77,9 @@ namespace Sinance.BlazorApp.Business.Services
         {
             using var context = dbContextFactory.CreateDbContext();
 
-            var bankAccountEntities = context.Categories.ToList();
+            var categories = context.Categories.ToList();
 
-            return bankAccountEntities.ToDto().ToList();
+            return categories.ToDto().ToList();
         }
     }
 }

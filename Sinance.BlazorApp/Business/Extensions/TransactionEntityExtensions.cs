@@ -17,6 +17,8 @@ namespace Sinance.BlazorApp.Business.Extensions
                 Id = entity.Id,
                 Description = entity.Description,
                 Name = entity.Name,
+                DestinationAccountNumber = entity.DestinationAccount,
+                SourceAccountNumber = entity.AccountNumber,
                 Amount = entity.Amount,
                 Date = entity.Date,
                 CategoryColorCode = entity.Category?.ColorCode,

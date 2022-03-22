@@ -1,0 +1,48 @@
+﻿@inject Sinance.BlazorApp.Business.Services.IBankAccountService bankAccountService
+@using Sinance.BlazorApp.Business.Model.BankAccount 
+@using System.Diagnostics.CodeAnalysis
+@using Sinance.Communication.Model.Import
+
+@inherits InputSelect<ColumnType>
+
+<InputSelect class="form-control" @bind-Value="CurrentValueAsString">
+    @foreach(var columnType in ColumnTypes)
+    {
+        <option value="@columnType.ToString()">@columnType.ToString()</option>
+    }
+</InputSelect>
+
+@code {
+    [Parameter]
+    public bool IncludeAllOption { get; set; }
+
+    public string SelectedBankAccountId { get; set; }
+
+    public ColumnType[] ColumnTypes { get; set; } = Enum.GetValues<ColumnType>();
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+    }
+
+    protected override string FormatValueAsString(ColumnType value)
+    {
+        return value.ToString();
+    }
+
+    protected override bool TryParseValueFromString(string value, [MaybeNullWhen(false)] out ColumnType result, [NotNullWhen(false)] out string validationErrorMessage)
+    {
+        if(Enum.TryParse<ColumnType>(value, out var columnType))
+        {
+            validationErrorMessage = null;
+            result = columnType;
+        }
+        else
+        {
+            validationErrorMessage = "Incorrect value for column type";
+            result = ColumnType.Ignore;
+        }
+
+        return true;
+    }
+}

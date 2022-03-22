@@ -7,76 +7,66 @@
 
 <div class="card shadow mb-4">
     <div class="card-header">
-        <ul class="nav nav-pills card-header-pills">
-          <li class="nav-item">
-            <button class="nav-link"
-                @onclick="OpenCategorySelectionModalForSelected" >Set Category</button>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Link</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link disabled">Disabled</a>
-          </li>
-    </ul>
+        <ul class="nav nav-pills card-header-pills float-end">
+            <li class="nav-item">
+                <button class="nav-link" @onclick="OpenCategorySelectionModalForSelected">Set Category</button>
+            </li>
+        </ul>
 
     </div>
     <div class="card-body no-padding">
-            <SelectablePagingTable 
-                @ref=table
-                Page="FilterModel.Page"
-                PageSize="FilterModel.PageSize"
-                TRowDataType="TransactionModel" 
-                LoadMoreFunc="LoadMoreTransactionsAsync"
-                TableCss="transaction-table"
-                RowIdFunc="GetTransactionId">
-                <HeaderTemplate>
-                    <th class="date">Date</th>
-                    <th class="category">Type</th>
-                    <th class="name">Name</th>
-                    <th class="amount">Amount</th>
-                    <th class="description">Description</th>
-                </HeaderTemplate>
-                <RowTemplate Context="row">
-                    <td class="date" width="100">
-                        @row.RowData.Date.ToShortDateString()
-                    </td>
-                    <td class="category" width=75>
-                        @if (row.RowData.CategoryShortName != null)
-                        {
-                            <span 
-                                class="badge badge-secondary pointer" 
-                                style="background-color: @row.RowData.CategoryColorCode" 
-                                @onclick="async () => await OpenCategoryModalForSingle(row.RowData)">
-                                @row.RowData.CategoryShortName
-                            </span>
-                        }
-                        else
-                        {
-                            <span 
-                                class="badge badge-secondary pointer" 
-                                style="color: black"
-                                @onclick="async () => await OpenCategoryModalForSingle(row.RowData)">
-                                <span class="oi oi-plus"></span>
-                            </span>
-                        }
-                    </td>
-                    <td class="name">
-                        @row.RowData.Name
-                    </td>
-                    <td class="amount">
-                        <span class="badge bg-@(row.RowData.Amount > 0 ? "success" : "danger")">
-                            @row.RowData.Amount.ToString("C2", CultureInfo.CurrentCulture)
+        <SelectablePagingTable @ref=table
+                               Page="FilterModel.Page"
+                               PageSize="FilterModel.PageSize"
+                               TRowDataType="TransactionModel"
+                               LoadMoreFunc="LoadMoreTransactionsAsync"
+                               TableCss="transaction-table"
+                               RowIdFunc="GetTransactionId">
+            <HeaderTemplate>
+                <th class="date">Date</th>
+                <th class="category">Type</th>
+                <th class="name">Name</th>
+                <th class="amount">Amount</th>
+                <th class="description">Description</th>
+            </HeaderTemplate>
+            <RowTemplate Context="row">
+                <td class="date" width="100">
+                    @row.RowData.Date.ToShortDateString()
+                </td>
+                <td class="category" width=75>
+                    @if (row.RowData.CategoryShortName != null)
+                    {
+                        <span class="badge badge-secondary pointer"
+                          style="background-color: @row.RowData.CategoryColorCode"
+                          @onclick="async () => await OpenCategoryModalForSingle(row.RowData)">
+                            @row.RowData.CategoryShortName
                         </span>
-                    </td>
-                    <td class="description">
-                        @row.RowData.Description
-                    </td>
-                </RowTemplate>
-            </SelectablePagingTable>
+                    }
+                    else
+                    {
+                        <span class="badge badge-secondary pointer"
+                          style="color: black"
+                          @onclick="async () => await OpenCategoryModalForSingle(row.RowData)">
+                            <span class="oi oi-plus"></span>
+                        </span>
+                    }
+                </td>
+                <td class="name">
+                    @row.RowData.Name
+                </td>
+                <td class="amount">
+                    <span class="badge bg-@(row.RowData.Amount > 0 ? "success" : "danger")">
+                        @row.RowData.Amount.ToString("C2", CultureInfo.CurrentCulture)
+                    </span>
+                </td>
+                <td class="description">
+                    @row.RowData.Description
+                </td>
+            </RowTemplate>
+        </SelectablePagingTable>
 
-            <SelectTransactionCategoryModal @ref="selectTransactionCategoryModal"
-                OnTransactionsUpdated="TransactionsUpdated"></SelectTransactionCategoryModal>
+        <SelectTransactionCategoryModal @ref="selectTransactionCategoryModal"
+                                        OnTransactionsUpdated="TransactionsUpdated"></SelectTransactionCategoryModal>
     </div>
 </div>
 
@@ -94,7 +84,7 @@
 
     public async void OpenCategorySelectionModalForSelected()
     {
-        if(table.SelectedRows.Any())
+        if (table.SelectedRows.Any())
         {
             await selectTransactionCategoryModal.OpenForTransactionsAsync(table.SelectedRows);
         }

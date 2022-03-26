@@ -9,24 +9,21 @@ namespace Sinance.Business.Extensions
     {
         public static List<TransactionModel> ToDto(this List<TransactionEntity> transactions) => transactions.Select(x => x.ToDto()).ToList();
 
-        public static TransactionModel ToDto(this TransactionEntity transaction)
-        {
-            return new TransactionModel
+        public static TransactionModel ToDto(this TransactionEntity transaction) =>
+            new TransactionModel
             {
                 Id = transaction.Id,
                 Name = transaction.Name,
                 BankAccountId = transaction.BankAccountId,
                 Amount = transaction.Amount,
                 Date = transaction.Date,
-                Categories = transaction.TransactionCategories != null ? transaction.TransactionCategories.ToDto().ToList() : new List<TransactionCategoryModel>(),
+                Category = transaction.Category?.ToTransactionCategoryDto(),
                 Description = transaction.Description,
                 DestinationAccount = transaction.DestinationAccount
             };
-        }
 
-        public static TransactionEntity ToNewEntity(this TransactionModel transactionModel, int userId)
-        {
-            var entity = new TransactionEntity
+        public static TransactionEntity ToNewEntity(this TransactionModel transactionModel, int userId) =>
+            new TransactionEntity
             {
                 Name = transactionModel.Name,
                 Description = transactionModel.Description,
@@ -35,20 +32,9 @@ namespace Sinance.Business.Extensions
                 Date = transactionModel.Date,
                 BankAccountId = transactionModel.BankAccountId,
                 AccountNumber = transactionModel.FromAccount,
-                UserId = userId
+                UserId = userId,
+                CategoryId = transactionModel.Category?.CategoryId
             };
-
-            if (transactionModel.Categories != null)
-            {
-                entity.TransactionCategories = transactionModel.Categories.Select(x => new TransactionCategoryEntity
-                {
-                    Amount = x.Amount,
-                    CategoryId = x.CategoryId
-                }).ToList();
-            }
-
-            return entity;
-        }
 
         public static TransactionEntity UpdateFromModel(this TransactionEntity transactionEntity, TransactionModel model)
         {

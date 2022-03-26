@@ -12,23 +12,12 @@
     </td>
     <td class="categoryColumn">
         <a class="transactionCategoryBox">
-            @foreach (var transactionCategory in Model.Categories)
-            {
-                int width = 50;
-
-                if (Model.Categories.Count() > 1)
-                {
-                    width = (int)Math.Round(((transactionCategory.Amount ?? 1) / Model.Amount * 50));
-                    if (width < 0)
-                    {
-                        // Invert if this was a negative width
-                        width *= -1;
-                    }
-                }
-
-                string style = string.Format("width:{0}px;background-color:{1};", width, transactionCategory.ColorCode);
-                <div class="transactionCategoryFillBox" style="@style"></div>
+           @{
+                string style = Model.Category != null ?
+                    $"width:50px;background-color:{Model.Category.ColorCode};" :
+                    "width:50px;";
             }
+            <div class="transactionCategoryFillBox" style="@style"></div>
         </a>
     </td>
     <td class="amountColumn">

@@ -72,9 +72,6 @@ namespace Sinance.Business.Services.Categories
                 throw new DeleteStandardCategoryException();
             }
 
-            var transactionCategories = await unitOfWork.TransactionCategoryRepository.FindAllTracked(x => x.CategoryId == categoryId);
-
-            unitOfWork.TransactionCategoryRepository.DeleteRange(transactionCategories);
             unitOfWork.CategoryRepository.Delete(category);
 
             await unitOfWork.SaveAsync();
@@ -129,20 +126,11 @@ namespace Sinance.Business.Services.Categories
             }
 
             var transactions = await unitOfWork.TransactionRepository.FindAllTracked(
-                x => transactionIds.Any(y => y == x.Id),
-                includeProperties: nameof(TransactionEntity.TransactionCategories));
+                x => transactionIds.Any(y => y == x.Id));
 
             foreach (var transaction in transactions)
             {
-                transaction.TransactionCategories = new List<TransactionCategoryEntity>
-                {
-                    new TransactionCategoryEntity
-                    {
-                        TransactionId = transaction.Id,
-                        Amount = null,
-                        CategoryId = category.Id
-                    }
-                };
+                transaction.CategoryId = categoryId;
             }
 
             await unitOfWork.SaveAsync();

@@ -50,16 +50,16 @@ namespace Sinance.Controllers
             var totalProfitLossLastMonth = transactions.Sum(x => x.Amount);
 
             var totalIncomeLastMonth = transactions.Where(x =>
-                        (!x.Categories.Any() || x.Categories.Any(x => x.CategoryId != internalCashFlowCategory.Id)) && // Cashflow
+                        x.Category?.CategoryId != internalCashFlowCategory.Id && // Cashflow
                         x.Amount > 0).Sum(x => x.Amount);
 
             var totalExpensesLastMonth = transactions.Where(x =>
-                        (!x.Categories.Any() || x.Categories.Any(x => x.CategoryId != internalCashFlowCategory.Id)) && // Cashflow
+                        x.Category?.CategoryId != internalCashFlowCategory.Id && // Cashflow
                         x.Amount < 0).Sum(x => x.Amount * -1);
 
             // Yes it's ascending cause we are looking for the lowest amount
             var topExpenses = transactions.Where(x =>
-                    (!x.Categories.Any() || x.Categories.Any(x => x.CategoryId != internalCashFlowCategory.Id)) && // Cashflow
+                    x.Category?.CategoryId != internalCashFlowCategory.Id && // Cashflow
                     x.Amount < 0)
                 .OrderBy(x => x.Amount)
                 .Take(15)

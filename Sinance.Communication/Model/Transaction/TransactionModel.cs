@@ -21,9 +21,9 @@ namespace Sinance.Communication.Model.Transaction
         public int BankAccountId { get; set; }
 
         /// <summary>
-        /// Categories applied to the transaction
+        /// Category applied to the transaction
         /// </summary>
-        public List<TransactionCategoryModel> Categories { get; set; } = new List<TransactionCategoryModel>();
+        public TransactionCategoryModel Category { get; set; }
 
         /// <summary>
         /// Date

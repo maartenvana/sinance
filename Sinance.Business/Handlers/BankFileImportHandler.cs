@@ -94,7 +94,9 @@ namespace Sinance.Business.Handlers
 
         private static async Task MapCategoriesToRows(IUnitOfWork unitOfWork, int userId, IList<ImportRow> rowsToImport)
         {
-            var categoryMappings = await unitOfWork.CategoryMappingRepository.FindAll(item => item.Category.UserId == userId, "Category");
+            var categoryMappings = await unitOfWork.CategoryMappingRepository.FindAll(
+                item => item.Category.UserId == userId, 
+                includeProperties: new [] { "Category" });
 
             CategoryHandler.SetTransactionCategories(transactions: rowsToImport.Select(item => item.Transaction), categoryMappings: categoryMappings);
         }

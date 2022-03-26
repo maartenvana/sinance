@@ -2,11 +2,6 @@
 {
     public class TransactionCategoryModel
     {
-        /// <summary>
-        /// Amount
-        /// </summary>
-        public decimal? Amount { get; set; }
-
         public int CategoryId { get; set; }
 
         public string ColorCode { get; set; }

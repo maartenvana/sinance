@@ -31,7 +31,7 @@ namespace Sinance.Business.Calculations
                      item.Date >= startMonth &&
                      item.Date <= nextMonthEnd &&
                      item.Amount < 0,
-                 includeProperties: nameof(TransactionEntity.TransactionCategories));
+                 includeProperties: nameof(TransactionEntity.Category));
 
             var allCategories = await unitOfWork.CategoryRepository.ListAll(
                 includeProperties: new string[] {
@@ -71,7 +71,7 @@ namespace Sinance.Business.Calculations
             }
 
             var uncategorizedTransactions = transactions.Where(item =>
-                item.TransactionCategories.Count == 0 &&
+                item.CategoryId == null &&
                 item.Date >= startMonth &&
                 item.Date <= nextMonthEnd).ToList().ToDto();
 
@@ -95,12 +95,7 @@ namespace Sinance.Business.Calculations
                         item.Date >= dateRangeStart &&
                         item.Date <= dateRangeEnd &&
                         item.Amount < 0 &&
-                        item.TransactionCategories.Any(transactionCategory =>
-                            categoryIds.Any(reportCategory =>
-                                reportCategory == transactionCategory.CategoryId)),
-                    includeProperties: new string[] {
-                        nameof(TransactionEntity.TransactionCategories)
-                    });
+                        categoryIds.Any(reportCategory => reportCategory == item.CategoryId));
 
             var categories = await unitOfWork.CategoryRepository.FindAll(x => categoryIds.Any(y => y == x.Id), includeProperties: new string[] { nameof(CategoryEntity.ParentCategory) });
 
@@ -110,17 +105,11 @@ namespace Sinance.Business.Calculations
 
             foreach (var transaction in transactions)
             {
-                if (transaction.TransactionCategories?.Any() == true)
+                if (transaction.CategoryId != null)
                 {
-                    foreach (var transactionCategory in transaction.TransactionCategories.Where(transactionCategory => categoryIds.Any(reportCategory => reportCategory == transactionCategory.CategoryId)))
-                    {
-                        var category = categories.Single(x => x.Id == transactionCategory.CategoryId);
-
-                        var amount = transactionCategory.Amount ?? transaction.Amount;
-                        amount = GetPositiveAmount(amount);
-
-                        reportDictionary[CreateCategoryNameWithOptionalParent(category)][transaction.Date.Month] += amount;
-                    }
+                    var category = categories.Single(x => x.Id == transaction.CategoryId);
+                    var amount = GetPositiveAmount(transaction.Amount);
+                    reportDictionary[CreateCategoryNameWithOptionalParent(category)][transaction.Date.Month] += amount;
                 }
                 else
                 {
@@ -202,13 +191,10 @@ namespace Sinance.Business.Calculations
         /// <param name="category">Category to look for</param>
         /// <param name="transactions">Transactions to use</param>
         /// <returns></returns>
-        private static decimal CalculateSumCategoryTransactions(CategoryEntity category, IList<TransactionEntity> transactions)
-        {
-            return transactions.Sum(item => item.TransactionCategories.Any(transCategory => transCategory.Amount == null) ?
-                                        item.Amount :
-                                        item.TransactionCategories.Where(transCategory => transCategory.CategoryId == category.Id)
-                                            .Sum(transCategory => transCategory.Amount.GetValueOrDefault()));
-        }
+        private static decimal CalculateSumCategoryTransactions(CategoryEntity category, IList<TransactionEntity> transactions) =>
+            transactions
+                .Where(transaction => transaction.CategoryId == category.Id)
+                .Sum(transaction => transaction.Amount);
 
         private static string CreateCategoryNameWithOptionalParent(CategoryEntity category)
         {
@@ -223,8 +209,8 @@ namespace Sinance.Business.Calculations
         }
 
         private static Dictionary<int, decimal> CreateMonthlyDictionary() =>
-                    new Dictionary<int, decimal>
-                    {
+            new Dictionary<int, decimal>
+            {
                 { 1, 0 },
                 { 2, 0 },
                 { 3, 0 },
@@ -237,7 +223,7 @@ namespace Sinance.Business.Calculations
                 { 10, 0 },
                 { 11, 0 },
                 { 12, 0 }
-                    };
+            };
 
         private static decimal GetPositiveAmount(decimal amount)
         {
@@ -252,15 +238,10 @@ namespace Sinance.Business.Calculations
         /// <param name="monthStart">Transactions need to occur after this date</param>
         /// <param name="nextMonthStart">Transactions need to occur before this date</param>
         /// <returns>List of matching transactions</returns>
-        private static IList<TransactionEntity> TransactionsForMonth(IList<TransactionEntity> transactions, CategoryEntity category, int year, int month)
-        {
-            IList<TransactionEntity> lastMonthParentTransactions = transactions.Where(
-                    item =>
-                        item.Date.Year == year &&
-                        item.Date.Month == month &&
-                        item.TransactionCategories.Any(transactionCategory =>
-                            transactionCategory.CategoryId == category.Id)).ToList();
-            return lastMonthParentTransactions;
-        }
+        private static IList<TransactionEntity> TransactionsForMonth(IList<TransactionEntity> transactions, CategoryEntity category, int year, int month) =>
+            transactions.Where(item =>
+                item.Date.Year == year &&
+                item.Date.Month == month &&
+                item.CategoryId == category.Id).ToList();
     }
 }

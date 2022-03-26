@@ -1,14 +1,11 @@
-using System;
-using System.Globalization;
-using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
-using Sinance.BlazorApp.Storage;
 using Sinance.Storage;
+using System;
 
 namespace Sinance.BlazorApp
 {
@@ -19,8 +16,8 @@ namespace Sinance.BlazorApp
             .ConfigureWebHostDefaults(webBuilder =>
             {
                 webBuilder
-                .UseStartup<Startup>()
-                .UseSerilog();
+                    .UseStartup<Startup>()
+                    .UseSerilog();
             });
 
         public static int Main(string[] args)
@@ -39,7 +36,6 @@ namespace Sinance.BlazorApp
                 var host = CreateHostBuilder(args).Build();
 
                 CreateOrMigrateDatabase(host);
-                SeedData(host);
 
                 Log.Information("Starting web host");
                 host.Run();
@@ -53,37 +49,6 @@ namespace Sinance.BlazorApp
             finally
             {
                 Log.CloseAndFlush();
-            }
-        }
-
-        private static void SeedData(IHost host)
-        {
-            using var scope = host.Services.CreateScope();
-
-            var services = scope.ServiceProvider;
-
-            try
-            {
-                var contextFactory = services.GetRequiredService<Storage.IDbContextFactory<SinanceContext>>();
-                using var context = contextFactory.CreateDbContext();
-
-                Log.Information("Seeding data");
-
-                var allTransactions = context.Transactions
-                    .Include(x => x.TransactionCategories)
-                    .Where(x => x.CategoryId == null && x.TransactionCategories.Any()).ToList();
-                foreach (var transaction in allTransactions)
-                {
-                    transaction.CategoryId = transaction.TransactionCategories.First().CategoryId;
-                }
-
-                context.SaveChanges();
-                
-                Log.Information("Seeding data completed");
-            }
-            catch (Exception exc)
-            {
-                Log.Error(exc, "An error seeding the DB.");
             }
         }
 

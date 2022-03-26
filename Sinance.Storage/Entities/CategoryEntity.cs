@@ -54,11 +54,6 @@ namespace Sinance.Storage.Entities
         public int? ParentId { get; set; }
 
         /// <summary>
-        /// Transaction categories
-        /// </summary>
-        public List<TransactionCategoryEntity> TransactionCategories { get; set; }
-
-        /// <summary>
         /// Short name of max 3 chars
         /// </summary>
         [StringLength(4)]

@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: Sinance.BlazorApp/Dockerfile
     environment:
-      - ConnectionStrings__SQL=server=mysql;port=3306;database=Sinance_Blazor;user=root;password=development;
+      - ConnectionStrings__SQL=server=mysql;port=3306;database=Sinance_Blazor;user=root;password=my-secret-pw;
 
   sinance.web:
     image: ${DOCKER_REGISTRY-}sinanceweb
@@ -17,9 +17,11 @@ services:
     environment:
       - Database__SeedDemoData=true
       - Database__OverrideSeedDemoData=true
-      - ConnectionStrings__SQL=server=mysql;port=3306;database=Sinance_Legacy;user=root;password=development;
+      - ConnectionStrings__SQL=server=mysql;port=3306;database=Sinance_Legacy;user=root;password=my-secret-pw;
 
   mysql:
     image: mysql:5.7
+    ports:
+      - 3307:3306
     environment:
-    - MYSQL_ROOT_PASSWORD=development
+    - MYSQL_ROOT_PASSWORD=my-secret-pw

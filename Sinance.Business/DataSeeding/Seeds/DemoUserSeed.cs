@@ -206,14 +206,7 @@ namespace Sinance.Business.DataSeeding.Seeds
                     BankAccount = primaryChecking,
                     Description = "Savings deposit",
                     Date = startDate.AddMonths(-i),
-                    TransactionCategories = new List<TransactionCategoryEntity>
-                    {
-                        new TransactionCategoryEntity
-                        {
-                            Amount = amount,
-                            Category = internalCashflowCategory
-                        }
-                    },
+                    Category = internalCashflowCategory,
                     DestinationAccount = "NL83RABO2338418883",
                     Name = "Savings",
                     User = primaryChecking.User
@@ -226,14 +219,7 @@ namespace Sinance.Business.DataSeeding.Seeds
                     BankAccount = savingsAccount,
                     Description = "Savings deposit",
                     Date = startDate.AddMonths(-i),
-                    TransactionCategories = new List<TransactionCategoryEntity>
-                    {
-                        new TransactionCategoryEntity
-                        {
-                            Amount = amount,
-                            Category = internalCashflowCategory
-                        }
-                    },
+                    Category = internalCashflowCategory,
                     DestinationAccount = "",
                     Name = "Savings",
                     User = savingsAccount.User
@@ -269,14 +255,7 @@ namespace Sinance.Business.DataSeeding.Seeds
                     BankAccount = bankAccount,
                     Description = transactionDescription,
                     Date = startDate.AddMonths(-i),
-                    TransactionCategories = new List<TransactionCategoryEntity>
-                    {
-                        new TransactionCategoryEntity
-                        {
-                            Amount = amount,
-                            Category = category
-                        }
-                    },
+                    Category = category,
                     DestinationAccount = "NL83RABO2338418883",
                     Name = transactionName,
                     User = bankAccount.User
@@ -316,14 +295,7 @@ namespace Sinance.Business.DataSeeding.Seeds
                     BankAccount = bankAccount,
                     Description = transactionDescription,
                     Date = transactionDate,
-                    TransactionCategories = new List<TransactionCategoryEntity>
-                    {
-                        new TransactionCategoryEntity
-                        {
-                            Amount = amount,
-                            Category = category
-                        }
-                    },
+                    Category = category,
                     DestinationAccount = "NL83RABO2338418883",
                     Name = transactionName,
                     User = bankAccount.User
@@ -360,14 +332,7 @@ namespace Sinance.Business.DataSeeding.Seeds
                     BankAccount = bankAccount,
                     Description = transactionDescription,
                     Date = startDate.AddDays(-7 * i),
-                    TransactionCategories = new List<TransactionCategoryEntity>
-                    {
-                        new TransactionCategoryEntity
-                        {
-                            Amount = amount,
-                            Category = category
-                        }
-                    },
+                    Category = category,
                     DestinationAccount = "NL83RABO2338418883",
                     Name = transactionName,
                     User = bankAccount.User

@@ -46,7 +46,7 @@
             });
         });
 
-        function SetSelectedTransaction(transactionId, categories) {
+        function SetSelectedTransaction(transactionId, category) {
             selectedTransaction = transactionId;
 
             $(".popoverSelectedCategory").removeClass("popoverSelectedCategory");
@@ -56,10 +56,9 @@
                     $(".category" + value).addClass("popoverSelectedCategory");
                 });
 
-                var firstCategory = categories[0];
-                if (firstCategory !== undefined) {
-                    var firstCategoryOffset = $(".category" + firstCategory).offset().top;
-                    $(".CategoryPopoverList").scrollTop(firstCategoryOffset - $(".CategoryPopoverList").offset().top);
+                if (category !== undefined) {
+                    var categoryOffset = $(".category" + category).offset().top;
+                    $(".CategoryPopoverList").scrollTop(categoryOffset - $(".CategoryPopoverList").offset().top);
                 }
             }
         }
@@ -165,7 +164,6 @@
                     <div class="transactionCategoryBox-sm" style="background-color: @(subCategory.ColorCode)"></div><span> @subCategory.Name</span>
                 </div>
             }
-
         }
     </div>
 </div>

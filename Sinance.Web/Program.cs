@@ -66,25 +66,18 @@ namespace Sinance.Web
 
             var services = scope.ServiceProvider;
 
-            try
-            {
-                var unitOfWorkFunc = services.GetRequiredService<Func<IUnitOfWork>>();
-                using var unitOfWork = unitOfWorkFunc();
+            var unitOfWorkFunc = services.GetRequiredService<Func<IUnitOfWork>>();
+            using var unitOfWork = unitOfWorkFunc();
 
-                Log.Information("Checking if database needs to be migrated/created");
-                var pendingMigrations = unitOfWork.Context.Database.GetPendingMigrations();
-                foreach (var pendingMigration in pendingMigrations)
-                {
-                    Log.Information("Need to apply migration: {pendingMigration}", pendingMigration);
-                }
-                unitOfWork.Context.Database.Migrate();
-
-                Log.Information("Initializing database completed");
-            }
-            catch (Exception exc)
+            Log.Information("Checking if database needs to be migrated/created");
+            var pendingMigrations = unitOfWork.Context.Database.GetPendingMigrations();
+            foreach (var pendingMigration in pendingMigrations)
             {
-                Log.Error(exc, "An error occurred creating the DB.");
+                Log.Information("Need to apply migration: {pendingMigration}", pendingMigration);
             }
+            unitOfWork.Context.Database.Migrate();
+
+            Log.Information("Initializing database completed");
         }
     }
 }

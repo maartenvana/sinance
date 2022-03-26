@@ -22,15 +22,10 @@ namespace Sinance.Business.Calculations
             using var unitOfWork = _unitOfWork();
 
             // No need to sort this list, we loop through it by month numbers
-            var transactions = await unitOfWork.TransactionRepository
-            .FindAll(
-                findQuery: item =>
-                    item.Date >= startDate &&
-                    item.Date <= endDate &&
-                    item.Amount < 0,
-                includeProperties: new string[] {
-                    nameof(TransactionEntity.TransactionCategories)
-                });
+            var transactions = await unitOfWork.TransactionRepository.FindAll(findQuery: item =>
+                item.Date >= startDate &&
+                item.Date <= endDate &&
+                item.Amount < 0);
 
             var categories = await unitOfWork.CategoryRepository.ListAll();
 
@@ -45,19 +40,15 @@ namespace Sinance.Business.Calculations
 
             foreach (var transaction in transactions)
             {
-                if (transaction.TransactionCategories.Any())
+                if (transaction.CategoryId.HasValue && transaction.CategoryId != internalCashFlowCategory.Id)
                 {
-                    foreach (var transactionCategory in transaction.TransactionCategories.Where(item => item.CategoryId != internalCashFlowCategory.Id))
+                    var categoryId = transaction.CategoryId.Value;
+                    if (!amountPerCategory.ContainsKey(categoryId))
                     {
-                        var categoryId = transactionCategory.CategoryId;
-
-                        if (!amountPerCategory.ContainsKey(categoryId))
-                        {
-                            amountPerCategory.Add(categoryId, 0M);
-                        }
-
-                        amountPerCategory[categoryId] += (transactionCategory.Amount ?? transaction.Amount) * -1;
+                        amountPerCategory.Add(categoryId, 0M);
                     }
+
+                    amountPerCategory[categoryId] += transaction.Amount * -1;
                 }
                 else
                 {

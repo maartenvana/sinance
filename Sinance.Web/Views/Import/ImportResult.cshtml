@@ -60,23 +60,12 @@
                             </td>
                             <td>
                                 <a class="transactionCategoryBox">
-                                    @foreach (var transactionCategory in Model.ImportRows[index].Transaction.Categories)
-                                    {
-                                        int width = 50;
-
-                                        if (Model.ImportRows[index].Transaction.Categories.Count() > 1)
-                                        {
-                                            width = (int)Math.Round(((transactionCategory.Amount ?? 1) / Model.ImportRows[index].Transaction.Amount * 50));
-                                            if (width < 0)
-                                            {
-                                                // Invert if this was a negative width
-                                                width *= -1;
-                                            }
-                                        }
-
-                                        string style = string.Format("width:{0}px;background-color:{1};", width, transactionCategory.ColorCode);
-                                        <div class="transactionCategoryFillBox" style="@style"></div>
+                                    @{
+                                        string style = Model.ImportRows[index].Transaction.Category != null ?
+                                            $"width:50px;background-color:{Model.ImportRows[index].Transaction.Category.ColorCode};" :
+                                            "width:50px;";
                                     }
+                                    <div class="transactionCategoryFillBox" style="@style"></div>
                                 </a>
                             </td>
                             <td class="amountColumn">

@@ -7,5 +7,5 @@ dotnet ef --startup-project ../Sinance.Web migrations add <migrationname> -c Sin
 # Removing the last migration
 ```
 cd Sinance.Storage
-dotnet ef migrations remove
+dotnet ef --startup-project ../Sinance.Web migrations remove
 ```

@@ -30,7 +30,7 @@ namespace Sinance.Business.Calculations
                     item.Date >= startMonth &&
                     item.Date <= nextMonthEnd &&
                     item.Amount > 0,
-                includeProperties: nameof(TransactionEntity.TransactionCategories));
+                includeProperties: nameof(TransactionEntity.Category));
 
             var allCategories = await unitOfWork.CategoryRepository.ListAll(
                 includeProperties: new string[]
@@ -54,7 +54,7 @@ namespace Sinance.Business.Calculations
             }
 
             var uncategorizedTransactions = transactions.Where(item =>
-                item.TransactionCategories.Count == 0 &&
+                item.CategoryId == null &&
                 item.Date >= startMonth &&
                 item.Date <= nextMonthEnd).ToList().ToDto();
 
@@ -117,13 +117,8 @@ namespace Sinance.Business.Calculations
         /// <param name="category">Category to look for</param>
         /// <param name="transactions">Transactions to use</param>
         /// <returns></returns>
-        private static decimal CalculateSumCategoryTransactions(CategoryEntity category, IList<TransactionEntity> transactions)
-        {
-            return transactions.Sum(item => item.TransactionCategories.Any(transCategory => transCategory.Amount == null) ?
-                                        item.Amount :
-                                        item.TransactionCategories.Where(transCategory => transCategory.CategoryId == category.Id)
-                                            .Sum(transCategory => transCategory.Amount.GetValueOrDefault()));
-        }
+        private static decimal CalculateSumCategoryTransactions(CategoryEntity category, IList<TransactionEntity> transactions) =>
+            transactions.Where(x => x.CategoryId == category.Id).Sum(item => item.Amount);
 
         /// <summary>
         /// Searches for transactions between two dates and that are mapped to the given category
@@ -133,15 +128,10 @@ namespace Sinance.Business.Calculations
         /// <param name="monthStart">Transactions need to occur after this date</param>
         /// <param name="nextMonthStart">Transactions need to occur before this date</param>
         /// <returns>List of matching transactions</returns>
-        private static IList<TransactionEntity> TransactionsForMonth(IList<TransactionEntity> transactions, CategoryEntity category, int year, int month)
-        {
-            var lastMonthParentTransactions = transactions.Where(
-                    item =>
-                        item.Date.Year == year &&
-                        item.Date.Month == month &&
-                        item.TransactionCategories.Any(transactionCategory =>
-                            transactionCategory.CategoryId == category.Id)).ToList();
-            return lastMonthParentTransactions;
-        }
+        private static IList<TransactionEntity> TransactionsForMonth(IList<TransactionEntity> transactions, CategoryEntity category, int year, int month) => 
+            transactions.Where(item =>
+                item.Date.Year == year &&
+                item.Date.Month == month &&
+                item.CategoryId == category.Id).ToList();
     }
 }

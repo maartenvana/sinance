@@ -31,17 +31,14 @@ namespace Sinance.Business.Services.Transactions
         {
             using var unitOfWork = _unitOfWork();
 
-            var transaction = await unitOfWork.TransactionRepository.FindSingleTracked(
-                item => item.Id == transactionId,
-                includeProperties: nameof(TransactionEntity.TransactionCategories));
+            var transaction = await unitOfWork.TransactionRepository.FindSingleTracked(item => item.Id == transactionId);
 
             if (transaction == null)
             {
                 throw new NotFoundException(nameof(TransactionEntity));
             }
 
-            // Remove any previous assigned categories
-            unitOfWork.TransactionCategoryRepository.DeleteRange(transaction.TransactionCategories);
+            transaction.CategoryId = null;
 
             await unitOfWork.SaveAsync();
 
@@ -84,11 +81,6 @@ namespace Sinance.Business.Services.Transactions
                 throw new NotFoundException(nameof(TransactionEntity));
             }
 
-            if (transaction.TransactionCategories != null)
-            {
-                unitOfWork.TransactionCategoryRepository.DeleteRange(transaction.TransactionCategories);
-            }
-
             unitOfWork.TransactionRepository.Delete(transaction);
             await unitOfWork.SaveAsync();
 
@@ -103,16 +95,13 @@ namespace Sinance.Business.Services.Transactions
 
             excludeCategoryIds ??= new int[] { };
 
-            var transactions = await unitOfWork.TransactionRepository.FindTopAscending(findQuery: x =>
-                        x.TransactionCategories.All(x => !excludeCategoryIds.Any(y => y == x.CategoryId)) &&
-                        x.Date.Year == year,
+            var transactions = await unitOfWork.TransactionRepository.FindTopAscending(findQuery: transaction =>
+                        !excludeCategoryIds.Any(y => y == transaction.CategoryId) &&
+                        transaction.Date.Year == year,
                         orderByAscending: x => x.Amount,
                         count: count,
                         skip: skip,
-                        includeProperties: new string[] {
-                            nameof(TransactionEntity.TransactionCategories),
-                            $"{nameof(TransactionEntity.TransactionCategories)}.{nameof(TransactionCategoryEntity.Category)}"
-                            });
+                        includeProperties: new string[] { nameof(TransactionEntity.Category) });
 
             return transactions.ToDto().ToList();
         }
@@ -140,10 +129,7 @@ namespace Sinance.Business.Services.Transactions
                                     orderByDescending: x => x.Date,
                                     count: count,
                                     skip: skip,
-                                    includeProperties: new string[] {
-                                        nameof(TransactionEntity.TransactionCategories),
-                                        $"{nameof(TransactionEntity.TransactionCategories)}.{nameof(TransactionCategoryEntity.Category)}"
-                                    });
+                                    includeProperties: new string[] { nameof(TransactionEntity.Category) });
 
             return transactions.ToDto().ToList();
         }
@@ -155,10 +141,7 @@ namespace Sinance.Business.Services.Transactions
             var transactions = await unitOfWork.TransactionRepository.FindAll(findQuery: x =>
                         x.Date.Year == year &&
                         x.Date.Month == month,
-                        includeProperties: new string[] {
-                            nameof(TransactionEntity.TransactionCategories),
-                            $"{nameof(TransactionEntity.TransactionCategories)}.{nameof(TransactionCategoryEntity.Category)}"
-                            });
+                        includeProperties: new string[] { nameof(TransactionEntity.Category) });
 
             return transactions.ToDto().ToList();
         }
@@ -175,25 +158,14 @@ namespace Sinance.Business.Services.Transactions
             }
 
             var category = await unitOfWork.CategoryRepository.FindSingle(item => item.Id == categoryId);
-
             if (category == null)
             {
                 throw new NotFoundException(nameof(CategoryEntity));
             }
 
-            // Remove any previous assigned categories
-            unitOfWork.TransactionCategoryRepository.DeleteRange(transaction.TransactionCategories);
-
-            // Insert the new link
-            unitOfWork.TransactionCategoryRepository.Insert(new TransactionCategoryEntity
-            {
-                TransactionId = transaction.Id,
-                CategoryId = category.Id
-            });
+            transaction.Category = category;
 
             await unitOfWork.SaveAsync();
-
-            transaction = await FindTransaction(transactionId, unitOfWork);
 
             return transaction.ToDto();
         }
@@ -226,8 +198,7 @@ namespace Sinance.Business.Services.Transactions
                 findQuery: item => item.Id == transactionId,
                 includeProperties: new string[] {
                     nameof(TransactionEntity.BankAccount),
-                    nameof(TransactionEntity.TransactionCategories),
-                    $"{nameof(TransactionEntity.TransactionCategories)}.{nameof(TransactionCategoryEntity.Category)}"
+                    nameof(TransactionEntity.Category)
                 });
         }
     }

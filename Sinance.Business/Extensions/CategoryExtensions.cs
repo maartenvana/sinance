@@ -1,4 +1,5 @@
 ﻿using Sinance.Communication.Model.Category;
+using Sinance.Communication.Model.Transaction;
 using Sinance.Storage.Entities;
 using System.Collections.Generic;
 using System.Linq;
@@ -52,6 +53,14 @@ namespace Sinance.Business.Extensions
 
             return entity;
         }
+
+        public static TransactionCategoryModel ToTransactionCategoryDto(this CategoryEntity entity) =>
+            new TransactionCategoryModel()
+            {
+                CategoryId = entity.Id,
+                ColorCode = entity.ColorCode,
+                Name = entity.Name
+            };
 
         public static CategoryEntity UpdateStandardEntity(this CategoryEntity entity, CategoryModel model)
         {

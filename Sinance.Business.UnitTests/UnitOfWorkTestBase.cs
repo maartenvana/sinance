@@ -70,7 +70,8 @@ namespace Sinance.Business.Tests
                     new GenericRepository<CategoryMappingEntity>(context),
                     new GenericRepository<CustomReportCategoryEntity>(context),
                     new GenericRepository<CustomReportEntity>(context),
-                    new GenericRepository<TransactionEntity>(context)
+                    new GenericRepository<TransactionEntity>(context),
+                    new GenericRepository<SourceTransactionEntity>(context)
                 );
             });
         }

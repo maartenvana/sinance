@@ -8,20 +8,17 @@ namespace Sinance.Storage.Entities
     /// <summary>
     /// Transaction entity
     /// </summary>
-    public class TransactionEntity : UserEntityBase
+    public class SourceTransactionEntity : UserEntityBase
     {
         /// <summary>
         /// Account number from
         /// </summary>
-        [Display(Name = "Rekeningnummer")]
         [StringLength(50)]
         public string AccountNumber { get; set; }
 
         /// <summary>
         /// Amount
         /// </summary>
-        [Display(Name = "Bedrag")]
-        [DisplayFormat(DataFormatString = "{0:C2}")]
         public decimal Amount { get; set; }
 
         /// <summary>
@@ -39,39 +36,30 @@ namespace Sinance.Storage.Entities
         /// Date
         /// </summary>
         [Required]
-        [Display(Name = "Datum")]
         public DateTime Date { get; set; }
 
         /// <summary>
         /// Description
         /// </summary>
-        [Display(Name = "Omschrijving")]
         [StringLength(500)]
         public string Description { get; set; }
 
         /// <summary>
         /// Destination account
         /// </summary>
-        [Display(Name = "Tegenrekening")]
         [StringLength(50)]
         public string DestinationAccount { get; set; }
 
         /// <summary>
         /// Name
         /// </summary>
-        [Required]
-        [Display(Name = "Titel")]
         [StringLength(255)]
         public string Name { get; set; }
 
-        [ForeignKey("CategoryId")]
+        public ICollection<TransactionEntity> Transactions { get; set; } = new HashSet<TransactionEntity>();
+
         public CategoryEntity Category { get; set; }
 
         public int? CategoryId { get; set; }
-
-        [ForeignKey("SourceTransactionId")]
-        public SourceTransactionEntity SourceTransaction { get; set; }
-
-        public int SourceTransactionId { get; set; }
     }
 }

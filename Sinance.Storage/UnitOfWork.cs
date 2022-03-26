@@ -22,6 +22,8 @@ namespace Sinance.Storage
 
         public IGenericRepository<CustomReportEntity> CustomReportRepository { get; }
 
+        public IGenericRepository<SourceTransactionEntity> SourceTransactionsRepository { get; }
+
         public IGenericRepository<TransactionEntity> TransactionRepository { get; }
 
         public IGenericRepository<SinanceUserEntity> UserRepository { get; }
@@ -34,7 +36,8 @@ namespace Sinance.Storage
             IGenericRepository<CategoryMappingEntity> categoryMappingRepository,
             IGenericRepository<CustomReportCategoryEntity> customReportCategorieRepository,
             IGenericRepository<CustomReportEntity> customReportRepository,
-            IGenericRepository<TransactionEntity> transactionRepository)
+            IGenericRepository<TransactionEntity> transactionRepository,
+            IGenericRepository<SourceTransactionEntity> sourceTransactionsRepository)
         {
             Context = context;
             UserRepository = userRepository;
@@ -44,6 +47,7 @@ namespace Sinance.Storage
             CustomReportCategoryRepository = customReportCategorieRepository;
             CustomReportRepository = customReportRepository;
             TransactionRepository = transactionRepository;
+            SourceTransactionsRepository = sourceTransactionsRepository;
         }
 
         public void Dispose()

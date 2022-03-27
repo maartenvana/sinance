@@ -58,25 +58,18 @@ namespace Sinance.BlazorApp
 
             var services = scope.ServiceProvider;
 
-            try
-            {
-                var contextFactory = services.GetRequiredService<Storage.IDbContextFactory<SinanceContext>>();
-                using var context = contextFactory.CreateDbContext();
+            var contextFactory = services.GetRequiredService<Storage.IDbContextFactory<SinanceContext>>();
+            using var context = contextFactory.CreateDbContext();
 
-                Log.Information("Checking if database needs to be migrated/created");
-                var pendingMigrations = context.Database.GetPendingMigrations();
-                foreach (var pendingMigration in pendingMigrations)
-                {
-                    Log.Information("Need to apply migration: {pendingMigration}", pendingMigration);
-                }
-                context.Database.Migrate();
-
-                Log.Information("Initializing database completed");
-            }
-            catch (Exception exc)
+            Log.Information("Checking if database needs to be migrated/created");
+            var pendingMigrations = context.Database.GetPendingMigrations();
+            foreach (var pendingMigration in pendingMigrations)
             {
-                Log.Error(exc, "An error occurred migrating the DB.");
+                Log.Information("Need to apply migration: {pendingMigration}", pendingMigration);
             }
+            context.Database.Migrate();
+
+            Log.Information("Initializing database completed");
         }
     }
 }

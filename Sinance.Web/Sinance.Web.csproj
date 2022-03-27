@@ -38,19 +38,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="Classes\**" />
-    <Compile Remove="out\**" />
-    <Content Remove="Classes\**" />
-    <Content Remove="out\**" />
-    <EmbeddedResource Remove="Classes\**" />
-    <EmbeddedResource Remove="out\**" />
-    <None Remove="Classes\**" />
-    <None Remove="out\**" />
-    <Watch Remove="Classes\**" />
-    <Watch Remove="out\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Watch Remove="Components\SideNavigation.cs" />
     <Watch Remove="Components\SimpleMonthSelector.cs" />
     <Watch Remove="Extensions\IApplicationBuilderStorageExtensions.cs" />

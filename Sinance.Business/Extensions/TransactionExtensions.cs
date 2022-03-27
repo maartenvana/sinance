@@ -10,7 +10,7 @@ namespace Sinance.Business.Extensions
         public static List<TransactionModel> ToDto(this List<TransactionEntity> transactions) => transactions.Select(x => x.ToDto()).ToList();
 
         public static TransactionModel ToDto(this TransactionEntity transaction) =>
-            new TransactionModel
+            new()
             {
                 Id = transaction.Id,
                 Name = transaction.Name,
@@ -23,7 +23,7 @@ namespace Sinance.Business.Extensions
             };
 
         public static TransactionEntity ToNewEntity(this TransactionModel transactionModel, int userId) =>
-            new TransactionEntity
+            new()
             {
                 Name = transactionModel.Name,
                 Description = transactionModel.Description,
@@ -34,6 +34,19 @@ namespace Sinance.Business.Extensions
                 AccountNumber = transactionModel.FromAccount,
                 UserId = userId,
                 CategoryId = transactionModel.Category?.CategoryId
+            };
+
+        public static ImportTransactionEntity ToNewImportEntity(this TransactionModel transactionModel, int userId) =>
+            new()
+            {
+                Name = transactionModel.Name,
+                Description = transactionModel.Description,
+                DestinationAccount = transactionModel.DestinationAccount,
+                Amount = transactionModel.Amount,
+                Date = transactionModel.Date,
+                BankAccountId = transactionModel.BankAccountId,
+                AccountNumber = transactionModel.FromAccount,
+                UserId = userId
             };
 
         public static TransactionEntity UpdateFromModel(this TransactionEntity transactionEntity, TransactionModel model)

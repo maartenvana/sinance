@@ -57,7 +57,7 @@ namespace Sinance.Business.Handlers
             return importRows;
         }
 
-        private static void MatchExistingTransactionsWithImportRows(IList<ImportRow> importRows, List<TransactionEntity> existingTransactions)
+        private static void MatchExistingTransactionsWithImportRows(IList<ImportRow> importRows, List<ImportTransactionEntity> existingTransactions)
         {
             foreach (var importRow in importRows)
             {
@@ -68,13 +68,13 @@ namespace Sinance.Business.Handlers
             }
         }
 
-        private static bool ImportRowHasExistingTransaction(List<TransactionEntity> existingTransactions, ImportRow importRow) => 
+        private static bool ImportRowHasExistingTransaction(List<ImportTransactionEntity> existingTransactions, ImportRow importRow) => 
             existingTransactions.Any(transaction => 
                 importRow.Transaction.Amount == transaction.Amount &&
                 importRow.Transaction.Name.Equals(transaction.Name.Trim(), StringComparison.CurrentCultureIgnoreCase) &&
                 importRow.Transaction.Date == transaction.Date);
 
-        private static async Task<List<TransactionEntity>> GetExistingTransactionsForImportRows(
+        private static async Task<List<ImportTransactionEntity>> GetExistingTransactionsForImportRows(
             IUnitOfWork unitOfWork, 
             int userId,
             int bankAccountId,
@@ -83,7 +83,7 @@ namespace Sinance.Business.Handlers
             var firstDate = rowsToImport.Min(item => item.Transaction.Date);
             var lastDate = rowsToImport.Max(item => item.Transaction.Date);
 
-            var existingTransactions = await unitOfWork.TransactionRepository
+            var existingTransactions = await unitOfWork.ImportTransactionsRepository
                 .FindAll(transaction => 
                     transaction.BankAccountId == bankAccountId &&
                     transaction.UserId == userId && 
@@ -113,15 +113,20 @@ namespace Sinance.Business.Handlers
         {
             var savedTransactions = 0;
 
-            // Select all cached import rows that have to be imported
-            foreach (var cachedImportRow in importRows.Where(item => !item.ExistsInDatabase && item.Import)
+            var cachedImportRowTransactions = importRows
+                .Where(item => !item.ExistsInDatabase && item.Import)
                 .Select(importRow => cachedImportRows.SingleOrDefault(item => item.ImportRowId == importRow.ImportRowId))
-                .Where(cachedImportRow => cachedImportRow != null))
-            {
-                // Set the application user id and bank account id
-                cachedImportRow.Transaction.BankAccountId = bankAccountId;
+                .Where(cachedImportRow => cachedImportRow != null)
+                .Select(x => x.Transaction);
 
-                unitOfWork.TransactionRepository.Insert(cachedImportRow.Transaction.ToNewEntity(userId));
+            // Select all cached import rows that have to be imported
+            foreach (var cachedImportRowTransaction in cachedImportRowTransactions)
+            {
+                cachedImportRowTransaction.BankAccountId = bankAccountId;
+
+                // Import into both tables, the import is only for registration and double prevention
+                unitOfWork.TransactionRepository.Insert(cachedImportRowTransaction.ToNewEntity(userId));
+                unitOfWork.ImportTransactionsRepository.Insert(cachedImportRowTransaction.ToNewImportEntity(userId));
 
                 // Count how many we inserted
                 savedTransactions++;

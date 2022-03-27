@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Sinance.Storage;
 
@@ -11,9 +12,10 @@ using Sinance.Storage;
 namespace Sinance.Storage.Migrations
 {
     [DbContext(typeof(SinanceContext))]
-    partial class SinanceContextModelSnapshot : ModelSnapshot
+    [Migration("20220327202619_ImportTransactions")]
+    partial class ImportTransactions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -176,7 +178,25 @@ namespace Sinance.Storage.Migrations
                     b.ToTable("CustomReport", (string)null);
                 });
 
-            modelBuilder.Entity("Sinance.Storage.Entities.ImportTransactionEntity", b =>
+            modelBuilder.Entity("Sinance.Storage.Entities.SinanceUserEntity", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("Password")
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Username")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users", (string)null);
+                });
+
+            modelBuilder.Entity("Sinance.Storage.Entities.SourceTransactionEntity", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -220,24 +240,6 @@ namespace Sinance.Storage.Migrations
                     b.ToTable("ImportTransactions", (string)null);
                 });
 
-            modelBuilder.Entity("Sinance.Storage.Entities.SinanceUserEntity", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Password")
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Username")
-                        .HasColumnType("longtext");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Users", (string)null);
-                });
-
             modelBuilder.Entity("Sinance.Storage.Entities.TransactionEntity", b =>
                 {
                     b.Property<int>("Id")
@@ -269,13 +271,13 @@ namespace Sinance.Storage.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
-                    b.Property<int?>("ImportTransactionId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
+
+                    b.Property<int>("SourceTransactionId")
+                        .HasColumnType("int");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -286,7 +288,7 @@ namespace Sinance.Storage.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.HasIndex("ImportTransactionId");
+                    b.HasIndex("SourceTransactionId");
 
                     b.HasIndex("UserId");
 
@@ -370,7 +372,7 @@ namespace Sinance.Storage.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("Sinance.Storage.Entities.ImportTransactionEntity", b =>
+            modelBuilder.Entity("Sinance.Storage.Entities.SourceTransactionEntity", b =>
                 {
                     b.HasOne("Sinance.Storage.Entities.BankAccountEntity", "BankAccount")
                         .WithMany()
@@ -401,9 +403,11 @@ namespace Sinance.Storage.Migrations
                         .WithMany()
                         .HasForeignKey("CategoryId");
 
-                    b.HasOne("Sinance.Storage.Entities.ImportTransactionEntity", "ImportTransaction")
+                    b.HasOne("Sinance.Storage.Entities.SourceTransactionEntity", "SourceTransaction")
                         .WithMany("Transactions")
-                        .HasForeignKey("ImportTransactionId");
+                        .HasForeignKey("SourceTransactionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.HasOne("Sinance.Storage.Entities.SinanceUserEntity", "User")
                         .WithMany()
@@ -415,7 +419,7 @@ namespace Sinance.Storage.Migrations
 
                     b.Navigation("Category");
 
-                    b.Navigation("ImportTransaction");
+                    b.Navigation("SourceTransaction");
 
                     b.Navigation("User");
                 });
@@ -437,7 +441,7 @@ namespace Sinance.Storage.Migrations
                     b.Navigation("ReportCategories");
                 });
 
-            modelBuilder.Entity("Sinance.Storage.Entities.ImportTransactionEntity", b =>
+            modelBuilder.Entity("Sinance.Storage.Entities.SourceTransactionEntity", b =>
                 {
                     b.Navigation("Transactions");
                 });

@@ -25,12 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Calculations\" />
-    <Folder Include="Database\" />
-    <Folder Include="Handlers\" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Sinance.Business\Sinance.Business.csproj" />
     <ProjectReference Include="..\Sinance.Communication\Sinance.Communication.csproj" />
   </ItemGroup>

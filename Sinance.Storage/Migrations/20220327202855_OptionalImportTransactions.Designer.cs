@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Sinance.Storage;
 
@@ -11,9 +12,10 @@ using Sinance.Storage;
 namespace Sinance.Storage.Migrations
 {
     [DbContext(typeof(SinanceContext))]
-    partial class SinanceContextModelSnapshot : ModelSnapshot
+    [Migration("20220327202855_OptionalImportTransactions")]
+    partial class OptionalImportTransactions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -269,13 +271,13 @@ namespace Sinance.Storage.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
-                    b.Property<int?>("ImportTransactionId")
-                        .HasColumnType("int");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
+
+                    b.Property<int?>("SourceTransactionId")
+                        .HasColumnType("int");
 
                     b.Property<int>("UserId")
                         .HasColumnType("int");
@@ -286,7 +288,7 @@ namespace Sinance.Storage.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.HasIndex("ImportTransactionId");
+                    b.HasIndex("SourceTransactionId");
 
                     b.HasIndex("UserId");
 
@@ -401,9 +403,9 @@ namespace Sinance.Storage.Migrations
                         .WithMany()
                         .HasForeignKey("CategoryId");
 
-                    b.HasOne("Sinance.Storage.Entities.ImportTransactionEntity", "ImportTransaction")
+                    b.HasOne("Sinance.Storage.Entities.ImportTransactionEntity", "SourceTransaction")
                         .WithMany("Transactions")
-                        .HasForeignKey("ImportTransactionId");
+                        .HasForeignKey("SourceTransactionId");
 
                     b.HasOne("Sinance.Storage.Entities.SinanceUserEntity", "User")
                         .WithMany()
@@ -415,7 +417,7 @@ namespace Sinance.Storage.Migrations
 
                     b.Navigation("Category");
 
-                    b.Navigation("ImportTransaction");
+                    b.Navigation("SourceTransaction");
 
                     b.Navigation("User");
                 });

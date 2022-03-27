@@ -8,7 +8,7 @@ namespace Sinance.Storage.Entities
     /// <summary>
     /// Transaction entity
     /// </summary>
-    public class SourceTransactionEntity : UserEntityBase
+    public class ImportTransactionEntity : UserEntityBase
     {
         /// <summary>
         /// Account number from
@@ -57,9 +57,5 @@ namespace Sinance.Storage.Entities
         public string Name { get; set; }
 
         public ICollection<TransactionEntity> Transactions { get; set; } = new HashSet<TransactionEntity>();
-
-        public CategoryEntity Category { get; set; }
-
-        public int? CategoryId { get; set; }
     }
 }

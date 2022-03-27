@@ -69,9 +69,9 @@ namespace Sinance.Storage.Entities
 
         public int? CategoryId { get; set; }
 
-        [ForeignKey("SourceTransactionId")]
-        public SourceTransactionEntity SourceTransaction { get; set; }
+        [ForeignKey("ImportTransactionId")]
+        public ImportTransactionEntity ImportTransaction { get; set; }
 
-        public int SourceTransactionId { get; set; }
+        public int? ImportTransactionId { get; set; }
     }
 }

@@ -11,14 +11,10 @@ namespace Sinance.BlazorApp
 {
     public class Program
     {
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-            .ConfigureWebHostDefaults(webBuilder =>
-            {
-                webBuilder
-                    .UseStartup<Startup>()
-                    .UseSerilog();
-            });
+        public static IHostBuilder CreateHostBuilder(string[] args) => Host
+                .CreateDefaultBuilder(args)
+                .UseSerilog()
+                .ConfigureWebHostDefaults(webBuilder => webBuilder.UseStartup<Startup>());
 
         public static int Main(string[] args)
         {

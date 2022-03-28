@@ -125,8 +125,12 @@ namespace Sinance.Business.Handlers
                 cachedImportRowTransaction.BankAccountId = bankAccountId;
 
                 // Import into both tables, the import is only for registration and double prevention
-                unitOfWork.TransactionRepository.Insert(cachedImportRowTransaction.ToNewEntity(userId));
-                unitOfWork.ImportTransactionsRepository.Insert(cachedImportRowTransaction.ToNewImportEntity(userId));
+                var importTransactionEntity = cachedImportRowTransaction.ToNewImportEntity(userId);
+                var transactionEntity = cachedImportRowTransaction.ToNewEntity(userId);
+                transactionEntity.ImportTransaction = importTransactionEntity;
+
+                unitOfWork.ImportTransactionsRepository.Insert(importTransactionEntity);
+                unitOfWork.TransactionRepository.Insert(transactionEntity);
 
                 // Count how many we inserted
                 savedTransactions++;

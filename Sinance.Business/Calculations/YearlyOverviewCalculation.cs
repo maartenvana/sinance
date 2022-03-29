@@ -80,9 +80,13 @@ namespace Sinance.Business.Calculations
             var allCategories = await _categoryService.GetAllCategoriesForCurrentUser();
             var internalCashFlowCategory = allCategories.Single(x => x.Name == StandardCategoryNames.InternalCashFlowName);
 
-            var biggestExpenses = await _transactionService.GetBiggestExpensesForYearForCurrentUser(year, count: 20, skip: 0, excludeCategoryIds: new int[] {
-                internalCashFlowCategory.Id
-            });
+            var biggestExpenses = await _transactionService.GetBiggestExpensesForYearForCurrentUser(
+                year,
+                count: 20,
+                skip: 0,
+                excludeCategoryIds: new int?[] {
+                    internalCashFlowCategory.Id
+                });
 
             result.BiggestExpenses = biggestExpenses.OrderBy(x => x.Amount).ThenByDescending(x => x.Date).ToList();
 

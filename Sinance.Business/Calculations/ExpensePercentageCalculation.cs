@@ -50,7 +50,7 @@ namespace Sinance.Business.Calculations
 
                     amountPerCategory[categoryId] += transaction.Amount * -1;
                 }
-                else
+                else if (transaction.CategoryId != internalCashFlowCategory.Id)
                 {
                     if (!amountPerCategory.ContainsKey(noneCategory.Id))
                     {

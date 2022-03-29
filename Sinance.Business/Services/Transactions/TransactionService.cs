@@ -89,11 +89,11 @@ namespace Sinance.Business.Services.Transactions
             await unitOfWork.SaveAsync();
         }
 
-        public async Task<List<TransactionModel>> GetBiggestExpensesForYearForCurrentUser(int year, int count, int skip, params int[] excludeCategoryIds)
+        public async Task<List<TransactionModel>> GetBiggestExpensesForYearForCurrentUser(int year, int count, int skip, params int?[] excludeCategoryIds)
         {
             using var unitOfWork = _unitOfWork();
 
-            excludeCategoryIds ??= new int[] { };
+            excludeCategoryIds ??= Array.Empty<int?>();
 
             var transactions = await unitOfWork.TransactionRepository.FindTopAscending(findQuery: transaction =>
                         !excludeCategoryIds.Any(y => y == transaction.CategoryId) &&

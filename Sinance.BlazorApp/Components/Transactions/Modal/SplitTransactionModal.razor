@@ -119,9 +119,6 @@
         UpdateModel.NewTransactions.Add(new TransactionModel
         {
             Date = UpdateModel.OriginalTransaction.Date,
-            Description = UpdateModel.OriginalTransaction.Description,
-            Name = UpdateModel.OriginalTransaction.Name,
-            Amount = Math.Round(UpdateModel.OriginalTransaction.Amount, 2),
             SourceAccountNumber = UpdateModel.OriginalTransaction.SourceAccountNumber,
             DestinationAccountNumber = UpdateModel.OriginalTransaction.DestinationAccountNumber,
             CategoryId = UpdateModel.OriginalTransaction.CategoryId

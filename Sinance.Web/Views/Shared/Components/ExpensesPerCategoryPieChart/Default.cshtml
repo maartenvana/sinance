@@ -5,7 +5,7 @@
         $.ajax({
             type: "POST",
             url: "@Url.Action("ExpensePercentagesPerCategory", "Graph")",
-            data: { starDate: "@Model.StartDate", endDate: "@Model.EndDate" },
+            data: { startDate: "@Model.StartDate", endDate: "@Model.EndDate" },
             success: function (response) {
                 CreateExpensesPerCategoryPieChart("#expenses-chart-container", response.objectData);
             }

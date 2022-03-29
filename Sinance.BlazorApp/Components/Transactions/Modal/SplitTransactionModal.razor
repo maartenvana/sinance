@@ -1,0 +1,182 @@
+﻿@using Sinance.BlazorApp.Attributes
+@using Sinance.BlazorApp.Business.Model.Transaction
+@using Sinance.BlazorApp.Business.Services
+@using Sinance.Communication.Model.Import
+@using System.ComponentModel.DataAnnotations
+@using System.Globalization
+@inject ITransactionService transactionService
+
+<EditForm EditContext="EditContext" OnValidSubmit="SplitTransactionAsync" class="hide-validity">
+    <BSModal @ref="modal" DataId="modal1" IsStaticBackdrop="true" FullScreenSize="Size.ExtraLarge" Size="Size.ExtraLarge">
+        <Header>Split transaction</Header>
+        <Content>
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            @if (UpdateModel.OriginalTransaction != null)
+            {
+                <table class="table transaction-table">
+                    <thead>
+                        <tr>
+                            <th class="date">Date</th>
+                            <th class="category">Type</th>
+                            <th class="name">Name</th>
+                            <th class="amount">Amount</th>
+                            <th class="description">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="date" width="100">
+                                @UpdateModel.OriginalTransaction.Date.ToShortDateString()
+                            </td>
+                            <td class="category" width=75>
+                                @if (UpdateModel.OriginalTransaction.CategoryShortName != null)
+                                {
+                                    <span class="badge badge-secondary pointer"
+                                  style="background-color: @UpdateModel.OriginalTransaction.CategoryColorCode">
+                                        @UpdateModel.OriginalTransaction.CategoryShortName
+                                    </span>
+                                }
+                            </td>
+                            <td class="name">
+                                @UpdateModel.OriginalTransaction.Name
+                            </td>
+                            <td class="amount">
+                                <span class="badge bg-@(UpdateModel.OriginalTransaction.Amount > 0 ? "success" : "danger")">
+                                    @UpdateModel.OriginalTransaction.Amount.ToString("C2", CultureInfo.CurrentCulture)
+                                </span>
+                            </td>
+                            <td class="description">
+                                @UpdateModel.OriginalTransaction.Description
+                            </td>
+                        </tr>
+                        <tr>
+                            <th colspan="5">Split into</th>
+                        </tr>
+                        @foreach (var newTransaction in UpdateModel.NewTransactions)
+                        {
+                            <tr>
+                                <td class="date" width="100">
+                                    <InputDate @bind-Value="newTransaction.Date" />
+                                </td>
+                                <td class="category" width=75>
+                                    <CategoriesDropdown @bind-Value="newTransaction.CategoryId" />
+                                </td>
+                                <td class="name">
+                                    <InputText @bind-Value="newTransaction.Name" />
+                                </td>
+                                <td class="amount">
+                                    <InputNumber  @bind-Value="newTransaction.Amount" />
+                                </td>
+                                <td class="description">
+                                    <InputTextArea @bind-Value="newTransaction.Description" />
+                                </td>
+                                <td>
+                                    <button class="btn btn-danger" type="button" @onclick="() => RemoveNewTransaction(newTransaction)">R</button>
+                                </td>
+                            </tr>
+                        }
+                        <tr>
+                            <th colspan="5"><button class="btn btn-primary" type="button" @onclick="() => AddNewTransaction()">Add transaction</button></th>
+                        </tr>
+                    </tbody>
+                </table>
+            }
+
+        </Content>
+        <Footer Context="modal">
+            <button class="btn btn-default" Color="BSColor.Secondary" @onclick="modal.HideAsync" type="button">Close</button>
+            <button class="btn btn-primary" type="submit">Save changes</button>
+        </Footer>
+    </BSModal>
+</EditForm>
+
+@code {
+    private TransactionModel sourceTransaction;
+
+    private SplitFormModel UpdateModel { get; set; } = new();
+
+    private EditContext EditContext { get; set; }
+
+    [Parameter]
+    public EventCallback<TransactionsSplittedEvent> OnTransactionsUpdated { get; set; }
+
+    private BSModal modal { get; set; }
+
+    protected override void OnInitialized()
+    {
+        EditContext = new EditContext(UpdateModel);
+    }
+
+    private void RemoveNewTransaction(TransactionModel model)
+    {
+        UpdateModel.NewTransactions.Remove(model);
+    }
+
+    private void AddNewTransaction()
+    {
+        UpdateModel.NewTransactions.Add(new TransactionModel
+        {
+            Date = UpdateModel.OriginalTransaction.Date,
+            Description = UpdateModel.OriginalTransaction.Description,
+            Name = UpdateModel.OriginalTransaction.Name,
+            Amount = Math.Round(UpdateModel.OriginalTransaction.Amount, 2),
+            SourceAccountNumber = UpdateModel.OriginalTransaction.SourceAccountNumber,
+            DestinationAccountNumber = UpdateModel.OriginalTransaction.DestinationAccountNumber,
+            CategoryId = UpdateModel.OriginalTransaction.CategoryId
+        });
+    }
+
+    public async Task OpenForTransactionsAsync(TransactionModel transaction)
+    {
+        UpdateModel.OriginalTransaction = transaction;
+        UpdateModel.NewTransactions = new List<TransactionModel>();
+
+        this.sourceTransaction = transaction;
+
+        await modal.ShowAsync();
+    }
+
+    public async Task SplitTransactionAsync()
+    {
+        await transactionService.SplitTransactionAsync(new SplitTransactionModel
+        {
+            NewTransactions = UpdateModel.NewTransactions.Select(x => new CreateTransactionModel
+            {
+                Description = x.Description,
+                Name = x.Name,
+                Amount = x.Amount,
+                Date = x.Date,
+                SourceAccountNumber = x.SourceAccountNumber,
+                DestinationAccountNumber = x.DestinationAccountNumber,
+                CategoryId = x.CategoryId
+            }).ToList(),
+            SourceTransactionId = UpdateModel.OriginalTransaction.Id
+        });
+
+        await OnTransactionsUpdated.InvokeAsync(new TransactionsSplittedEvent
+            {
+                OriginalTransaction = UpdateModel.OriginalTransaction,
+                NewTransactions = UpdateModel.NewTransactions
+            });
+
+        await modal.HideAsync();
+    }
+
+    protected class SplitFormModel
+    {
+        public TransactionModel OriginalTransaction { get; set; }
+
+        [TransactionTotalAmountAddsUpToSourceTransaction(nameof(OriginalTransaction))]
+        public List<TransactionModel> NewTransactions { get; set; } = new List<TransactionModel>();
+    }
+
+
+    public class TransactionsSplittedEvent
+    {
+        public TransactionModel OriginalTransaction { get; set; }
+
+        public List<TransactionModel> NewTransactions { get; set; } = new List<TransactionModel>();
+    }
+}

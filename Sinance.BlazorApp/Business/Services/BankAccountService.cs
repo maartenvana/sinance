@@ -9,16 +9,16 @@ namespace Sinance.BlazorApp.Business.Services
 {
     public class BankAccountService : IBankAccountService
     {
-        private readonly IDbContextFactory<SinanceContext> dbContextFactory;
+        private readonly ISinanceDbContextFactory<SinanceContext> dbContextFactory;
 
-        public BankAccountService(IDbContextFactory<SinanceContext> dbContextFactory)
+        public BankAccountService(ISinanceDbContextFactory<SinanceContext> dbContextFactory)
         {
             this.dbContextFactory = dbContextFactory;
         }
 
         public List<BankAccountModel> GetAllBankAccounts()
         {
-            using var context = this.dbContextFactory.CreateDbContext();
+            using var context = dbContextFactory.CreateDbContext();
 
             var bankAccountEntities = context.BankAccounts.ToList();
 
@@ -27,7 +27,7 @@ namespace Sinance.BlazorApp.Business.Services
 
         public List<BankAccountModel> GetAllActiveBankAccounts()
         {
-            using var context = this.dbContextFactory.CreateDbContext();
+            using var context = dbContextFactory.CreateDbContext();
 
             var bankAccountEntities = context.BankAccounts.Where(x => x.Disabled == false).ToList();
 
@@ -36,7 +36,7 @@ namespace Sinance.BlazorApp.Business.Services
 
         public BankAccountModel GetBankAccount(int id)
         {
-            using var context = this.dbContextFactory.CreateDbContext();
+            using var context = dbContextFactory.CreateDbContext();
 
             var bankAccountEntity = context.BankAccounts.Single(x => x.Id == id);
 

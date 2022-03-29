@@ -6,7 +6,7 @@ namespace Sinance.BlazorApp.Storage
     /// Factory to create new instances of <see cref="DbContext"/>.
     /// </summary>
     /// <typeparam name="TContext">The type of <seealso cref="DbContext"/> to create.</typeparam>
-    public interface IDbContextFactory<TContext> where TContext : DbContext
+    public interface ISinanceDbContextFactory<TContext> where TContext : DbContext
     {
         /// <summary>
         /// Generate a new <see cref="DbContext"/>.

@@ -14,11 +14,11 @@ namespace Sinance.BlazorApp.Business.Services
 {
     public class CategoryService : ICategoryService
     {
-        private readonly IDbContextFactory<SinanceContext> dbContextFactory;
+        private readonly ISinanceDbContextFactory<SinanceContext> dbContextFactory;
         private readonly IUserIdProvider userIdProvider;
 
         public CategoryService(
-            IDbContextFactory<SinanceContext> dbContextFactory,
+            ISinanceDbContextFactory<SinanceContext> dbContextFactory,
             IUserIdProvider userIdProvider)
         {
             this.dbContextFactory = dbContextFactory;

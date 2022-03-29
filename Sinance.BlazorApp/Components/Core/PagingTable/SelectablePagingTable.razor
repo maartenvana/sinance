@@ -24,10 +24,9 @@
     </tbody>
 </table>
 
-
 @if (loading)
 {
-            
+    <LoadingAnimation />
 }
 @if (!loading && canLoadMore)
 {
@@ -69,12 +68,20 @@
     {
         allSelected = !allSelected;
 
-        foreach(var row in Rows)
+        foreach (var row in Rows)
         {
             row.IsSelected = allSelected;
         }
     }
 
+    public void UpdateRowData(string rowId, IEnumerable<TRowDataType> updateRowData)
+    {
+        var row = Rows.Single(x => x.RowId == rowId);
+        var rowIndex = Rows.IndexOf(row);
+
+        Rows.Remove(row);
+        Rows.InsertRange(rowIndex, updateRowData.Select(x => ToSelectableTableRow(x)));
+    }
 
     public void UpdateRowData(string rowId, TRowDataType updatedRowData)
     {
@@ -98,12 +105,7 @@
         {
             var newRows = await LoadMoreFunc(Page, PageSize);
 
-            var newSelectableRows = newRows.Select(x => new SelectableTableRow<TRowDataType>
-                {
-                    IsSelected = allSelected,
-                    RowData = x,
-                    RowId = RowIdFunc(x)
-                }).ToList();
+            var newSelectableRows = newRows.Select(x => ToSelectableTableRow(x)).ToList();
 
             Rows.AddRange(newSelectableRows);
 
@@ -111,7 +113,7 @@
 
             Page++;
         }
-        catch(Exception)
+        catch (Exception)
         {
             userNotificationService.ShowError("Exception trying to load data rows");
         }
@@ -121,4 +123,12 @@
             StateHasChanged();
         }
     }
+
+    private SelectableTableRow<TRowDataType> ToSelectableTableRow(TRowDataType rowDataType) =>
+        new SelectableTableRow<TRowDataType>
+            {
+                IsSelected = allSelected,
+                RowData = rowDataType,
+                RowId = RowIdFunc(rowDataType)
+            };
 }

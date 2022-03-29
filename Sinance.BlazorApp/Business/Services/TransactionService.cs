@@ -3,6 +3,7 @@ using Sinance.BlazorApp.Business.Extensions;
 using Sinance.BlazorApp.Business.Model.BankAccount;
 using Sinance.BlazorApp.Business.Model.Category;
 using Sinance.BlazorApp.Business.Model.Transaction;
+using Sinance.BlazorApp.Storage;
 using Sinance.Storage;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,16 +13,32 @@ namespace Sinance.BlazorApp.Business.Services
 {
     public class TransactionService : ITransactionService
     {
-        private readonly Storage.IDbContextFactory<SinanceContext> dbContextFactory;
+        private readonly ISinanceDbContextFactory<SinanceContext> dbContextFactory;
 
-        public TransactionService(Storage.IDbContextFactory<SinanceContext> dbContextFactory)
+        public TransactionService(ISinanceDbContextFactory<SinanceContext> dbContextFactory)
         {
             this.dbContextFactory = dbContextFactory;
         }
 
-        public async Task<List<TransactionModel>> SearchTransactionsPaged(SearchTransactionsFilterModel filter)
+        public async Task<List<TransactionModel>> SplitTransactionAsync(SplitTransactionModel splitModel)
         {
-            using var context = this.dbContextFactory.CreateDbContext();
+            using var context = dbContextFactory.CreateDbContext();
+
+            var transactionToSplit = context.Transactions.Single(x => x.Id == splitModel.SourceTransactionId);
+
+            var newTransactionEntities = transactionToSplit.SplitToNewTransactions(splitModel.NewTransactions);
+
+            context.Transactions.AddRange(newTransactionEntities);
+            context.Transactions.Remove(transactionToSplit);
+
+            await context.SaveChangesAsync();
+
+            return newTransactionEntities.ToDto().ToList();
+        }
+
+        public async Task<List<TransactionModel>> SearchTransactionsPagedAsync(SearchTransactionsFilterModel filter)
+        {
+            using var context = dbContextFactory.CreateDbContext();
 
             var query = context.Transactions
                 .Include(x => x.Category)

@@ -1,9 +1,12 @@
 ﻿@inject Sinance.BlazorApp.Business.Services.ITransactionService transactionService
 @inject IUserNotificationService userNotificationService
 @using Sinance.BlazorApp.Business.Model.Transaction
-@using Sinance.BlazorApp.Components.Categories.Model
+@using Sinance.BlazorApp.Components.Transactions.Modal
 @using Sinance.BlazorApp.Components.Core.PagingTable
 @using System.Globalization
+@using static Sinance.BlazorApp.Components.Transactions.Modal.SplitTransactionModal
+
+@using static Sinance.BlazorApp.Components.Transactions.Modal.SelectTransactionCategoryModal
 
 <div class="card shadow mb-4">
     <div class="card-header">
@@ -12,7 +15,6 @@
                 <button class="nav-link" @onclick="OpenCategorySelectionModalForSelected">Set Category</button>
             </li>
         </ul>
-
     </div>
     <div class="card-body no-padding">
         <SelectablePagingTable @ref=table
@@ -28,6 +30,7 @@
                 <th class="name">Name</th>
                 <th class="amount">Amount</th>
                 <th class="description">Description</th>
+                <th class="actions"></th>
             </HeaderTemplate>
             <RowTemplate Context="row">
                 <td class="date" width="100">
@@ -62,11 +65,17 @@
                 <td class="description">
                     @row.RowData.Description
                 </td>
+                <td>
+                    <button class="btn btn-primary" @onclick="async () => OpenSplitTransactionModalForSingle(row.RowData)">Split</button>
+                </td>
             </RowTemplate>
         </SelectablePagingTable>
 
         <SelectTransactionCategoryModal @ref="selectTransactionCategoryModal"
                                         OnTransactionsUpdated="TransactionsUpdated"></SelectTransactionCategoryModal>
+                                        
+        <SplitTransactionModal @ref="splitTransactionModal"
+                                        OnTransactionsUpdated="TransactionsSplitted"></SplitTransactionModal>
     </div>
 </div>
 
@@ -75,12 +84,16 @@
     public SearchTransactionsFilterModel FilterModel { get; set; } = new();
 
     private SelectTransactionCategoryModal selectTransactionCategoryModal;
+    private SplitTransactionModal splitTransactionModal;
 
     private SelectablePagingTable<TransactionModel> table;
 
     public async Task RefreshAsync() => await table.RefreshAsync();
 
     public string GetTransactionId(TransactionModel model) => model.Id.ToString();
+
+    public async void OpenSplitTransactionModalForSingle(TransactionModel transaction) =>
+        await splitTransactionModal.OpenForTransactionsAsync(transaction);
 
     public async void OpenCategorySelectionModalForSelected()
     {
@@ -96,6 +109,15 @@
 
     public async Task OpenCategoryModalForSingle(TransactionModel transaction) =>
         await selectTransactionCategoryModal.OpenForTransactionsAsync(new List<TransactionModel> { transaction });
+
+    public void TransactionsSplitted(TransactionsSplittedEvent eventData)
+    {
+        table.UpdateRowData(
+            eventData.OriginalTransaction.Id.ToString(),
+            eventData.NewTransactions);
+
+        userNotificationService.ShowSuccess($"Transaction was split into {eventData.NewTransactions.Count} new transaction(s)");
+    }
 
     public void TransactionsUpdated(TransactionsCategoryUpdatedEvent eventModel)
     {
@@ -114,7 +136,7 @@
             FilterModel.PageSize = pageSize;
             FilterModel.Page = page;
 
-            return await transactionService.SearchTransactionsPaged(FilterModel);
+            return await transactionService.SearchTransactionsPagedAsync(FilterModel);
         }
         catch (Exception)
         {

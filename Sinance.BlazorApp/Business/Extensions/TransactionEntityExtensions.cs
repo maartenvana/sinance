@@ -10,21 +10,43 @@ namespace Sinance.BlazorApp.Business.Extensions
         public static IEnumerable<TransactionModel> ToDto(this IEnumerable<TransactionEntity> entities)
             => entities.Select(x => x.ToDto());
 
-        public static TransactionModel ToDto(this TransactionEntity entity)
-        {
-            return new TransactionModel
+        public static IEnumerable<TransactionEntity> SplitToNewTransactions(
+            this TransactionEntity transactionEntity,
+            IEnumerable<CreateTransactionModel> newTransactions) =>
+            newTransactions.Select(x => transactionEntity.ToNewSplittedEntity(x));
+
+        public static TransactionEntity ToNewSplittedEntity(
+            this TransactionEntity transactionEntity,
+            CreateTransactionModel model) =>
+            new()
+            {
+                Name = model.Name,
+                Date = model.Date,
+                Amount = model.Amount,
+                CategoryId = model.CategoryId,
+                Description = model.Description,
+                AccountNumber = model.SourceAccountNumber,
+                DestinationAccount = model.DestinationAccountNumber,
+
+                UserId = transactionEntity.UserId,
+                BankAccountId = transactionEntity.BankAccountId,
+                ImportTransactionId = transactionEntity.ImportTransactionId
+            };
+
+        public static TransactionModel ToDto(this TransactionEntity entity) => 
+            new()
             {
                 Id = entity.Id,
-                Description = entity.Description,
                 Name = entity.Name,
-                DestinationAccountNumber = entity.DestinationAccount,
-                SourceAccountNumber = entity.AccountNumber,
-                Amount = entity.Amount,
                 Date = entity.Date,
+                Amount = entity.Amount,
+                Description = entity.Description,
+                SourceAccountNumber = entity.AccountNumber,
+                DestinationAccountNumber = entity.DestinationAccount,
+
+                CategoryId = entity.Category?.Id,
                 CategoryColorCode = entity.Category?.ColorCode,
-                CategoryShortName = entity.Category?.ShortName,
-                CategoryId = entity.Category?.Id
+                CategoryShortName = entity.Category?.ShortName
             };
-        }
     }
 }

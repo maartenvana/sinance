@@ -4,12 +4,12 @@ using System;
 
 namespace Sinance.BlazorApp.Storage
 {
-    public class DbContextFactory<TContext>
-           : IDbContextFactory<TContext> where TContext : DbContext
+    public class SinanceDbContextFactory<TContext>
+           : ISinanceDbContextFactory<TContext> where TContext : DbContext
     {
         private readonly IServiceProvider provider;
 
-        public DbContextFactory(IServiceProvider provider)
+        public SinanceDbContextFactory(IServiceProvider provider)
         {
             this.provider = provider;
         }

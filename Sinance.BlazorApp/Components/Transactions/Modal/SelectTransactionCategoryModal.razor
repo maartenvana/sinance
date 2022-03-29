@@ -2,7 +2,6 @@
 @using Sinance.BlazorApp.Business.Model.Category
 @using Sinance.BlazorApp.Business.Model.Transaction
 @using Sinance.BlazorApp.Business.Services
-@using Sinance.BlazorApp.Components.Categories.Model
 @using Sinance.Communication.Model.Import
 @using System.ComponentModel.DataAnnotations
 @inject ICategoryService categoryService
@@ -128,5 +127,11 @@
 
         [RequiredIf(nameof(CreateAutoMapping), true)]
         public string AutoMappingColumnValue { get; set; }
+    }
+
+    
+    public class TransactionsCategoryUpdatedEvent
+    {
+        public List<TransactionModel> Transactions { get; set; } = new List<TransactionModel>();
     }
 }

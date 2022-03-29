@@ -9,7 +9,7 @@ namespace Sinance.BlazorApp.Extensions
     public static class IServiceCollectionExtensions
     {
         /// <summary>
-        /// Registers the <seealso cref="DbContextFactory{TContext}"/> with DI.
+        /// Registers the <seealso cref="SinanceDbContextFactory{TContext}"/> with DI.
         /// </summary>
         /// <typeparam name="TContext">The instance of <see cref="DbContext"/> to register.</typeparam>
         /// <param name="collection">The instance of the <see cref="IServiceCollection"/>.</param>
@@ -24,8 +24,8 @@ namespace Sinance.BlazorApp.Extensions
         {
             // instantiate with the correctly scoped provider
             collection.Add(new ServiceDescriptor(
-                typeof(Storage.IDbContextFactory<TContext>),
-                sp => new DbContextFactory<TContext>(sp),
+                typeof(ISinanceDbContextFactory<TContext>),
+                sp => new SinanceDbContextFactory<TContext>(sp),
                 contextAndOptionsLifetime));
 
             // dynamically run the builder on each request

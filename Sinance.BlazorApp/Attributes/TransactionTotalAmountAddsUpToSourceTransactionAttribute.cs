@@ -1,6 +1,9 @@
-﻿using System;
+﻿using Sinance.BlazorApp.Business.Model.Transaction;
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 
 namespace Sinance.BlazorApp.Attributes
@@ -9,7 +12,7 @@ namespace Sinance.BlazorApp.Attributes
     /// Provides conditional validation based on related property value.
     /// </summary>
     [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-    public sealed class RequiredIfAttribute : ValidationAttribute
+    public sealed class TransactionTotalAmountAddsUpToSourceTransactionAttribute : ValidationAttribute
     {
         #region Properties
 
@@ -28,14 +31,6 @@ namespace Sinance.BlazorApp.Attributes
         /// The display name of the other property.
         /// </value>
         public string OtherPropertyDisplayName { get; set; }
-
-        /// <summary>
-        /// Gets or sets the other property value that will be relevant for validation.
-        /// </summary>
-        /// <value>
-        /// The other property value.
-        /// </value>
-        public object OtherPropertyValue { get; private set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether other property's value should match or differ from provided other property's value (default is <c>false</c>).
@@ -64,15 +59,14 @@ namespace Sinance.BlazorApp.Attributes
         #region Constructor
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RequiredIfAttribute"/> class.
+        /// Initializes a new instance of the <see cref="TransactionTotalAmountAddsUpToSourceTransactionAttribute"/> class.
         /// </summary>
         /// <param name="otherProperty">The other property.</param>
         /// <param name="otherPropertyValue">The other property value.</param>
-        public RequiredIfAttribute(string otherProperty, object otherPropertyValue)
-            : base("'{0}' is required because '{1}' has a value {3}'{2}'.")
+        public TransactionTotalAmountAddsUpToSourceTransactionAttribute(string otherProperty)
+            : base("Total amount of transactions should add up to source transaction")
         {
             OtherProperty = otherProperty;
-            OtherPropertyValue = otherPropertyValue;
             IsInverted = false;
         }
 
@@ -87,13 +81,7 @@ namespace Sinance.BlazorApp.Attributes
         /// </returns>
         public override string FormatErrorMessage(string name)
         {
-            return string.Format(
-                CultureInfo.CurrentCulture,
-                base.ErrorMessageString,
-                name,
-                OtherPropertyDisplayName ?? OtherProperty,
-                OtherPropertyValue,
-                IsInverted ? "other than " : "of ");
+            return base.ErrorMessageString;
         }
 
         /// <summary>
@@ -108,7 +96,7 @@ namespace Sinance.BlazorApp.Attributes
         {
             if (validationContext == null)
             {
-                throw new ArgumentNullException("validationContext");
+                throw new ArgumentNullException(nameof(validationContext));
             }
 
             PropertyInfo otherProperty = validationContext.ObjectType.GetProperty(OtherProperty);
@@ -120,21 +108,21 @@ namespace Sinance.BlazorApp.Attributes
 
             object otherValue = otherProperty.GetValue(validationContext.ObjectInstance);
 
-            // check if this value is actually required and validate it
-            if (!IsInverted && object.Equals(otherValue, OtherPropertyValue) ||
-                IsInverted && !object.Equals(otherValue, OtherPropertyValue))
+            if(otherValue is TransactionModel transactionModel &&
+                value is IEnumerable<TransactionModel> transactions)
             {
-                if (value == null)
+                if(transactions.Sum(x => x.Amount) > transactionModel.Amount)
                 {
-                    return new ValidationResult(FormatErrorMessage(validationContext.DisplayName));
+                    return new ValidationResult("New transactions total amount is larger than source transaction");
                 }
-
-                // additional check for strings so they're not empty
-                string val = value as string;
-                if (val != null && val.Trim().Length == 0)
+                else if(transactions.Sum(x => x.Amount) < transactionModel.Amount)
                 {
-                    return new ValidationResult(FormatErrorMessage(validationContext.DisplayName));
+                    return new ValidationResult("New transactions total amount is lower than source transaction");
                 }
+            } 
+            else
+            {
+                return new ValidationResult("Incorrect attribute usage"); // TODO: Better message
             }
 
             return ValidationResult.Success;

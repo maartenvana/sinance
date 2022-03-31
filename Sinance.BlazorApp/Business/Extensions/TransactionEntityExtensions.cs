@@ -12,12 +12,24 @@ namespace Sinance.BlazorApp.Business.Extensions
 
         public static IEnumerable<TransactionEntity> SplitToNewTransactions(
             this TransactionEntity transactionEntity,
-            IEnumerable<CreateTransactionModel> newTransactions) =>
+            IEnumerable<UpsertTransactionModel> newTransactions) =>
             newTransactions.Select(x => transactionEntity.ToNewSplittedEntity(x));
+
+        public static void UpdateFromUpsertModel(this TransactionEntity entity, UpsertTransactionModel upsertTransactionModel)
+        {
+            entity.Id = upsertTransactionModel.Id;
+            entity.Description = upsertTransactionModel.Description;
+            entity.Name = upsertTransactionModel.Name;
+            entity.Amount = upsertTransactionModel.Amount;
+            entity.Date = upsertTransactionModel.Date;
+            entity.AccountNumber = upsertTransactionModel.SourceAccountNumber;
+            entity.DestinationAccount= upsertTransactionModel.DestinationAccountNumber;
+            entity.CategoryId = upsertTransactionModel.CategoryId;
+        }
 
         public static TransactionEntity ToNewSplittedEntity(
             this TransactionEntity transactionEntity,
-            CreateTransactionModel model) =>
+            UpsertTransactionModel model) =>
             new()
             {
                 Name = model.Name,

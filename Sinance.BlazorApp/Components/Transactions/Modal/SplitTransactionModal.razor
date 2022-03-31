@@ -139,7 +139,7 @@
     {
         await transactionService.SplitTransactionAsync(new SplitTransactionModel
         {
-            NewTransactions = UpdateModel.NewTransactions.Select(x => new CreateTransactionModel
+            NewTransactions = UpdateModel.NewTransactions.Select(x => new UpsertTransactionModel
             {
                 Description = x.Description,
                 Name = x.Name,

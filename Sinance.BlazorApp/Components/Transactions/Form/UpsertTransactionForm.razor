@@ -1,0 +1,71 @@
+﻿@using Sinance.BlazorApp.Business.Model.Transaction
+
+<EditForm EditContext="EditContext" id="@FormId" OnValidSubmit="UpsertTransactionSubmitAsync" class="hide-validity">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label class="form-label" for="bankaccount">Bank account</label>
+        <BankAccountsDropdown id="bankaccount" @bind-Value="UpsertTransaction.BankAccountId" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" for="date">Date</label>
+        <InputDate id="date" class="form-control" @bind-Value="UpsertTransaction.Date" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" for="name">Name</label>
+        <InputText id="name" class="form-control" @bind-Value="UpsertTransaction.Name" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" for="category">Category</label>
+        <CategoriesDropdown id="category" @bind-Value="UpsertTransaction.CategoryId" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" for="amount">Amount</label>
+        <InputNumber id="amount" class="form-control" @bind-Value="UpsertTransaction.Amount" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" for="description">Description</label>
+        <InputTextArea id="description" class="form-control" @bind-Value="UpsertTransaction.Description" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" for="destinationAccountNumber">Source account</label>
+        <InputText id="sourceAccountNumber" class="form-control" @bind-Value="UpsertTransaction.SourceAccountNumber" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" for="destinationAccountNumber">Destination account</label>
+        <InputText id="destinationAccountNumber" class="form-control" @bind-Value="UpsertTransaction.DestinationAccountNumber" />
+    </div>
+</EditForm>
+
+@code {
+    [Parameter]
+    public string FormId { get; set; }
+
+    [Parameter]
+    public UpsertTransactionModel UpsertTransaction { get; set; }
+
+    private EditContext EditContext { get; set; }
+    
+    [Parameter]
+    public EventCallback<UpsertTransactionModel> OnValidSubmit { get; set; }
+
+    protected override void OnInitialized()
+    {
+        EditContext = new EditContext(UpsertTransaction);
+
+        base.OnInitialized();
+    }
+
+    public async void UpsertTransactionSubmitAsync()
+    {
+        await OnValidSubmit.InvokeAsync(UpsertTransaction);
+    }
+}

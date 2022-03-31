@@ -3,8 +3,10 @@ using Sinance.BlazorApp.Business.Extensions;
 using Sinance.BlazorApp.Business.Model.BankAccount;
 using Sinance.BlazorApp.Business.Model.Category;
 using Sinance.BlazorApp.Business.Model.Transaction;
+using Sinance.BlazorApp.Extensions;
 using Sinance.BlazorApp.Storage;
 using Sinance.Storage;
+using Sinance.Storage.Entities;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,10 +16,14 @@ namespace Sinance.BlazorApp.Business.Services
     public class TransactionService : ITransactionService
     {
         private readonly ISinanceDbContextFactory<SinanceContext> dbContextFactory;
+        private readonly IUserIdProvider userIdProvider;
 
-        public TransactionService(ISinanceDbContextFactory<SinanceContext> dbContextFactory)
+        public TransactionService(
+            ISinanceDbContextFactory<SinanceContext> dbContextFactory,
+            IUserIdProvider userIdProvider)
         {
             this.dbContextFactory = dbContextFactory;
+            this.userIdProvider = userIdProvider;
         }
 
         public async Task<List<TransactionModel>> SplitTransactionAsync(SplitTransactionModel splitModel)
@@ -64,6 +70,27 @@ namespace Sinance.BlazorApp.Business.Services
                 .ToListAsync();
 
             return transactionEntities.ToDto().ToList();
+        }
+
+        public async Task<TransactionModel> UpsertTransactionAsync(UpsertTransactionModel upsertTransactionModel)
+        {
+            using var context = dbContextFactory.CreateDbContext();
+
+            TransactionEntity transactionEntity;
+            if (upsertTransactionModel.IsNew)
+            {
+                transactionEntity = upsertTransactionModel.ToNewTransactionEntity(userIdProvider.GetCurrentUserId());
+                context.Transactions.Add(transactionEntity);
+            }
+            else
+            {
+                transactionEntity = context.Transactions.Single(x => x.Id == upsertTransactionModel.Id);
+                transactionEntity.UpdateFromUpsertModel(upsertTransactionModel);
+            }
+
+            await context.SaveChangesAsync();
+
+            return transactionEntity.ToDto();
         }
     }
 }

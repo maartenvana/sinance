@@ -74,17 +74,33 @@
         }
     }
 
-    public void UpdateRowData(string rowId, IEnumerable<TRowDataType> updateRowData)
+    public void InsertRowData(Func<TRowDataType, bool> insertAfterLastFunc, IEnumerable<TRowDataType> newRowData)
+    {
+        var row = Rows.LastOrDefault(x => insertAfterLastFunc(x.RowData));
+
+        if(row == null)
+        {
+            Rows.InsertRange(0, newRowData.Select(x => ToSelectableTableRow(x)));
+        } 
+        else
+        {
+            var insertIndex = Rows.IndexOf(row);
+            Rows.InsertRange(insertIndex, newRowData.Select(x => ToSelectableTableRow(x)));
+        }
+    }
+
+    public void ReplaceRowData(string rowId, IEnumerable<TRowDataType> newRowData)
     {
         var row = Rows.Single(x => x.RowId == rowId);
         var rowIndex = Rows.IndexOf(row);
 
         Rows.Remove(row);
-        Rows.InsertRange(rowIndex, updateRowData.Select(x => ToSelectableTableRow(x)));
+        Rows.InsertRange(rowIndex, newRowData.Select(x => ToSelectableTableRow(x)));
     }
 
-    public void UpdateRowData(string rowId, TRowDataType updatedRowData)
+    public void UpdateRowData(TRowDataType updatedRowData)
     {
+        var rowId = RowIdFunc(updatedRowData);
         var row = Rows.Single(x => x.RowId == rowId);
         row.RowData = updatedRowData;
     }

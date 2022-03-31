@@ -8,5 +8,6 @@ namespace Sinance.BlazorApp.Business.Services
     {
         Task<List<TransactionModel>> SearchTransactionsPagedAsync(SearchTransactionsFilterModel filter);
         Task<List<TransactionModel>> SplitTransactionAsync(SplitTransactionModel splitModel);
+        Task<TransactionModel> UpsertTransactionAsync(UpsertTransactionModel upsertTransactionModel);
     }
 }

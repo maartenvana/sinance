@@ -5,6 +5,6 @@ namespace Sinance.BlazorApp.Business.Model.Transaction
     public class SplitTransactionModel
     {
         public int SourceTransactionId { get; set; }
-        public List<CreateTransactionModel> NewTransactions { get; set; } = new List<CreateTransactionModel>();
+        public List<UpsertTransactionModel> NewTransactions { get; set; } = new List<UpsertTransactionModel>();
     }
 }

@@ -7,7 +7,7 @@
 @inject ICategoryService categoryService
 
 <EditForm EditContext="EditContext" OnValidSubmit="AssignCategoryAsync" class="hide-validity">
-    <BSModal @ref="modal" DataId="modal1">
+    <BSModal @ref="modal" IsStaticBackdrop="true" DataId="SelectTransactionCategoryModal">
         <Header>Assign Category</Header>
         <Content>
             <DataAnnotationsValidator />

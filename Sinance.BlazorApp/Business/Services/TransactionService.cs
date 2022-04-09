@@ -7,6 +7,7 @@ using Sinance.BlazorApp.Extensions;
 using Sinance.BlazorApp.Storage;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -17,13 +18,16 @@ namespace Sinance.BlazorApp.Business.Services
     {
         private readonly ISinanceDbContextFactory<SinanceContext> dbContextFactory;
         private readonly IUserIdProvider userIdProvider;
+        private readonly IBankAccountService bankAccountService;
 
         public TransactionService(
             ISinanceDbContextFactory<SinanceContext> dbContextFactory,
-            IUserIdProvider userIdProvider)
+            IUserIdProvider userIdProvider,
+            IBankAccountService bankAccountService) // TODO: VIOLATION BUT EVERYTHING SHOULD GO TO HANDLERS
         {
             this.dbContextFactory = dbContextFactory;
             this.userIdProvider = userIdProvider;
+            this.bankAccountService = bankAccountService;
         }
 
         public async Task<List<TransactionModel>> SplitTransactionAsync(SplitTransactionModel splitModel)
@@ -33,6 +37,9 @@ namespace Sinance.BlazorApp.Business.Services
             var transactionToSplit = context.Transactions.Single(x => x.Id == splitModel.SourceTransactionId);
 
             var newTransactionEntities = transactionToSplit.SplitToNewTransactions(splitModel.NewTransactions);
+
+            if(newTransactionEntities.Sum(x => x.Amount) != transactionToSplit.Amount)
+                throw new ArgumentOutOfRangeException(paramName: nameof(splitModel), message: "New transaction sum is not equal to source transaction");
 
             context.Transactions.AddRange(newTransactionEntities);
             context.Transactions.Remove(transactionToSplit);
@@ -89,6 +96,8 @@ namespace Sinance.BlazorApp.Business.Services
             }
 
             await context.SaveChangesAsync();
+
+            await bankAccountService.RecalculateBalanceAsync(transactionEntity.BankAccountId);
 
             return transactionEntity.ToDto();
         }

@@ -7,7 +7,7 @@
 @inject ITransactionService transactionService
 
 <EditForm EditContext="EditContext" OnValidSubmit="SplitTransactionAsync" class="hide-validity">
-    <BSModal @ref="modal" DataId="modal1" IsStaticBackdrop="true" FullScreenSize="Size.ExtraLarge" Size="Size.ExtraLarge">
+    <BSModal @ref="modal" DataId="SplitTransactionModal" IsStaticBackdrop="true" FullScreenSize="Size.ExtraLarge" Size="Size.ExtraLarge">
         <Header>Split transaction</Header>
         <Content>
             <DataAnnotationsValidator />

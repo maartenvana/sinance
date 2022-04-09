@@ -4,7 +4,7 @@
 @inject ITransactionService transactionService
 
 
-<BSModal @ref="modal" DataId="modal1" OnHide="OnHide">
+<BSModal @ref="modal" IsStaticBackdrop="true" DataId="UpsertTransactionModal" OnHide="OnHide">
     <Header>@ModalHeader</Header>
     <Content>
         @if (upsertTransaction != null)

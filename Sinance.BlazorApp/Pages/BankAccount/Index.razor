@@ -5,7 +5,7 @@
 @using Sinance.BlazorApp.Components.Transactions.Panel
 @inject IBankAccountService bankAccountService
 
-<BodyContent Title="@bankAccount.Name">
+<BodyContent Title="@($"{bankAccount.Name}: {bankAccount.CurrentBalance.ToString("C2")}")">
     <TransactionsPanel FilterModel=FilterModel @ref=transactionsPanel />
 </BodyContent>
 

@@ -4,6 +4,7 @@ using Sinance.BlazorApp.Storage;
 using Sinance.Storage;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Sinance.BlazorApp.Business.Services
 {
@@ -32,6 +33,18 @@ namespace Sinance.BlazorApp.Business.Services
             var bankAccountEntities = context.BankAccounts.Where(x => x.Disabled == false).ToList();
 
             return bankAccountEntities.ToDto().ToList();
+        }
+
+        public async Task RecalculateBalanceAsync(int bankAccountId)
+        {
+            using var context = dbContextFactory.CreateDbContext();
+
+            var bankAccount = context.BankAccounts.Single(x => x.Id == bankAccountId);
+            var bankAccountTransactionsSum = context.Transactions.Where(x => x.BankAccountId == bankAccountId).Sum(x => x.Amount);
+
+            bankAccount.CurrentBalance = bankAccountTransactionsSum;
+
+            await context.SaveChangesAsync();
         }
 
         public BankAccountModel GetBankAccount(int id)

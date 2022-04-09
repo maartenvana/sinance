@@ -1,7 +1,7 @@
 ﻿using Sinance.BlazorApp.Business.Model.Transaction;
 using Sinance.Storage.Entities;
 
-namespace Sinance.BlazorApp.Extensions
+namespace Sinance.BlazorApp.Business.Extensions
 {
     public static class UpsertTransactionModelExtensions
     {

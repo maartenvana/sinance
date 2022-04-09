@@ -121,7 +121,10 @@
 
     private async Task ConfirmDeleteTransaction(TransactionModel transactionModel)
     {
-        await transactionService.DeleteTransactionAsync(transactionModel);
+        await transactionService.DeleteTransactionAsync(new DeleteTransactionModel
+            {
+                TransactionId = transactionModel.Id
+            });
 
         table.DeleteRow(transactionModel);
     }

@@ -81,5 +81,38 @@ namespace Sinance.BlazorApp.Business.Services
 
             return categories.ToDto().ToList();
         }
+
+        public async Task<CategoryModel> UpsertCategoryAsync(UpsertCategoryModel model)
+        {
+            using var context = dbContextFactory.CreateDbContext();
+
+            CategoryEntity categoryEntity;
+
+            if (model.IsNew)
+            {
+                categoryEntity = model.ToNewCategoryEntity(userIdProvider.GetCurrentUserId());
+                context.Categories.Add(categoryEntity);
+            }
+            else
+            {
+                categoryEntity = context.Categories.Single(x => x.Id == model.Id);
+                categoryEntity.Update(model);
+            }
+
+            await context.SaveChangesAsync();
+
+            return categoryEntity.ToDto();
+        }
+
+        public async Task DeleteCategoryAsync(DeleteCategoryModel model)
+        {
+            using var context = dbContextFactory.CreateDbContext();
+
+            var categoryToDelete = context.Categories.Single(x => x.Id == model.CategoryId);
+
+            context.Categories.Remove(categoryToDelete);
+
+            await context.SaveChangesAsync();
+        }
     }
 }

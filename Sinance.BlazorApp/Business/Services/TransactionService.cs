@@ -23,7 +23,7 @@ namespace Sinance.BlazorApp.Business.Services
         public TransactionService(
             ISinanceDbContextFactory<SinanceContext> dbContextFactory,
             IUserIdProvider userIdProvider,
-            IBankAccountService bankAccountService) // TODO: VIOLATION BUT EVERYTHING SHOULD GO TO HANDLERS
+            IBankAccountService bankAccountService) // TODO: VIOLATION BUT EVERYTHING SHOULD GO TO HANDLERS SOON
         {
             this.dbContextFactory = dbContextFactory;
             this.userIdProvider = userIdProvider;
@@ -102,15 +102,17 @@ namespace Sinance.BlazorApp.Business.Services
             return transactionEntity.ToDto();
         }
 
-        public async Task DeleteTransactionAsync(TransactionModel transaction)
+        public async Task DeleteTransactionAsync(DeleteTransactionModel model)
         {
             using var context = dbContextFactory.CreateDbContext();
 
-            var transactionToRemove = context.Transactions.Single(x => x.Id == transaction.Id);
+            var transactionToRemove = context.Transactions.Single(x => x.Id == model.TransactionId);
 
             context.Remove(transactionToRemove);
 
             await context.SaveChangesAsync();
+
+            await bankAccountService.RecalculateBalanceAsync(transactionToRemove.BankAccountId);
         }
     }
 }

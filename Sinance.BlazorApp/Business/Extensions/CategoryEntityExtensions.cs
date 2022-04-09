@@ -1,14 +1,21 @@
 ﻿using Sinance.BlazorApp.Business.Model.Category;
 using Sinance.Storage.Entities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Sinance.BlazorApp.Business.Extensions
 {
     public static class CategoryEntityExtensions
     {
+        public static void Update(this CategoryEntity categoryEntity, UpsertCategoryModel model)
+        {
+            categoryEntity.ParentId = model.ParentId;
+            categoryEntity.Name = model.Name;
+            categoryEntity.ColorCode = model.ColorCode;
+            categoryEntity.ParentId = model.ParentId;
+            categoryEntity.ShortName = model.ShortName;
+        }
+
         public static IEnumerable<CategoryModel> ToDto(this IEnumerable<CategoryEntity> entities)
             => entities.Select(x => x.ToDto());
 

@@ -1,6 +1,7 @@
 ﻿@inject Sinance.BlazorApp.Business.Services.ITransactionService transactionService
 @inject IUserNotificationService userNotificationService
 @using Sinance.BlazorApp.Business.Model.Transaction
+@using Sinance.BlazorApp.Components.Core.Modal
 @using Sinance.BlazorApp.Components.Transactions.Modal
 @using Sinance.BlazorApp.Components.Core.PagingTable
 @using System.Globalization
@@ -68,20 +69,24 @@
                     @row.RowData.Description
                 </td>
                 <td>
-                    <button class="btn btn-warning" @onclick="async () => OpenSplitTransactionModalForSingle(row.RowData)">S</button>
-                    <button class="btn btn-primary" @onclick="async () => OpenEditTransactionModal(row.RowData)">A</button>
+                    <button class="btn btn-warning" @onclick="async () => await OpenSplitTransactionModalForSingle(row.RowData)">S</button>
+                    <button class="btn btn-primary" @onclick="async () => await OpenEditTransactionModal(row.RowData)">E</button>
+                    <button class="btn btn-danger" @onclick="async () => await StartDeleteTransaction(row.RowData)">D</button>
                 </td>
             </RowTemplate>
         </SelectablePagingTable>
 
         <SelectTransactionCategoryModal @ref="selectTransactionCategoryModal"
-                                        OnTransactionsUpdated="TransactionsUpdated"></SelectTransactionCategoryModal>
+            OnTransactionsUpdated="TransactionsUpdated"></SelectTransactionCategoryModal>
                                         
         <SplitTransactionModal @ref="splitTransactionModal"
-                                        OnTransactionsUpdated="TransactionsSplitted"></SplitTransactionModal>
+            OnTransactionsUpdated="TransactionsSplitted"></SplitTransactionModal>
                                         
         <UpsertTransactionModal @ref="upsertTransactionModal"
-                                        OnTransactionsUpserted="TransactionsUpserted"></UpsertTransactionModal>
+            OnTransactionsUpserted="TransactionsUpserted"></UpsertTransactionModal>
+
+        <ConfirmModal @ref="confirmDeleteTransactionModal" TModel="TransactionModel"
+            OnConfirm="ConfirmDeleteTransaction"></ConfirmModal>
     </div>
 </div>
 
@@ -93,16 +98,18 @@
     private SplitTransactionModal splitTransactionModal;
     private UpsertTransactionModal upsertTransactionModal;
 
+    private ConfirmModal<TransactionModel> confirmDeleteTransactionModal;
+
     private SelectablePagingTable<TransactionModel> table;
 
     public async Task RefreshAsync() => await table.RefreshAsync();
 
     public string GetTransactionId(TransactionModel model) => model.Id.ToString();
 
-    public async void OpenSplitTransactionModalForSingle(TransactionModel transaction) =>
+    public async Task OpenSplitTransactionModalForSingle(TransactionModel transaction) =>
         await splitTransactionModal.OpenForTransactionsAsync(transaction);
 
-    public async void OpenEditTransactionModal(TransactionModel transactionModel)
+    public async Task OpenEditTransactionModal(TransactionModel transactionModel)
     {
         await upsertTransactionModal.OpenForExistingTransactionAsync(transactionModel, FilterModel.BankAccountId);
     }
@@ -110,6 +117,21 @@
     public async void OpenCreateTransactionModal()
     {
         await upsertTransactionModal.OpenForNewTransactionAsync(FilterModel.BankAccountId);
+    }
+
+    private async Task ConfirmDeleteTransaction(TransactionModel transactionModel)
+    {
+        await transactionService.DeleteTransactionAsync(transactionModel);
+
+        table.DeleteRow(transactionModel);
+    }
+
+    private async Task StartDeleteTransaction(TransactionModel transactionModel)
+    {
+        await confirmDeleteTransactionModal.PromptConfirmForModelAsync(
+            title: $"Confirm: Delete transaction",
+            message: $"Are you sure you want to delete transaction: '{transactionModel.Name}'?",
+            model: transactionModel);
     }
 
     public void TransactionsUpserted(TransactionUpsertedEvent eventData)

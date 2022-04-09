@@ -74,6 +74,13 @@
         }
     }
 
+    public void DeleteRow(TRowDataType rowData)
+    {
+        var rowIdToDelete = RowIdFunc(rowData);
+        var rowToDelete = Rows.Single(x => x.RowId == rowIdToDelete);
+        Rows.Remove(rowToDelete);
+    }
+
     public void InsertRowData(Func<TRowDataType, bool> insertAfterLastFunc, IEnumerable<TRowDataType> newRowData)
     {
         var row = Rows.LastOrDefault(x => insertAfterLastFunc(x.RowData));

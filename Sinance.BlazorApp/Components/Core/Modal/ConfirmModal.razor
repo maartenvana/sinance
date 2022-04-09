@@ -1,0 +1,50 @@
+﻿@using Sinance.BlazorApp.Business.Model.Transaction
+@using Sinance.BlazorApp.Business.Services
+@using Sinance.BlazorApp.Components.Transactions.Form
+
+@typeparam TModel where TModel : class
+
+<BSModal @ref="modal">
+    <Header>@title</Header>
+    <Content>
+        @message
+    </Content>
+    <Footer Context="modal">
+        <button class="btn btn-default" Color="BSColor.Secondary" @onclick="CancelAsync" type="button">Cancel</button>
+        <button class="btn btn-primary" @onclick="ConfirmAsync" type="submit">Confirm</button>
+    </Footer>
+</BSModal>
+
+@code {
+    [Parameter]
+    public EventCallback<TModel> OnConfirm { get; set; }
+
+    private BSModal modal { get; set; }
+
+    private string title;
+
+    private string message;
+
+    private TModel model;
+
+    public async Task PromptConfirmForModelAsync(string title, string message, TModel model)
+    {
+        this.title = title;
+        this.message = message;
+        this.model = model;
+
+        await modal.ShowAsync();
+    }
+
+    private async Task CancelAsync()
+    {
+        await modal.HideAsync();
+    }
+
+    private async Task ConfirmAsync()
+    {
+        await OnConfirm.InvokeAsync(model);
+
+        await modal.HideAsync();
+    }
+}

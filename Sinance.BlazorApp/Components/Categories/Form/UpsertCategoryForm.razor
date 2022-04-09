@@ -1,0 +1,50 @@
+﻿<EditForm EditContext="EditContext" id="@FormId" OnValidSubmit="SubmitAsync" class="hide-validity">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label class="form-label" for="name">Name</label>
+        <InputText id="name" class="form-control" @bind-Value="Model.Name" />
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" for="name">Short Name</label>
+        <InputText id="name" class="form-control" @bind-Value="Model.ShortName" />
+    </div>
+    
+    <div class="mb-3">
+        <label class="form-label" for="name">ColorCode</label>
+        <InputText id="name" class="form-control" @bind-Value="Model.ColorCode" />
+    </div>
+    
+    <div class="mb-3">
+        <label class="form-label" for="category">Parent Category</label>
+        <CategoriesDropdown id="category" @bind-Value="Model.ParentId" />
+    </div>
+
+</EditForm>
+
+@code {
+    [Parameter]
+    public string FormId { get; set; }
+
+    [Parameter]
+    public UpsertCategoryModel Model { get; set; }
+
+    private EditContext EditContext { get; set; }
+    
+    [Parameter]
+    public EventCallback<UpsertCategoryModel> OnValidSubmit { get; set; }
+
+    protected override void OnInitialized()
+    {
+        EditContext = new EditContext(Model);
+
+        base.OnInitialized();
+    }
+
+    public async void SubmitAsync()
+    {
+        await OnValidSubmit.InvokeAsync(Model);
+    }
+}

@@ -1,0 +1,123 @@
+﻿@using Sinance.BlazorApp.Business.Services
+@using Sinance.BlazorApp.Components.Categories.Modal
+@using Sinance.BlazorApp.Components.Core.Modal
+@using System.Globalization
+
+@inject IUserNotificationService userNotificationService
+@inject ICategoryService categoryService
+
+<div class="card shadow mb-4">
+    <div class="card-header">
+        <ul class="nav nav-pills card-header-pills float-end">
+            <li class="nav-item">
+                <button class="nav-link" @onclick="OpenCreateModal">Add Category</button>
+            </li>
+        </ul>
+    </div>
+    <div class="card-body no-padding">
+        <SelectablePagingTable @ref=table
+                               Page="0"
+                               PageSize="0"
+                               TRowDataType="CategoryModel"
+                               LoadMoreFunc="LoadMoreAsync"
+                               TableCss="category-table"
+                               RowIdFunc="GetIdForModel">
+            <HeaderTemplate>
+                <th class="name">Name</th>
+                <th class="actions"></th>
+            </HeaderTemplate>
+            <RowTemplate Context="row">
+                <td class="name">
+                    @row.RowData.Name
+                </td>
+                <td class="shortName">
+                    <CategoryShortNameBadge Category=row.RowData />
+                </td>
+                <td>
+                    <button class="btn btn-primary" @onclick="async () => await OpenEditModal(row.RowData)">E</button>
+                    <button class="btn btn-danger" @onclick="async () => await StartDelete(row.RowData)">D</button>
+                </td>
+            </RowTemplate>
+        </SelectablePagingTable>
+
+        <UpsertCategoryModal @ref="upsertModal"
+            OnUpserted="OnUpserted"></UpsertCategoryModal>
+
+        <ConfirmModal @ref="confirmDeleteModal" TModel="CategoryModel"
+            OnConfirm="OnConfirmDelete"></ConfirmModal>
+    </div>
+</div>
+
+@code {
+    private UpsertCategoryModal upsertModal;
+
+    private ConfirmModal<CategoryModel> confirmDeleteModal;
+
+    private SelectablePagingTable<CategoryModel> table;
+
+    public async Task RefreshAsync() => await table.RefreshAsync();
+
+    public string GetIdForModel(CategoryModel model) => model.Id.ToString();
+
+    public async Task OpenEditModal(CategoryModel CategoryModel)
+    {
+        await upsertModal.OpenForExistingAsync(CategoryModel);
+    }
+
+    public async void OpenCreateModal()
+    {
+        await upsertModal.OpenForNewAsync();
+    }
+
+    private async Task StartDelete(CategoryModel model)
+    {
+        await confirmDeleteModal.PromptConfirmForModelAsync(
+            title: $"Confirm: Delete category",
+            message: $"Are you sure you want to delete category: '{model.Name}'?",
+            model: model);
+    }
+
+    public void OnUpserted(CategoryUpsertedEvent eventData)
+    {
+        if (eventData.Created)
+        {
+            var comparer = StringComparer.Create(CultureInfo.CurrentCulture, ignoreCase: true);
+
+            table.InsertRowData(
+                model => comparer.Compare(model.Name, eventData.Model.Name) > 1,
+                new[] { eventData.Model });
+        }
+        else
+        {
+            table.UpdateRowData(eventData.Model);
+        }
+    }
+
+    private async Task OnConfirmDelete(CategoryModel categoryModel)
+    {
+        await categoryService.DeleteCategoryAsync(new DeleteCategoryModel
+            {
+                CategoryId = categoryModel.Id
+            });
+
+        table.DeleteRow(categoryModel);
+    }
+
+    public Task<List<CategoryModel>> LoadMoreAsync(int page, int pageSize)
+    {
+        try
+        {
+            return Task.FromResult(categoryService.GetAllCategories());
+        }
+        catch (Exception)
+        {
+            userNotificationService.ShowError("Exception during load more");
+
+            return Task.FromResult(new List<CategoryModel>());
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+}

@@ -1,0 +1,24 @@
+﻿@if (Category != null)
+{
+    <span class="badge badge-secondary pointer"
+        style="background-color: @Category.ColorCode"
+        @onclick="OnClick.InvokeAsync">
+        @Category.ShortName
+    </span>
+}
+else
+{
+    <span class="badge badge-secondary pointer"
+        style="color: black"
+        @onclick="OnClick.InvokeAsync">
+        <span class="oi oi-plus"></span>
+    </span>
+}
+
+@code {
+    [Parameter]
+    public CategoryModel Category { get; set; }
+
+    [Parameter]
+    public EventCallback<Task> OnClick { get; set; }
+}

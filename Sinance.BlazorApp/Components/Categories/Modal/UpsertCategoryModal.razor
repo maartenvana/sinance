@@ -1,0 +1,67 @@
+﻿@using Sinance.BlazorApp.Business.Model.Transaction
+@using Sinance.BlazorApp.Business.Services
+@using Sinance.BlazorApp.Components.Categories.Form
+@inject ICategoryService categoryService
+
+<BSModal @ref="modal" IsStaticBackdrop="true" DataId="UpsertCategoryModal">
+    <Header>@ModalHeader</Header>
+    <Content>
+        @if (upsertModel != null)
+        {
+            <UpsertCategoryForm 
+                FormId="UpsertCategoryForm" 
+                Model="upsertModel"
+                OnValidSubmit="async(model) => await UpsertAsync(model)" />
+        }
+    </Content>
+    <Footer Context="modal">
+        <button class="btn btn-default" Color="BSColor.Secondary" @onclick="CancelAsync" type="button">Close</button>
+        <button class="btn btn-primary" form="UpsertTransactionForm" type="submit">Save changes</button>
+    </Footer>
+</BSModal>
+
+@code {
+    private UpsertCategoryModel upsertModel;
+
+    [Parameter]
+    public EventCallback<CategoryUpsertedEvent> OnUpserted { get; set; }
+
+    private BSModal modal { get; set; }
+
+    private string ModalHeader => upsertModel?.IsNew == true ? "Create category" : "Update category";
+
+    public async Task OpenForNewAsync()
+    {
+        upsertModel = new();
+
+        await modal.ShowAsync();
+    }
+
+    public async Task CancelAsync()
+    {
+        upsertModel = null;
+
+        await modal.HideAsync();
+    }
+
+    public async Task OpenForExistingAsync(CategoryModel model)
+    {
+        upsertModel = model.ToUpsertModel();
+
+        await modal.ShowAsync();
+    }
+
+    public async Task UpsertAsync(UpsertCategoryModel validForm)
+    {
+        var upsertedModel = await categoryService.UpsertCategoryAsync(validForm);
+
+        await OnUpserted.InvokeAsync(new CategoryUpsertedEvent
+            {
+                Created = validForm.IsNew,
+                Model = upsertedModel
+            });
+
+        await modal.HideAsync();
+    }
+
+}

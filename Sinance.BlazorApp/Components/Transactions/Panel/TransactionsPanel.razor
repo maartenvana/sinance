@@ -1,4 +1,5 @@
-﻿@inject Sinance.BlazorApp.Business.Services.ITransactionService transactionService
+﻿@inject ITransactionService transactionService
+@inject ICategoryService categoryService
 @inject IUserNotificationService userNotificationService
 @using Sinance.BlazorApp.Business.Model.Transaction
 @using Sinance.BlazorApp.Components.Core.Modal
@@ -40,22 +41,7 @@
                     @row.RowData.Date.ToShortDateString()
                 </td>
                 <td class="category" width=75>
-                    @if (row.RowData.CategoryShortName != null)
-                    {
-                        <span class="badge badge-secondary pointer"
-                          style="background-color: @row.RowData.CategoryColorCode"
-                          @onclick="async () => await OpenCategoryModalForSingle(row.RowData)">
-                            @row.RowData.CategoryShortName
-                        </span>
-                    }
-                    else
-                    {
-                        <span class="badge badge-secondary pointer"
-                          style="color: black"
-                          @onclick="async () => await OpenCategoryModalForSingle(row.RowData)">
-                            <span class="oi oi-plus"></span>
-                        </span>
-                    }
+                    <CategoryShortNameBadge Category=GetCategoryModelForTransaction(row.RowData) />
                 </td>
                 <td class="name">
                     @row.RowData.Name
@@ -98,6 +84,8 @@
     private SplitTransactionModal splitTransactionModal;
     private UpsertTransactionModal upsertTransactionModal;
 
+    private List<CategoryModel> AllCategories { get; set; }
+
     private ConfirmModal<TransactionModel> confirmDeleteTransactionModal;
 
     private SelectablePagingTable<TransactionModel> table;
@@ -106,8 +94,18 @@
 
     public string GetTransactionId(TransactionModel model) => model.Id.ToString();
 
+    protected override void OnInitialized()
+    {
+        AllCategories = categoryService.GetAllCategories();
+    }
+
+    private CategoryModel GetCategoryModelForTransaction(TransactionModel transactionModel)
+    {
+        return AllCategories.SingleOrDefault(x => x.Id == transactionModel.CategoryId);
+    }
+
     public async Task OpenSplitTransactionModalForSingle(TransactionModel transaction) =>
-        await splitTransactionModal.OpenForTransactionsAsync(transaction);
+    await splitTransactionModal.OpenForTransactionsAsync(transaction);
 
     public async Task OpenEditTransactionModal(TransactionModel transactionModel)
     {

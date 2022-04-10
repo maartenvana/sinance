@@ -16,6 +16,8 @@
         <ul class="nav nav-pills card-header-pills float-end">
             <li class="nav-item">
                 <button class="nav-link" @onclick="OpenCategorySelectionModalForSelected">Set Category</button>
+            </li>
+            <li class="nav-item">
                 <button class="nav-link" @onclick="OpenCreateTransactionModal">Add Transaction</button>
             </li>
         </ul>
@@ -29,18 +31,18 @@
                                TableCss="transaction-table"
                                RowIdFunc="GetTransactionId">
             <HeaderTemplate>
-                <th class="date">Date</th>
-                <th class="category">Type</th>
+                <th class="date" width="100">Date</th>
+                <th class="category" width="75">Type</th>
                 <th class="name">Name</th>
                 <th class="amount">Amount</th>
                 <th class="description">Description</th>
-                <th class="actions"></th>
+                <th class="actions" width="150"></th>
             </HeaderTemplate>
             <RowTemplate Context="row">
-                <td class="date" width="100">
+                <td class="date">
                     @row.RowData.Date.ToShortDateString()
                 </td>
-                <td class="category" width=75>
+                <td class="category">
                     <CategoryShortNameBadge Category=GetCategoryModelForTransaction(row.RowData) />
                 </td>
                 <td class="name">
@@ -63,16 +65,16 @@
         </SelectablePagingTable>
 
         <SelectTransactionCategoryModal @ref="selectTransactionCategoryModal"
-            OnTransactionsUpdated="TransactionsUpdated"></SelectTransactionCategoryModal>
-                                        
+                                        OnTransactionsUpdated="TransactionsUpdated"></SelectTransactionCategoryModal>
+
         <SplitTransactionModal @ref="splitTransactionModal"
-            OnTransactionsUpdated="TransactionsSplitted"></SplitTransactionModal>
-                                        
+                               OnTransactionsUpdated="TransactionsSplitted"></SplitTransactionModal>
+
         <UpsertTransactionModal @ref="upsertTransactionModal"
-            OnTransactionsUpserted="TransactionsUpserted"></UpsertTransactionModal>
+                                OnTransactionsUpserted="TransactionsUpserted"></UpsertTransactionModal>
 
         <ConfirmModal @ref="confirmDeleteTransactionModal" TModel="TransactionModel"
-            OnConfirm="ConfirmDeleteTransaction"></ConfirmModal>
+                      OnConfirm="ConfirmDeleteTransaction"></ConfirmModal>
     </div>
 </div>
 
@@ -137,7 +139,7 @@
 
     public void TransactionsUpserted(TransactionUpsertedEvent eventData)
     {
-        if(eventData.Created)
+        if (eventData.Created)
         {
             table.InsertRowData(
                 transaction => transaction.Date == eventData.Transaction.Date,

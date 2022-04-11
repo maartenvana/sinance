@@ -1,18 +1,6 @@
 ﻿@page "/Settings/Categories"
 @using Sinance.BlazorApp.Components.Categories.Panel
 
-<BodyContent Title="Transaction Search">
-    <CategoriesPanel @ref=categoriesPanel />
+<BodyContent Title="Categories">
+    <CategoriesPanel />
 </BodyContent>
-
-@code {
-    private CategoriesPanel categoriesPanel;
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!firstRender)
-            return;
-
-        await categoriesPanel.RefreshAsync();
-    }
-}

@@ -59,6 +59,14 @@
 
     public string GetIdForModel(CategoryModel model) => model.Id.ToString();
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        await RefreshAsync();
+    }
+
     public async Task OpenEditModal(CategoryModel CategoryModel)
     {
         await upsertModal.OpenForExistingAsync(CategoryModel);

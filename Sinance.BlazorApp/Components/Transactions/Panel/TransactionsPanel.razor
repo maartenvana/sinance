@@ -43,7 +43,9 @@
                     @row.RowData.Date.ToShortDateString()
                 </td>
                 <td class="category">
-                    <CategoryShortNameBadge Category=GetCategoryModelForTransaction(row.RowData) />
+                    <CategoryShortNameBadge 
+                        Category="GetCategoryModelForTransaction(row.RowData)" 
+                        OnClick="async () => await OpenCategoryModalForSingle(row.RowData)" />
                 </td>
                 <td class="name">
                     @row.RowData.Name
@@ -100,6 +102,14 @@
     {
         AllCategories = categoryService.GetAllCategories();
     }
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        await RefreshAsync();
+    }
 
     private CategoryModel GetCategoryModelForTransaction(TransactionModel transactionModel)
     {
@@ -107,7 +117,7 @@
     }
 
     public async Task OpenSplitTransactionModalForSingle(TransactionModel transaction) =>
-    await splitTransactionModal.OpenForTransactionsAsync(transaction);
+    await splitTransactionModal.OpenForTransactionsAsync(transaction, GetCategoryModelForTransaction(transaction));
 
     public async Task OpenEditTransactionModal(TransactionModel transactionModel)
     {

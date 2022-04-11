@@ -45,6 +45,7 @@ namespace Sinance.BlazorApp
             services.AddTransient<IUserNotificationService, UserNotificationService>();
             services.AddTransient<IBankAccountService, BankAccountService>();
             services.AddTransient<ICategoryService, CategoryService>();
+            services.AddTransient<IReportingService, ReportingService>();
 
             services.AddRazorPages();
             services.AddServerSideBlazor();

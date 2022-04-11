@@ -18,15 +18,10 @@
 
     private BankAccountModel bankAccount;
 
-    protected override void OnInitialized()
+    protected override void OnParametersSet()
     {
         bankAccount = bankAccountService.GetBankAccount(Id);
 
-        base.OnInitialized();
-    }
-
-    protected override void OnParametersSet()
-    {
         FilterModel = new SearchTransactionsFilterModel
         {
             BankAccountId = Id

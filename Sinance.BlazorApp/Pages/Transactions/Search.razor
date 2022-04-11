@@ -55,14 +55,6 @@
 
     public SearchTransactionsFilterModel FilterModel = new SearchTransactionsFilterModel();
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!firstRender)
-            return;
-
-        await transactionsPanel.RefreshAsync();
-    }
-
     public async Task SearchAsync()
     {
         await transactionsPanel.RefreshAsync();

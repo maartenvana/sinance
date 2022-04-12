@@ -1,7 +1,5 @@
 ﻿using Sinance.BlazorApp.Business.Model.BankAccount;
 using Sinance.Storage.Entities;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Sinance.BlazorApp.Business.Extensions
 {

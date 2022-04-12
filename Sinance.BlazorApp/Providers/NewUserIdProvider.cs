@@ -1,10 +1,10 @@
-﻿using Sinance.Storage;
+﻿using Sinance.Infrastructure;
 
 namespace Sinance.BlazorApp.Providers
 {
-    public class UserIdProvider : IUserIdProvider
+    public class NewUserIdProvider : IUserIdProvider
     {
-        public UserIdProvider()
+        public NewUserIdProvider()
         {
         }
 

@@ -1,0 +1,12 @@
+﻿global using MediatR;
+global using System.Collections.Generic;
+global using System.Data.Common;
+global using System.IO;
+global using System.Linq;
+global using System.Net;
+global using System.Reflection;
+global using System.Runtime.Serialization;
+global using System.Threading.Tasks;
+global using System.Threading;
+global using System;
+global using Sinance.Core.Extensions;

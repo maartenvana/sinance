@@ -1,21 +1,14 @@
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Sinance.Storage;
-using Microsoft.EntityFrameworkCore;
-using Sinance.BlazorApp.Providers;
-using Sinance.BlazorApp.Extensions;
-using Sinance.Common.Configuration;
-using Sinance.BlazorApp.Business.Services;
 using Blazored.Toast;
 using BlazorStrap;
-using Sinance.BlazorApp.Services;
-using System.Linq;
-using System.Net.Http;
+using MediatR;
 using Microsoft.AspNetCore.Components;
-using System;
+using Microsoft.EntityFrameworkCore;
+using Sinance.BlazorApp.Business.Services;
+using Sinance.BlazorApp.Extensions;
+using Sinance.BlazorApp.Providers;
+using Sinance.BlazorApp.Services;
+using Sinance.Common.Configuration;
+using Sinance.Infrastructure;
 
 namespace Sinance.BlazorApp
 {
@@ -32,14 +25,21 @@ namespace Sinance.BlazorApp
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddTransient<IUserIdProvider, UserIdProvider>();
+            services.AddTransient<Sinance.Storage.IUserIdProvider, OldUserIdProvider>();
+            services.AddTransient<Sinance.Infrastructure.IUserIdProvider, NewUserIdProvider>();
 
             var appSettings = Configuration.Get<AppSettings>();
             services.AddSingleton(appSettings);
 
-            services.AddDatabase<SinanceContext>(opt => opt
+            services.AddDatabase<Sinance.Storage.SinanceContext>(opt => opt
                 .UseMySql(appSettings.ConnectionStrings.Sql, new MySqlServerVersion("5.7"))
                 .EnableSensitiveDataLogging());
+
+            services.AddDbContext<Sinance.Infrastructure.SinanceContext>(opt => opt
+                .UseMySql(appSettings.ConnectionStrings.Sql, new MySqlServerVersion("5.7"))
+                .EnableSensitiveDataLogging());
+
+            services.AddMediatR(typeof(Startup));
 
             services.AddTransient<ITransactionService, TransactionService>();
             services.AddTransient<IUserNotificationService, UserNotificationService>();

@@ -47,6 +47,14 @@
         upsertTransaction = null;
     }
 
+    public async Task OpenForNewTransactionFromSourceAsync(TransactionModel transaction, int? bankAccountId)
+    {
+        upsertTransaction = transaction.ToUpsertModel(bankAccountId);
+        upsertTransaction.MarkAsNew();
+
+        await modal.ShowAsync();
+    }
+
     public async Task OpenForExistingTransactionAsync(TransactionModel transaction, int? bankAccountId)
     {
         upsertTransaction = transaction.ToUpsertModel(bankAccountId);

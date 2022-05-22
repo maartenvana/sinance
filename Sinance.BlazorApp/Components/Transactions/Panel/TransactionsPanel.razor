@@ -36,7 +36,7 @@
                 <th class="name">Name</th>
                 <th class="amount">Amount</th>
                 <th class="description">Description</th>
-                <th class="actions" width="150"></th>
+                <th class="actions" width="200"></th>
             </HeaderTemplate>
             <RowTemplate Context="row">
                 <td class="date">
@@ -59,9 +59,10 @@
                     @row.RowData.Description
                 </td>
                 <td>
-                    <button class="btn btn-warning" @onclick="async () => await OpenSplitTransactionModalForSingle(row.RowData)">S</button>
-                    <button class="btn btn-primary" @onclick="async () => await OpenEditTransactionModal(row.RowData)">E</button>
-                    <button class="btn btn-danger" @onclick="async () => await StartDeleteTransaction(row.RowData)">D</button>
+                    <button class="btn btn-primary" @onclick="async () => await OpenCreateTransactionModalFromSource(row.RowData)">D</button>
+                    <button class="btn btn-warning" @onclick="async () => await OpenSplitTransactionModalForSingle(row.RowData)"><span class="oi oi-link-broken"></span></button>
+                    <button class="btn btn-primary" @onclick="async () => await OpenEditTransactionModal(row.RowData)"><span class="oi oi-pencil"></span></button>
+                    <button class="btn btn-danger" @onclick="async () => await StartDeleteTransaction(row.RowData)"><span class="oi oi-trash"></span></button>
                 </td>
             </RowTemplate>
         </SelectablePagingTable>
@@ -102,7 +103,7 @@
     {
         AllCategories = categoryService.GetAllCategories();
     }
-    
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
@@ -117,11 +118,16 @@
     }
 
     public async Task OpenSplitTransactionModalForSingle(TransactionModel transaction) =>
-    await splitTransactionModal.OpenForTransactionsAsync(transaction, GetCategoryModelForTransaction(transaction));
+        await splitTransactionModal.OpenForTransactionsAsync(transaction, GetCategoryModelForTransaction(transaction));
 
     public async Task OpenEditTransactionModal(TransactionModel transactionModel)
     {
         await upsertTransactionModal.OpenForExistingTransactionAsync(transactionModel, FilterModel.BankAccountId);
+    }
+
+    public async Task OpenCreateTransactionModalFromSource(TransactionModel transactionModel)
+    {
+        await upsertTransactionModal.OpenForNewTransactionFromSourceAsync(transactionModel, FilterModel.BankAccountId);
     }
 
     public async void OpenCreateTransactionModal()

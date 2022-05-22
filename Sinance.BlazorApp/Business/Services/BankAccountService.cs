@@ -42,7 +42,7 @@ namespace Sinance.BlazorApp.Business.Services
             var bankAccount = context.BankAccounts.Single(x => x.Id == bankAccountId);
             var bankAccountTransactionsSum = context.Transactions.Where(x => x.BankAccountId == bankAccountId).Sum(x => x.Amount);
 
-            bankAccount.CurrentBalance = bankAccountTransactionsSum;
+            bankAccount.CurrentBalance = bankAccount.StartBalance + bankAccountTransactionsSum;
 
             await context.SaveChangesAsync();
         }

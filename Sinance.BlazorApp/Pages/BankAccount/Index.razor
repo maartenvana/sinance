@@ -18,10 +18,9 @@
 
     private BankAccountModel bankAccount;
 
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         bankAccount = bankAccountService.GetBankAccount(Id);
-
         FilterModel = new SearchTransactionsFilterModel
         {
             BankAccountId = Id

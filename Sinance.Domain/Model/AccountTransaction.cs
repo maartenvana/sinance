@@ -31,8 +31,9 @@
 
         }
 
-        public AccountTransaction(int bankAccountId, DateTime date, string name, string description, decimal amount, int? categoryId, string account, string destinationAcount, int? importTransactionId)
+        public AccountTransaction(int userId, int bankAccountId, DateTime date, string name, string description, decimal amount, int? categoryId, string account, string destinationAcount, int? importTransactionId)
         {
+            UserId = userId;
             BankAccountId = bankAccountId;
             Date = date;
             Name = name;

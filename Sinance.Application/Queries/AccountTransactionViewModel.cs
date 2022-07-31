@@ -1,8 +1,8 @@
 ﻿namespace Sinance.Application.Queries
 {
-    public record AccountTransactionViewModel
+    public record AccountTransactionCreationModel
     {
-        public int Id { get; set; }
+        public int BankAccountId { get; set; }
         public string Description { get; set; }
         public string Name { get; set; }
         public decimal Amount { get; set; }

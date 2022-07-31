@@ -1,12 +1,8 @@
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
 using Sinance.BlazorApp.Storage;
 using Sinance.Storage;
-using System;
 
 namespace Sinance.BlazorApp
 {

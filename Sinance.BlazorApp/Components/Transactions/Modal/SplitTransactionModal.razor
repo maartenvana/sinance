@@ -1,11 +1,13 @@
-﻿@using Sinance.BlazorApp.Attributes
+﻿@using Application.Command
+@using Application.Queries
+@using Sinance.BlazorApp.Attributes
 @using Sinance.BlazorApp.Business.Model.Transaction
 @using Sinance.BlazorApp.Business.Services
-@using Sinance.Communication.Model.Import
-@using System.ComponentModel.DataAnnotations
 @using System.Globalization
+@using Sinance.Domain.Model
 @inject ITransactionService transactionService
 @inject ICategoryService categoryService
+@inject IMediator mediator
 
 <EditForm EditContext="EditContext" OnValidSubmit="SplitTransactionAsync" class="hide-validity">
     <BSModal @ref="modal" DataId="SplitTransactionModal" IsStaticBackdrop="true" FullScreenSize="Size.ExtraLarge" Size="Size.ExtraLarge">
@@ -133,9 +135,9 @@
 
     public async Task SplitTransactionAsync()
     {
-        await transactionService.SplitTransactionAsync(new SplitTransactionModel
+        var splittedTransactions = await mediator.Send(new SplitAccountTransactionCommand 
         {
-            NewTransactions = UpdateModel.NewTransactions.Select(x => new UpsertTransactionModel
+            NewTransactions = UpdateModel.NewTransactions.Select(x => new AccountTransactionCreationModel 
             {
                 Description = x.Description,
                 Name = x.Name,
@@ -151,7 +153,7 @@
         await OnTransactionsUpdated.InvokeAsync(new TransactionsSplittedEvent
             {
                 OriginalTransaction = UpdateModel.OriginalTransaction,
-                NewTransactions = UpdateModel.NewTransactions
+                NewTransactions = splittedTransactions.Select(x => x.ToTransactionModel()).ToList() 
             });
 
         await modal.HideAsync();

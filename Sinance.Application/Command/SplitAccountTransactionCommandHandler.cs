@@ -6,7 +6,7 @@ using Sinance.Infrastructure;
 
 namespace Sinance.Application.Command
 {
-    public class SplitAccountTransactionCommandHandler : IRequestHandler<SplitAccountTransactionCommand, List<int>>
+    public class SplitAccountTransactionCommandHandler : IRequestHandler<SplitAccountTransactionCommand, List<AccountTransaction>>
     {
         private readonly SinanceContext context;
 
@@ -15,17 +15,18 @@ namespace Sinance.Application.Command
             this.context = context;
         }
 
-        public async Task<List<int>> Handle(SplitAccountTransactionCommand request, CancellationToken cancellationToken)
+        public async Task<List<AccountTransaction>> Handle(SplitAccountTransactionCommand request, CancellationToken cancellationToken)
         {
             var transaction = await context.BeginTransactionAsync();
             try
             {
                 var sourceTransaction = context.Transactions.Single(x => x.Id == request.SourceTransactionId);
 
+                // TODO: Add this in a pipeline behaviour(?)
                 var validator = new SplitAccountTransactionCommandValidator(sourceTransaction.Amount);
                 validator.Validate(request);
 
-                var newTransactions = request.NewTransactions.Select(x => CreateNewTransaction(x, sourceTransaction)).ToList();
+                var newTransactions = request.NewTransactions.Select(newTransaction => CreateNewTransaction(newTransaction, sourceTransaction)).ToList();
 
                 context.Transactions.AddRange(newTransactions);
                 context.Transactions.Remove(sourceTransaction);
@@ -33,7 +34,7 @@ namespace Sinance.Application.Command
                 await context.SaveEntitiesAsync(cancellationToken);
                 await context.CommitTransactionAsync(transaction);
 
-                return newTransactions.Select(x => x.Id).ToList();
+                return newTransactions.ToList();
             }
             catch (Exception exception)
             {
@@ -45,18 +46,19 @@ namespace Sinance.Application.Command
             }
         }
 
-        private static AccountTransaction CreateNewTransaction(AccountTransactionViewModel x, AccountTransaction sourceTransaction)
+        private static AccountTransaction CreateNewTransaction(AccountTransactionCreationModel newTransaction, AccountTransaction sourceTransaction)
         {
             return new AccountTransaction(
-                                bankAccountId: sourceTransaction.BankAccountId,
-                                date: x.Date,
-                                name: x.Name,
-                                description: x.Description,
-                                amount: x.Amount,
-                                categoryId: x.CategoryId,
-                                account: x.SourceAccountNumber,
-                                destinationAcount: x.DestinationAccountNumber,
-                                importTransactionId: sourceTransaction.ImportTransactionId);
+                userId: sourceTransaction.UserId,
+                bankAccountId: newTransaction.BankAccountId,
+                date: newTransaction.Date,
+                name: newTransaction.Name,
+                description: newTransaction.Description,
+                amount: newTransaction.Amount,
+                categoryId: newTransaction.CategoryId,
+                account: newTransaction.SourceAccountNumber,
+                destinationAcount: newTransaction.DestinationAccountNumber,
+                importTransactionId: sourceTransaction.ImportTransactionId);
         }
     }
 }

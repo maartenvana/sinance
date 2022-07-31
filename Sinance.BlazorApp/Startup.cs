@@ -2,13 +2,16 @@ using Blazored.Toast;
 using BlazorStrap;
 using MediatR;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
+using Sinance.Application;
 using Sinance.BlazorApp.Business.Services;
 using Sinance.BlazorApp.Extensions;
 using Sinance.BlazorApp.Providers;
 using Sinance.BlazorApp.Services;
 using Sinance.Common.Configuration;
 using Sinance.Infrastructure;
+using System.Reflection;
 
 namespace Sinance.BlazorApp
 {
@@ -39,7 +42,8 @@ namespace Sinance.BlazorApp
                 .UseMySql(appSettings.ConnectionStrings.Sql, new MySqlServerVersion("5.7"))
                 .EnableSensitiveDataLogging());
 
-            services.AddMediatR(typeof(Startup));
+            services.AddMediatR(Assembly.GetExecutingAssembly());
+            services.RegisterApplicationModule();
 
             services.AddTransient<ITransactionService, TransactionService>();
             services.AddTransient<IUserNotificationService, UserNotificationService>();

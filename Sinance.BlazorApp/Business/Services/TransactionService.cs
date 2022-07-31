@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Sinance.Application.Command;
 
 namespace Sinance.BlazorApp.Business.Services
 {
@@ -28,25 +29,6 @@ namespace Sinance.BlazorApp.Business.Services
             this.dbContextFactory = dbContextFactory;
             this.userIdProvider = userIdProvider;
             this.bankAccountService = bankAccountService;
-        }
-
-        public async Task<List<TransactionModel>> SplitTransactionAsync(SplitTransactionModel splitModel)
-        {
-            using var context = dbContextFactory.CreateDbContext();
-
-            var transactionToSplit = context.Transactions.Single(x => x.Id == splitModel.SourceTransactionId);
-
-            var newTransactionEntities = transactionToSplit.SplitToNewTransactions(splitModel.NewTransactions);
-
-            if(newTransactionEntities.Sum(x => x.Amount) != transactionToSplit.Amount)
-                throw new ArgumentOutOfRangeException(paramName: nameof(splitModel), message: "New transaction sum is not equal to source transaction");
-
-            context.Transactions.AddRange(newTransactionEntities);
-            context.Transactions.Remove(transactionToSplit);
-
-            await context.SaveChangesAsync();
-
-            return newTransactionEntities.ToDto().ToList();
         }
 
         public async Task<List<TransactionModel>> SearchTransactionsPagedAsync(SearchTransactionsFilterModel filter)

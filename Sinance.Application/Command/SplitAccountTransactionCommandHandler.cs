@@ -17,6 +17,7 @@ namespace Sinance.Application.Command
 
         public async Task<List<AccountTransaction>> Handle(SplitAccountTransactionCommand request, CancellationToken cancellationToken)
         {
+
             var transaction = await context.BeginTransactionAsync();
             try
             {

@@ -1,7 +1,5 @@
 ﻿using Sinance.BlazorApp.Business.Model.Transaction;
 using Sinance.Storage.Entities;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Sinance.BlazorApp.Business.Extensions
 {
@@ -13,12 +11,13 @@ namespace Sinance.BlazorApp.Business.Extensions
             newTransactions.Select(x => transactionEntity.ToNewSplittedEntity(x));
 
         public static IEnumerable<TransactionModel> ToDto(this IEnumerable<TransactionEntity> entities)
-                    => entities.Select(x => x.ToDto());
+            => entities.Select(x => x.ToDto());
 
         public static TransactionModel ToDto(this TransactionEntity entity) =>
             new()
             {
                 Id = entity.Id,
+                BankAccountId = entity.BankAccountId,
                 Name = entity.Name,
                 Date = entity.Date,
                 Amount = entity.Amount,

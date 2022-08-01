@@ -140,6 +140,7 @@
             NewTransactions = UpdateModel.NewTransactions.Select(x => new AccountTransactionCreationModel 
             {
                 Description = x.Description,
+                BankAccountId = UpdateModel.OriginalTransaction.BankAccountId,
                 Name = x.Name,
                 Amount = x.Amount,
                 Date = x.Date,

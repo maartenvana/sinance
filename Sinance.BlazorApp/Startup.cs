@@ -1,8 +1,6 @@
 using Blazored.Toast;
 using BlazorStrap;
-using MediatR;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.EntityFrameworkCore;
 using Sinance.Application;
 using Sinance.BlazorApp.Business.Services;
@@ -29,7 +27,7 @@ namespace Sinance.BlazorApp
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddTransient<Sinance.Storage.IUserIdProvider, OldUserIdProvider>();
-            services.AddTransient<Sinance.Infrastructure.IUserIdProvider, NewUserIdProvider>();
+            services.AddTransient<IUserIdProvider, NewUserIdProvider>();
 
             var appSettings = Configuration.Get<AppSettings>();
             services.AddSingleton(appSettings);
@@ -38,11 +36,11 @@ namespace Sinance.BlazorApp
                 .UseMySql(appSettings.ConnectionStrings.Sql, new MySqlServerVersion("5.7"))
                 .EnableSensitiveDataLogging());
 
-            services.AddDbContext<Sinance.Infrastructure.SinanceContext>(opt => opt
+            services.AddDbContext<SinanceContext>(opt => opt
                 .UseMySql(appSettings.ConnectionStrings.Sql, new MySqlServerVersion("5.7"))
                 .EnableSensitiveDataLogging());
 
-            services.AddMediatR(Assembly.GetExecutingAssembly());
+            //services.AddMediatR(Assembly.GetExecutingAssembly());
             services.RegisterApplicationModule();
 
             services.AddTransient<ITransactionService, TransactionService>();

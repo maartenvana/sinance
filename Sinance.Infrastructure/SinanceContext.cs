@@ -84,7 +84,7 @@ namespace Sinance.Infrastructure
             if (transaction != _currentTransaction) throw new InvalidOperationException($"Transaction {transaction.TransactionId} is not current");
         }
 
-        public async Task<bool> SaveEntitiesAsync(CancellationToken cancellationToken = default)
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             // Dispatch Domain Events collection. 
             // Choices:
@@ -96,11 +96,8 @@ namespace Sinance.Infrastructure
 
             // After executing this line all the changes (from the Command Handler and Domain Event Handlers) 
             // performed through the DbContext will be committed
-            await base.SaveChangesAsync(cancellationToken);
-
-            return true;
+            return await base.SaveChangesAsync(cancellationToken);
         }
-
 
         public void RollbackTransaction()
         {

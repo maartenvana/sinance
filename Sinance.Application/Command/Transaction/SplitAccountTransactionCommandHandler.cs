@@ -1,10 +1,10 @@
 ﻿using Serilog;
 using Sinance.Application.Command.Validators;
-using Sinance.Application.Queries;
+using Sinance.Application.Model;
 using Sinance.Domain.Model;
 using Sinance.Infrastructure;
 
-namespace Sinance.Application.Command
+namespace Sinance.Application.Command.Transaction
 {
     public class SplitAccountTransactionCommandHandler : IRequestHandler<SplitAccountTransactionCommand, List<AccountTransaction>>
     {
@@ -17,23 +17,16 @@ namespace Sinance.Application.Command
 
         public async Task<List<AccountTransaction>> Handle(SplitAccountTransactionCommand request, CancellationToken cancellationToken)
         {
-
-            var transaction = await context.BeginTransactionAsync();
             try
             {
                 var sourceTransaction = context.Transactions.Single(x => x.Id == request.SourceTransactionId);
-
-                // TODO: Add this in a pipeline behaviour(?)
-                var validator = new SplitAccountTransactionCommandValidator(sourceTransaction.Amount);
-                validator.Validate(request);
 
                 var newTransactions = request.NewTransactions.Select(newTransaction => CreateNewTransaction(newTransaction, sourceTransaction)).ToList();
 
                 context.Transactions.AddRange(newTransactions);
                 context.Transactions.Remove(sourceTransaction);
 
-                await context.SaveEntitiesAsync(cancellationToken);
-                await context.CommitTransactionAsync(transaction);
+                await context.SaveChangesAsync(cancellationToken);
 
                 return newTransactions.ToList();
             }

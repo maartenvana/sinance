@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using Sinance.Application.Command.Transaction;
 
 namespace Sinance.Application.Command.Validators
 {

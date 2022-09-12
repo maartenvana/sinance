@@ -1,4 +1,4 @@
-﻿namespace Sinance.Application.Queries
+﻿namespace Sinance.Application.Model
 {
     public record AccountTransactionCreationModel
     {

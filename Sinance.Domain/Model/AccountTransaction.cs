@@ -1,4 +1,6 @@
-﻿namespace Sinance.Domain.Model
+﻿using Sinance.Domain.Events;
+
+namespace Sinance.Domain.Model
 {
     public class AccountTransaction : UserEntity
     {
@@ -43,6 +45,8 @@
             ImportTransactionId = importTransactionId;
             AccountNumber = account;
             DestinationAccount = destinationAcount;
+
+            AddDomainEvent(new AccountTransactionCreatedDomainEvent(this));
         }
     }
 }

@@ -1,6 +1,6 @@
-﻿using Sinance.Application.Queries;
+﻿using Sinance.Application.Model;
 
-namespace Sinance.Application.Command
+namespace Sinance.Application.Command.Transaction
 {
     public class SplitAccountTransactionCommand : IRequest<List<Domain.Model.AccountTransaction>>
     {

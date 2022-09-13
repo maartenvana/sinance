@@ -26,13 +26,10 @@ namespace Sinance.Application.Command.Transaction
 
         private static void UpdateTransactionFromUpdateModel(AccountTransaction currentTransaction, AccountTransactionUpdateModel updateModel)
         {
-            currentTransaction.Description = updateModel.Description;
-            currentTransaction.Name = updateModel.Name;
-            currentTransaction.Amount = updateModel.Amount;
-            currentTransaction.Date = updateModel.Date;
-            currentTransaction.AccountNumber = updateModel.SourceAccountNumber;
-            currentTransaction.DestinationAccount = updateModel.DestinationAccountNumber;
-            currentTransaction.CategoryId = updateModel.CategoryId;
+            currentTransaction.UpdateMetadata(updateModel.Date, updateModel.Name, updateModel.Description, updateModel.CategoryId, updateModel.SourceAccountNumber, updateModel.DestinationAccountNumber);
+
+            if (currentTransaction.Amount != updateModel.Amount)
+                currentTransaction.UpdateAmount(updateModel.Amount);
         }
     }
 }

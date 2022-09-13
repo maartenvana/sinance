@@ -1,6 +1,7 @@
 ﻿@inject ITransactionService transactionService
 @inject ICategoryService categoryService
 @inject IUserNotificationService userNotificationService
+@using Sinance.Application.Command.Transaction
 @using Sinance.BlazorApp.Business.Model.Transaction
 @using Sinance.BlazorApp.Components.Core.Modal
 @using Sinance.BlazorApp.Components.Transactions.Modal
@@ -10,6 +11,8 @@
 @using static Sinance.BlazorApp.Components.Transactions.Modal.SplitTransactionModal
 
 @using static Sinance.BlazorApp.Components.Transactions.Modal.SelectTransactionCategoryModal
+
+@inject IMediator mediator
 
 <div class="card shadow mb-4">
     <div class="card-header">
@@ -137,10 +140,11 @@
 
     private async Task ConfirmDeleteTransaction(TransactionModel transactionModel)
     {
-        await transactionService.DeleteTransactionAsync(new DeleteTransactionModel
-            {
-                TransactionId = transactionModel.Id
-            });
+        await mediator.Send(new DeleteAccountTransactionCommand
+        {
+            TransactionId = transactionModel.Id,
+            UserId = 4
+        });
 
         table.DeleteRow(transactionModel);
     }

@@ -1,5 +1,4 @@
 ﻿using Serilog;
-using Sinance.Application.Command.Validators;
 using Sinance.Application.Model;
 using Sinance.Domain.Model;
 using Sinance.Infrastructure;
@@ -17,27 +16,25 @@ namespace Sinance.Application.Command.Transaction
 
         public async Task<List<AccountTransaction>> Handle(SplitAccountTransactionCommand request, CancellationToken cancellationToken)
         {
-            try
-            {
-                var sourceTransaction = context.Transactions.Single(x => x.Id == request.SourceTransactionId);
+            var sourceTransaction = context.Transactions.Single(x => x.Id == request.SourceTransactionId);
+            var newTransactions = request.NewTransactions.Select(newTransaction => CreateNewTransaction(newTransaction, sourceTransaction)).ToList();
 
-                var newTransactions = request.NewTransactions.Select(newTransaction => CreateNewTransaction(newTransaction, sourceTransaction)).ToList();
+            GuardNewAmountEqualToSourceTransaction(sourceTransaction, newTransactions);
 
-                context.Transactions.AddRange(newTransactions);
-                context.Transactions.Remove(sourceTransaction);
+            context.Transactions.AddRange(newTransactions);
+            context.Transactions.Remove(sourceTransaction);
 
-                await context.SaveChangesAsync(cancellationToken);
+            await context.SaveChangesAsync(cancellationToken);
 
-                return newTransactions.ToList();
-            }
-            catch (Exception exception)
-            {
-                Log.Error(exception, "Exception during handle for SplitTransactionCommand");
+            return newTransactions.ToList();
+        }
 
-                context.RollbackTransaction();
+        private static void GuardNewAmountEqualToSourceTransaction(AccountTransaction sourceTransaction, List<AccountTransaction> newTransactions)
+        {
+            var newTransactionSumAmount = newTransactions.Sum(x => x.Amount);
 
-                throw;
-            }
+            if (sourceTransaction.Amount != newTransactionSumAmount)
+                throw new InvalidOperationException($"Source transaction amount of {sourceTransaction.Amount} is not equal to new transactions sum of {newTransactionSumAmount}");
         }
 
         private static AccountTransaction CreateNewTransaction(AccountTransactionCreationModel newTransaction, AccountTransaction sourceTransaction)

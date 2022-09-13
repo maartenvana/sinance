@@ -4,29 +4,29 @@ namespace Sinance.Domain.Model
 {
     public class AccountTransaction : UserEntity
     {
-        public string AccountNumber { get; set; }
+        public string AccountNumber { get; private set; }
 
-        public decimal Amount { get; set; }
+        public decimal Amount { get; private set; }
 
-        public Account BankAccount { get; set; }
+        public Account BankAccount { get; private set; }
 
-        public int BankAccountId { get; set; }
+        public int BankAccountId { get; private set; }
 
-        public DateTime Date { get; set; }
+        public DateTime Date { get; private set; }
 
-        public string Description { get; set; }
+        public string Description { get; private set; }
 
-        public string DestinationAccount { get; set; }
+        public string DestinationAccount { get; private set; }
 
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
-        public Category Category { get; set; }
+        public Category Category { get; private set; }
 
-        public int? CategoryId { get; set; }
+        public int? CategoryId { get; private set; }
 
-        public ImportTransaction ImportTransaction { get; set; }
+        public ImportTransaction ImportTransaction { get; private set; }
 
-        public int? ImportTransactionId { get; set; }
+        public int? ImportTransactionId { get; private set; }
 
         public AccountTransaction()
         {
@@ -47,6 +47,28 @@ namespace Sinance.Domain.Model
             DestinationAccount = destinationAcount;
 
             AddDomainEvent(new AccountTransactionCreatedDomainEvent(this));
+        }
+
+        public void UpdateAmount(decimal newAmount)
+        {
+            Amount = newAmount;
+
+            AddDomainEvent(new AccountTransactionAmountChangedDomainEvent(this));
+        }
+
+        public void UpdateMetadata(DateTime date, string name, string description, int? categoryId, string account, string destinationAcount)
+        {
+            Date = date;
+            Name = name;
+            Description = description;
+            CategoryId = categoryId;
+            AccountNumber = account;
+            DestinationAccount = destinationAcount;
+        }
+
+        public void MarkDeleted()
+        {
+            AddDomainEvent(new AccountTransactionDeletedDomainEvent(this));
         }
     }
 }

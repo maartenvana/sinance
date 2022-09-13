@@ -77,18 +77,5 @@ namespace Sinance.BlazorApp.Business.Services
 
             return transactionEntity.ToDto();
         }
-
-        public async Task DeleteTransactionAsync(DeleteTransactionModel transaction)
-        {
-            using var context = dbContextFactory.CreateDbContext();
-
-            var transactionToRemove = context.Transactions.Single(x => x.Id == transaction.TransactionId);
-
-            context.Remove(transactionToRemove);
-
-            await context.SaveChangesAsync();
-
-            await bankAccountService.RecalculateBalanceAsync(transactionToRemove.BankAccountId);
-        }
     }
 }

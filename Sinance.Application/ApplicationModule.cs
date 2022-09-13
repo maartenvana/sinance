@@ -1,8 +1,8 @@
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
 using Sinance.Application.Behaviours;
-using Sinance.Application.Command.Transaction;
 using Sinance.Application.Command.Validators;
+using Sinance.Application.DomainEventHandlers;
 
 namespace Sinance.Application
 {
@@ -10,20 +10,32 @@ namespace Sinance.Application
     {
         public static IServiceCollection RegisterApplicationModule(this IServiceCollection services)
         {
+            typeof(BalanceRecalculationEventHandler).Assembly.GetTypes().Where(x => x.IsClosedTypeOf(typeof(INotificationHandler<>)))
+                .ToList()
+                .ForEach(x =>
+                {
+                    var serviceTypes = x.GetClosedTypesOf(typeof(INotificationHandler<>));
+                    foreach (var serviceType in serviceTypes)
+                    {
+                        services.AddTransient(serviceType, x);
+                    }
+                });
+
             typeof(SplitAccountTransactionCommandValidator).Assembly.GetTypes().Where(x => x.IsClosedTypeOf(typeof(IValidator<>)))
                 .ToList()
                 .ForEach(x =>
                 {
-                    var serviceType = x.GetClosedTypeOf(typeof(IValidator<>));
-                    services.AddTransient(serviceType, x);
+                    var serviceTypes = x.GetClosedTypesOf(typeof(IValidator<>));
+                    foreach (var serviceType in serviceTypes)
+                    {
+                        services.AddTransient(serviceType, x);
+                    }
                 });
 
             return services.AddMediatR(Assembly.GetExecutingAssembly())
                 .AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehaviour<,>))
                 .AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>))
-                .AddTransient(typeof(IPipelineBehavior<,>), typeof(TransactionBehaviour<,>))
-
-                .AddTransient<IValidator<SplitAccountTransactionCommand>, SplitAccountTransactionCommandValidator>(); // make generic when more are made.
+                .AddTransient(typeof(IPipelineBehavior<,>), typeof(TransactionBehaviour<,>));
         }
 
         /// <summary>
@@ -32,9 +44,9 @@ namespace Sinance.Application
         /// <param name="this">The type we are checking.</param>
         /// <param name="openGeneric">The open generic type to validate against.</param>
         /// <returns>True if <paramref name="this"/> is a closed type of <paramref name="openGeneric"/>. False otherwise.</returns>
-        public static Type GetClosedTypeOf(this Type @this, Type openGeneric)
+        public static List<Type> GetClosedTypesOf(this Type @this, Type openGeneric)
         {
-            return TypesAssignableFrom(@this).Single(t => t.IsGenericType && !@this.ContainsGenericParameters && t.GetGenericTypeDefinition() == openGeneric);
+            return TypesAssignableFrom(@this).Where(t => t.IsGenericType && !@this.ContainsGenericParameters && t.GetGenericTypeDefinition() == openGeneric).ToList();
         }
 
         /// <summary>

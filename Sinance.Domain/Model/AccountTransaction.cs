@@ -49,11 +49,11 @@ namespace Sinance.Domain.Model
             AddDomainEvent(new AccountTransactionCreatedDomainEvent(this));
         }
 
-        public void UpdateAmount(decimal newAmount)
+        public void UpdateAmount(decimal newAmount, decimal oldAmount)
         {
             Amount = newAmount;
 
-            AddDomainEvent(new AccountTransactionAmountChangedDomainEvent(this));
+            AddDomainEvent(new AccountTransactionAmountChangedDomainEvent(this, oldAmount));
         }
 
         public void UpdateMetadata(DateTime date, string name, string description, int? categoryId, string account, string destinationAcount)
@@ -66,7 +66,7 @@ namespace Sinance.Domain.Model
             DestinationAccount = destinationAcount;
         }
 
-        public void MarkDeleted()
+        public override void MarkAsDeleted()
         {
             AddDomainEvent(new AccountTransactionDeletedDomainEvent(this));
         }

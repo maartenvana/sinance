@@ -15,7 +15,6 @@ namespace Sinance.Application.Command.Transaction
         {
             var transaction = context.Transactions.SingleOrDefault(x => x.Id == request.TransactionId);
 
-            transaction.MarkDeleted();
             context.Transactions.Remove(transaction);
 
             await context.SaveChangesAsync(cancellationToken);

@@ -10,17 +10,6 @@ namespace Sinance.Application
     {
         public static IServiceCollection RegisterApplicationModule(this IServiceCollection services)
         {
-            typeof(BalanceRecalculationEventHandler).Assembly.GetTypes().Where(x => x.IsClosedTypeOf(typeof(INotificationHandler<>)))
-                .ToList()
-                .ForEach(x =>
-                {
-                    var serviceTypes = x.GetClosedTypesOf(typeof(INotificationHandler<>));
-                    foreach (var serviceType in serviceTypes)
-                    {
-                        services.AddTransient(serviceType, x);
-                    }
-                });
-
             typeof(SplitAccountTransactionCommandValidator).Assembly.GetTypes().Where(x => x.IsClosedTypeOf(typeof(IValidator<>)))
                 .ToList()
                 .ForEach(x =>

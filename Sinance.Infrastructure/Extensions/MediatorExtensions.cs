@@ -12,6 +12,13 @@ namespace Sinance.Infrastructure.Extensions
     {
         public static async Task DispatchDomainEventsAsync(this IMediator mediator, SinanceContext context)
         {
+            // Mark all entities that are going to be deleted to be deleted so any domain events can be emitted;
+            context.ChangeTracker
+                .Entries<Entity>()
+                .Where(x => x.State == Microsoft.EntityFrameworkCore.EntityState.Deleted)
+                .ToList()
+                .ForEach(x => x.Entity.MarkAsDeleted());
+            
             var domainEntities = context.ChangeTracker
                 .Entries<Entity>()
                 .Where(x => x.Entity.DomainEvents != null && x.Entity.DomainEvents.Any());

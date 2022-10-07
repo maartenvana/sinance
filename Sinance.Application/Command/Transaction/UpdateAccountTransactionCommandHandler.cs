@@ -26,10 +26,12 @@ namespace Sinance.Application.Command.Transaction
 
         private static void UpdateTransactionFromUpdateModel(AccountTransaction currentTransaction, AccountTransactionUpdateModel updateModel)
         {
+            var oldAmount = currentTransaction.Amount;
+
             currentTransaction.UpdateMetadata(updateModel.Date, updateModel.Name, updateModel.Description, updateModel.CategoryId, updateModel.SourceAccountNumber, updateModel.DestinationAccountNumber);
 
             if (currentTransaction.Amount != updateModel.Amount)
-                currentTransaction.UpdateAmount(updateModel.Amount);
+                currentTransaction.UpdateAmount(updateModel.Amount, oldAmount);
         }
     }
 }

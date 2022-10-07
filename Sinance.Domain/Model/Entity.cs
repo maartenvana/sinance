@@ -33,6 +33,11 @@ namespace Sinance.Domain.Model
             _domainEvents?.Remove(eventItem);
         }
 
+        public virtual void MarkAsDeleted()
+        {
+            // Default behaviour is not doing anything
+        }
+
         public void ClearDomainEvents()
         {
             _domainEvents?.Clear();

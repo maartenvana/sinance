@@ -10,11 +10,13 @@ namespace Sinance.Domain.Events
 {
     public class AccountTransactionAmountChangedDomainEvent : INotification
     {
-        public AccountTransactionAmountChangedDomainEvent(AccountTransaction transaction)
+        public AccountTransactionAmountChangedDomainEvent(AccountTransaction transaction, decimal oldAmount)
         {
             Transaction = transaction;
+            OldAmount = oldAmount;
         }
 
+        public decimal OldAmount { get; }
         public AccountTransaction Transaction { get; }
     }
 }

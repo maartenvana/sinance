@@ -17,25 +17,25 @@ namespace Sinance.Application.DomainEventHandlers
 
         public async Task Handle(AccountTransactionDeletedDomainEvent notification, CancellationToken cancellationToken)
         {
-            await RecalculateBalanceForAccount(notification.Transaction.BankAccountId);
+            await UpdateBankAccountCurrentBalance(notification.Transaction.BankAccountId, changeAmount: notification.Transaction.Amount * -1);
         }
 
         public async Task Handle(AccountTransactionCreatedDomainEvent notification, CancellationToken cancellationToken)
         {
-            await RecalculateBalanceForAccount(notification.Transaction.BankAccountId);
+            await UpdateBankAccountCurrentBalance(notification.Transaction.BankAccountId, changeAmount: notification.Transaction.Amount);
         }
 
         public async Task Handle(AccountTransactionAmountChangedDomainEvent notification, CancellationToken cancellationToken)
         {
-            await RecalculateBalanceForAccount(notification.Transaction.BankAccountId);
+            var changeAmount = Math.Abs(notification.OldAmount - notification.Transaction.Amount);
+            await UpdateBankAccountCurrentBalance(notification.Transaction.BankAccountId, changeAmount);
         }
 
-        private Task RecalculateBalanceForAccount(int bankAccountId)
+        private Task UpdateBankAccountCurrentBalance(int bankAccountId, decimal changeAmount)
         {
             var bankAccount = context.BankAccounts.Single(x => x.Id == bankAccountId);
-            var bankAccountTransactionsSum = context.Transactions.Where(x => x.BankAccountId == bankAccountId).Sum(x => x.Amount);
 
-            bankAccount.CurrentBalance = bankAccount.StartBalance + bankAccountTransactionsSum;
+            bankAccount.CurrentBalance += changeAmount;
 
             return Task.CompletedTask;
         }

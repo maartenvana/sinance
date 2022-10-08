@@ -12,19 +12,20 @@
     [Parameter]
     public int Id { get; set; }
 
-    public SearchTransactionsFilterModel FilterModel;
+    public FindAccountTransactionsFilter FilterModel;
 
     private TransactionsPanel transactionsPanel;
 
     private BankAccountModel bankAccount;
 
-    protected override async Task OnParametersSetAsync()
+    protected override void OnParametersSet()
     {
         bankAccount = bankAccountService.GetBankAccount(Id);
 
-        FilterModel = new SearchTransactionsFilterModel
+        FilterModel = new FindAccountTransactionsFilter
         {
-            BankAccountId = Id
+            BankAccountId = Id,
+            PageSize = 25
         };
     }
 

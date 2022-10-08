@@ -9,7 +9,6 @@ using Sinance.BlazorApp.Providers;
 using Sinance.BlazorApp.Services;
 using Sinance.Common.Configuration;
 using Sinance.Infrastructure;
-using System.Reflection;
 
 namespace Sinance.BlazorApp
 {
@@ -43,7 +42,6 @@ namespace Sinance.BlazorApp
             //services.AddMediatR(Assembly.GetExecutingAssembly());
             services.RegisterApplicationModule();
 
-            services.AddTransient<ITransactionService, TransactionService>();
             services.AddTransient<IUserNotificationService, UserNotificationService>();
             services.AddTransient<IBankAccountService, BankAccountService>();
             services.AddTransient<ICategoryService, CategoryService>();

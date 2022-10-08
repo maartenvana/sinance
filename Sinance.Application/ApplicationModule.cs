@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Sinance.Application.Behaviours;
 using Sinance.Application.Command.Validators;
 using Sinance.Application.DomainEventHandlers;
+using Sinance.Application.Queries;
 
 namespace Sinance.Application
 {
@@ -21,10 +22,12 @@ namespace Sinance.Application
                     }
                 });
 
-            return services.AddMediatR(Assembly.GetExecutingAssembly())
+            services.AddMediatR(Assembly.GetExecutingAssembly())
                 .AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehaviour<,>))
                 .AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>))
                 .AddTransient(typeof(IPipelineBehavior<,>), typeof(TransactionBehaviour<,>));
+
+            return services.AddTransient<IAccountTransactionQueries, AccountTransactionQueries>();
         }
 
         /// <summary>

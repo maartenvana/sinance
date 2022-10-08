@@ -18,8 +18,13 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Sinance.Contract\Sinance.Contract.csproj" />
     <ProjectReference Include="..\Sinance.Core\Sinance.Core.csproj" />
     <ProjectReference Include="..\Sinance.Infrastructure\Sinance.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Queries\Transaction\" />
   </ItemGroup>
 
 </Project>

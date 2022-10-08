@@ -53,7 +53,10 @@
 @code {
     private TransactionsPanel transactionsPanel;
 
-    public SearchTransactionsFilterModel FilterModel = new SearchTransactionsFilterModel();
+    public FindAccountTransactionsFilter FilterModel = new FindAccountTransactionsFilter
+        {
+            PageSize = 25
+        };
 
     public async Task SearchAsync()
     {

@@ -38,7 +38,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sinance.Infrastructure", "S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sinance.Domain", "Sinance.Domain\Sinance.Domain.csproj", "{1A81F12D-9B50-47E2-AEFA-9C374D6C377C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sinance.Core", "Sinance.Core\Sinance.Core.csproj", "{56486EDA-D5D7-4BFC-95A2-9B809B42C719}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sinance.Core", "Sinance.Core\Sinance.Core.csproj", "{56486EDA-D5D7-4BFC-95A2-9B809B42C719}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sinance.Contract", "Sinance.Contract\Sinance.Contract.csproj", "{B98EDFD1-7DAD-49B7-B3CA-F209913EC152}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -119,6 +121,12 @@ Global
 		{56486EDA-D5D7-4BFC-95A2-9B809B42C719}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{56486EDA-D5D7-4BFC-95A2-9B809B42C719}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{56486EDA-D5D7-4BFC-95A2-9B809B42C719}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B98EDFD1-7DAD-49B7-B3CA-F209913EC152}.Code Analysis|Any CPU.ActiveCfg = Debug|Any CPU
+		{B98EDFD1-7DAD-49B7-B3CA-F209913EC152}.Code Analysis|Any CPU.Build.0 = Debug|Any CPU
+		{B98EDFD1-7DAD-49B7-B3CA-F209913EC152}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B98EDFD1-7DAD-49B7-B3CA-F209913EC152}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B98EDFD1-7DAD-49B7-B3CA-F209913EC152}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B98EDFD1-7DAD-49B7-B3CA-F209913EC152}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

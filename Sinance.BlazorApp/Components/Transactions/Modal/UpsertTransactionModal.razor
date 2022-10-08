@@ -1,18 +1,21 @@
-﻿@using Sinance.BlazorApp.Business.Model.Transaction
+﻿@using Sinance.Application.Command.Transaction
+@using Sinance.BlazorApp.Business.Model.Transaction
 @using Sinance.BlazorApp.Business.Services
 @using Sinance.BlazorApp.Components.Transactions.Form
+@using Sinance.Domain.Model
+@using Sinance.Infrastructure
 @inject ITransactionService transactionService
-
+@inject IUserIdProvider _userProvider
+@inject IMediator _mediator
 
 <BSModal @ref="modal" IsStaticBackdrop="true" DataId="UpsertTransactionModal" OnHide="OnHide">
     <Header>@ModalHeader</Header>
     <Content>
         @if (upsertTransaction != null)
         {
-            <UpsertTransactionForm 
-                FormId="UpsertTransactionForm" 
-                UpsertTransaction="upsertTransaction"
-                OnValidSubmit="async(transaction) => await UpsertTransaction(transaction)" />
+            <UpsertTransactionForm FormId="UpsertTransactionForm"
+                               UpsertTransaction="upsertTransaction"
+                               OnValidSubmit="async(transaction) => await UpsertTransaction(transaction)" />
         }
     </Content>
     <Footer Context="modal">
@@ -47,7 +50,7 @@
         upsertTransaction = null;
     }
 
-    public async Task OpenForNewTransactionFromSourceAsync(TransactionModel transaction, int? bankAccountId)
+    public async Task OpenForNewTransactionFromSourceAsync(TransactionModel transaction, int bankAccountId)
     {
         upsertTransaction = transaction.ToUpsertModel(bankAccountId);
         upsertTransaction.MarkAsNew();
@@ -55,7 +58,7 @@
         await modal.ShowAsync();
     }
 
-    public async Task OpenForExistingTransactionAsync(TransactionModel transaction, int? bankAccountId)
+    public async Task OpenForExistingTransactionAsync(TransactionModel transaction, int bankAccountId)
     {
         upsertTransaction = transaction.ToUpsertModel(bankAccountId);
 
@@ -64,14 +67,53 @@
 
     public async Task UpsertTransaction(UpsertTransactionModel validTransaction)
     {
-        var upsertedTransaction = await transactionService.UpsertTransactionAsync(validTransaction);
+        var upsertedTransaction = await CreateOrUpdateTransaction(validTransaction);
 
         await OnTransactionsUpserted.InvokeAsync(new TransactionUpsertedEvent
             {
                 Created = validTransaction.IsNew,
-                Transaction = upsertedTransaction
+                Transaction = upsertedTransaction.ToTransactionModel()
             });
 
         await modal.HideAsync();
+    }
+    private async Task<AccountTransaction> CreateOrUpdateTransaction(UpsertTransactionModel validTransaction)
+    {
+        if (validTransaction.IsNew)
+        {
+            return await _mediator.Send(new CreateAccountTransactionCommand
+                {
+                    UserId = _userProvider.GetCurrentUserId(),
+                    CreationModel = new Application.Model.AccountTransactionCreationModel
+                    {
+                        Amount = validTransaction.Amount,
+                        BankAccountId = validTransaction.BankAccountId.Value,
+                        CategoryId = validTransaction.CategoryId,
+                        Date = validTransaction.Date,
+                        Description = validTransaction.Description,
+                        DestinationAccountNumber = validTransaction.DestinationAccountNumber,
+                        Name = validTransaction.Name,
+                        SourceAccountNumber = validTransaction.SourceAccountNumber
+                    }
+                });
+        }
+        else
+        {
+            return await _mediator.Send(new UpdateAccountTransactionCommand
+                {
+                    UserId = _userProvider.GetCurrentUserId(),
+                    TransactionId = validTransaction.Id,
+                    UpdateModel = new Application.Model.AccountTransactionUpdateModel
+                    {
+                        Amount = validTransaction.Amount,
+                        CategoryId = validTransaction.CategoryId,
+                        Date = validTransaction.Date,
+                        Description = validTransaction.Description,
+                        DestinationAccountNumber = validTransaction.DestinationAccountNumber,
+                        Name = validTransaction.Name,
+                        SourceAccountNumber = validTransaction.SourceAccountNumber
+                    }
+                });
+        }
     }
 }

@@ -13,6 +13,7 @@
 @using static Sinance.BlazorApp.Components.Transactions.Modal.SelectTransactionCategoryModal
 
 @inject IMediator mediator
+@inject IToastService toastService
 
 <div class="card shadow mb-4">
     <div class="card-header">
@@ -125,12 +126,12 @@
 
     public async Task OpenEditTransactionModal(TransactionModel transactionModel)
     {
-        await upsertTransactionModal.OpenForExistingTransactionAsync(transactionModel, FilterModel.BankAccountId);
+        await upsertTransactionModal.OpenForExistingTransactionAsync(transactionModel, transactionModel.BankAccountId);
     }
 
     public async Task OpenCreateTransactionModalFromSource(TransactionModel transactionModel)
     {
-        await upsertTransactionModal.OpenForNewTransactionFromSourceAsync(transactionModel, FilterModel.BankAccountId);
+        await upsertTransactionModal.OpenForNewTransactionFromSourceAsync(transactionModel, transactionModel.BankAccountId);
     }
 
     public async void OpenCreateTransactionModal()

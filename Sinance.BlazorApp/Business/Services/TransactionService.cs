@@ -12,17 +12,10 @@ namespace Sinance.BlazorApp.Business.Services
     public class TransactionService : ITransactionService
     {
         private readonly ISinanceDbContextFactory<SinanceContext> dbContextFactory;
-        private readonly IUserIdProvider userIdProvider;
-        private readonly IBankAccountService bankAccountService;
 
-        public TransactionService(
-            ISinanceDbContextFactory<SinanceContext> dbContextFactory,
-            IUserIdProvider userIdProvider,
-            IBankAccountService bankAccountService) // TODO: VIOLATION BUT EVERYTHING SHOULD GO TO HANDLERS SOON
+        public TransactionService(ISinanceDbContextFactory<SinanceContext> dbContextFactory)
         {
             this.dbContextFactory = dbContextFactory;
-            this.userIdProvider = userIdProvider;
-            this.bankAccountService = bankAccountService;
         }
 
         public async Task<List<TransactionModel>> SearchTransactionsPagedAsync(SearchTransactionsFilterModel filter)
@@ -53,29 +46,6 @@ namespace Sinance.BlazorApp.Business.Services
                 .ToListAsync();
 
             return transactionEntities.ToDto().ToList();
-        }
-
-        public async Task<TransactionModel> UpsertTransactionAsync(UpsertTransactionModel upsertTransactionModel)
-        {
-            using var context = dbContextFactory.CreateDbContext();
-
-            TransactionEntity transactionEntity;
-            if (upsertTransactionModel.IsNew)
-            {
-                transactionEntity = upsertTransactionModel.ToNewTransactionEntity(userIdProvider.GetCurrentUserId());
-                context.Transactions.Add(transactionEntity);
-            }
-            else
-            {
-                transactionEntity = context.Transactions.Single(x => x.Id == upsertTransactionModel.Id);
-                transactionEntity.UpdateFromUpsertModel(upsertTransactionModel);
-            }
-
-            await context.SaveChangesAsync();
-
-            await bankAccountService.RecalculateBalanceAsync(transactionEntity.BankAccountId);
-
-            return transactionEntity.ToDto();
         }
     }
 }

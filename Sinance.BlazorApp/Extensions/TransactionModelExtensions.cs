@@ -9,7 +9,7 @@ namespace Sinance.BlazorApp.Extensions
             transactionModel.Id = 0;
         }
 
-        public static UpsertTransactionModel ToUpsertModel(this TransactionModel transactionModel, int? bankAccountId) =>
+        public static UpsertTransactionModel ToUpsertModel(this TransactionModel transactionModel, int bankAccountId) =>
             new()
             {
                 Amount = transactionModel.Amount,

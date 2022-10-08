@@ -7,6 +7,5 @@ namespace Sinance.BlazorApp.Business.Services
     public interface ITransactionService
     {
         Task<List<TransactionModel>> SearchTransactionsPagedAsync(SearchTransactionsFilterModel filter);
-        Task<TransactionModel> UpsertTransactionAsync(UpsertTransactionModel upsertTransactionModel);
     }
 }

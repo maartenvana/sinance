@@ -10,6 +10,7 @@ namespace Sinance.BlazorApp.Extensions
             return new TransactionModel
             {
                 Amount = accountTransaction.Amount,
+                BankAccountId = accountTransaction.BankAccountId,
                 CategoryId = accountTransaction.CategoryId,
                 Date = accountTransaction.Date,
                 Description = accountTransaction.Description,

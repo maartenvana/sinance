@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <ProjectGuid>8a612c52-5239-4cfb-8b3b-5344be88d1ee</ProjectGuid>
     <CodeAnalysisRuleSet>Sinance.Web.ruleset</CodeAnalysisRuleSet>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
@@ -90,7 +90,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\.editorconfig" Link=".editorconfig" />
     <None Include="wwwroot\content\bootstrap-theme.css" />
     <None Include="wwwroot\content\bootstrap-theme.css.map" />
     <None Include="wwwroot\content\bootstrap-theme.min.css" />

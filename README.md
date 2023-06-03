@@ -1,7 +1,5 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=maartenvana_sinance&metric=alert_status)](https://sonarcloud.io/dashboard?id=maartenvana_sinance)
-[![Build Status](https://dev.azure.com/maartenvanarem/Sinance/_apis/build/status/Sinance-CI?branchName=master)](https://dev.azure.com/maartenvanarem/Sinance/_build/latest?definitionId=2&branchName=master)
-![Docker Pulls](https://img.shields.io/docker/pulls/maartenvana/sinance)
-![Docker Cloud Build Status](https://img.shields.io/docker/cloud/build/maartenvana/sinance)
+[![Build](https://github.com/maartenvana/sinance/actions/workflows/build.yml/badge.svg)](https://github.com/maartenvana/sinance/actions/workflows/build.yml)
 
 # Sinance
 Simple finances

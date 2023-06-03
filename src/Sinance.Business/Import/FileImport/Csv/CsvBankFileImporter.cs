@@ -13,7 +13,7 @@ namespace Sinance.Business.Import.FileImport.Csv
 {
     public class CsvBankFileImporter
     {
-        private static readonly Regex _trimExtraWhitespaceRegex = new Regex(@"\s\s+", RegexOptions.Compiled);
+        private static readonly Regex _trimExtraWhitespaceRegex = new Regex(@"\s\s+", RegexOptions.Compiled, matchTimeout: TimeSpan.FromSeconds(30));
 
         private string delimiter;
 

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>net7.0</TargetFramework>
     <ProjectGuid>a1e9e99b-47cb-48ea-bafc-d467ba2d9a77</ProjectGuid>
     <CodeAnalysisRuleSet>Sinance.Business.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
@@ -15,10 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.1.0" />
-    <PackageReference Include="CsvHelper" Version="27.1.1" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="5.0.0" />
-    <PackageReference Include="Serilog" Version="2.10.0" />
+    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageReference Include="CsvHelper" Version="30.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="7.0.0" />
+    <PackageReference Include="Serilog" Version="2.12.0" />
   </ItemGroup>
 
   <ItemGroup>

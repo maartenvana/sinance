@@ -16,14 +16,10 @@ namespace Sinance.Web
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
             .UseServiceProviderFactory(new AutofacServiceProviderFactory())
+            .UseSerilog()
             .ConfigureWebHostDefaults(webBuilder =>
             {
-                webBuilder.ConfigureKestrel(serverOptions =>
-                {
-                    // Set properties and call methods on options
-                })
-                .UseStartup<Startup>()
-                .UseSerilog();
+                webBuilder.UseStartup<Startup>();
             });
 
         public static int Main(string[] args)

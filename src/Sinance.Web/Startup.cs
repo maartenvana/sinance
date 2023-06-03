@@ -97,11 +97,6 @@ namespace Sinance.Web
 
             services.AddRazorPages();
 
-            if (_environment.EnvironmentName == Environments.Development)
-            {
-                mvc.AddRazorRuntimeCompilation();
-            }
-
             services.AddLogging(loggingBuilder =>
                 loggingBuilder.AddSerilog(dispose: true));
 

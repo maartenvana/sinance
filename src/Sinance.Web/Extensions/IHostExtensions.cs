@@ -14,25 +14,28 @@ public static class IHostExtensions
 {
     public static async Task RunWithStartupTasksAsync(this IHost host, CancellationToken cancellationToken = default)
     {
-        var tasks = host.Services.GetService<IEnumerable<IStartupTask>>();
-        if (tasks?.Any() == true)
+        using var scope = host.Services.CreateScope();
+
+        var tasks = scope.ServiceProvider.GetService<IEnumerable<IStartupTask>>();
+
+        if (tasks?.Any() != true)
+            return;
+
+        foreach (var task in tasks!)
         {
-            foreach (var task in tasks!)
+            Log.Information("Starting startup task: {task}", task.GetType().Name);
+
+            try
             {
-                Log.Information("Starting startup task: {task}", task.GetType().Name);
-
-                try
-                {
-                    await task.RunAsync(cancellationToken);
-                }
-                catch(Exception exception)
-                {
-                    Log.Fatal(exception, "Exception during startup task");
-                    throw;
-                }
-
-                Log.Information("Finished startup task: {task}", task.GetType().Name);
+                await task.RunAsync(cancellationToken);
             }
+            catch (Exception exception)
+            {
+                Log.Fatal(exception, "Exception during startup task");
+                throw;
+            }
+
+            Log.Information("Finished startup task: {task}", task.GetType().Name);
         }
 
         host.Run();

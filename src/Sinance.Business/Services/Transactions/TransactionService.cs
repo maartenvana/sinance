@@ -133,8 +133,6 @@ public class TransactionService : ITransactionService
 
     public async Task<List<TransactionModel>> GetTransactionsForBankAccountForCurrentUser(int bankAccountId, int count, int skip)
     {
-        
-
         var transactions = await _unitOfWork.TransactionRepository
             .FindTopDescending(item => item.BankAccountId == bankAccountId,
                                 orderByDescending: x => x.Date,
@@ -150,8 +148,6 @@ public class TransactionService : ITransactionService
 
     public async Task<List<TransactionModel>> GetTransactionsForMonthForCurrentUser(int year, int month)
     {
-        
-
         var transactions = await _unitOfWork.TransactionRepository.FindAll(findQuery: x =>
                     x.Date.Year == year &&
                     x.Date.Month == month,
@@ -165,8 +161,6 @@ public class TransactionService : ITransactionService
 
     public async Task<TransactionModel> OverwriteTransactionCategoriesForCurrentUser(int transactionId, int categoryId)
     {
-        
-
         var transaction = await FindTransaction(transactionId, _unitOfWork);
 
         if (transaction == null)

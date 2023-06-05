@@ -29,7 +29,8 @@ public class Startup
             .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
             .AddJsonFile($"appsettings.{env.EnvironmentName.ToLower()}.json", optional: true)
             .AddJsonFile("secrets/appsettings.secrets.json", optional: true, reloadOnChange: true)
-            .AddEnvironmentVariables().Build();
+            .AddEnvironmentVariables()
+            .Build();
 
         _appSettings = configuration.Get<AppSettings>();
 
@@ -70,8 +71,8 @@ public class Startup
         services.AddTransient<IAuthenticationService, AuthenticationService>();
         services.AddScoped<IUserIdProvider, UserIdProvider>();
 
-        services.AddScoped<IStartupTask, DatabaseMigrationTask>();
-        services.AddScoped<IStartupTask, DataSeedStartupTask>();
+        services.AddTransient<IStartupTask, DatabaseMigrationTask>();
+        services.AddTransient<IStartupTask, DataSeedStartupTask>();
 
         services.AddBusinessModule();
         services.AddStorageModule(_appSettings);

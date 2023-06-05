@@ -10,108 +10,107 @@ using Serilog.Events;
 using Sinance.BlazorApp.Storage;
 using Sinance.Storage;
 
-namespace Sinance.BlazorApp
+namespace Sinance.BlazorApp;
+
+public class Program
 {
-    public class Program
+    public static IHostBuilder CreateHostBuilder(string[] args) =>
+        Host.CreateDefaultBuilder(args)
+        .ConfigureWebHostDefaults(webBuilder =>
+        {
+            webBuilder
+            .UseStartup<Startup>()
+            .UseSerilog();
+        });
+
+    public static int Main(string[] args)
     {
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-            .ConfigureWebHostDefaults(webBuilder =>
-            {
-                webBuilder
-                .UseStartup<Startup>()
-                .UseSerilog();
-            });
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+            .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Information)
+            .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Information)
+            .Enrich.FromLogContext()
+            .WriteTo.Console()
+            .CreateLogger();
 
-        public static int Main(string[] args)
+        try
         {
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Information)
-                .MinimumLevel.Override("Microsoft.EntityFrameworkCore.Database.Command", LogEventLevel.Information)
-                .Enrich.FromLogContext()
-                .WriteTo.Console()
-                .CreateLogger();
+            Log.Information("Building web host");
+            var host = CreateHostBuilder(args).Build();
 
-            try
-            {
-                Log.Information("Building web host");
-                var host = CreateHostBuilder(args).Build();
+            CreateOrMigrateDatabase(host);
+            SeedData(host);
 
-                CreateOrMigrateDatabase(host);
-                SeedData(host);
-
-                Log.Information("Starting web host");
-                host.Run();
-                return 0;
-            }
-            catch (Exception ex)
-            {
-                Log.Fatal(ex, "Host terminated unexpectedly");
-                return 1;
-            }
-            finally
-            {
-                Log.CloseAndFlush();
-            }
+            Log.Information("Starting web host");
+            host.Run();
+            return 0;
         }
-
-        private static void SeedData(IHost host)
+        catch (Exception ex)
         {
-            using var scope = host.Services.CreateScope();
-
-            var services = scope.ServiceProvider;
-
-            try
-            {
-                var contextFactory = services.GetRequiredService<Storage.IDbContextFactory<SinanceContext>>();
-                using var context = contextFactory.CreateDbContext();
-
-                Log.Information("Seeding data");
-
-                var allTransactions = context.Transactions
-                    .Include(x => x.TransactionCategories)
-                    .Where(x => x.TransactionCategories.Any()).ToList();
-                foreach (var transaction in allTransactions)
-                {
-                    transaction.CategoryId = transaction.TransactionCategories.First().CategoryId;
-                }
-
-                context.SaveChanges();
-                
-                Log.Information("Seeding data completed");
-            }
-            catch (Exception exc)
-            {
-                Log.Error(exc, "An error seeding the DB.");
-            }
+            Log.Fatal(ex, "Host terminated unexpectedly");
+            return 1;
         }
-
-        private static void CreateOrMigrateDatabase(IHost host)
+        finally
         {
-            using var scope = host.Services.CreateScope();
+            Log.CloseAndFlush();
+        }
+    }
 
-            var services = scope.ServiceProvider;
+    private static void SeedData(IHost host)
+    {
+        using var scope = host.Services.CreateScope();
 
-            try
+        var services = scope.ServiceProvider;
+
+        try
+        {
+            var contextFactory = services.GetRequiredService<Storage.IDbContextFactory<SinanceContext>>();
+            using var context = contextFactory.CreateDbContext();
+
+            Log.Information("Seeding data");
+
+            var allTransactions = context.Transactions
+                .Include(x => x.TransactionCategories)
+                .Where(x => x.TransactionCategories.Any()).ToList();
+            foreach (var transaction in allTransactions)
             {
-                var contextFactory = services.GetRequiredService<Storage.IDbContextFactory<SinanceContext>>();
-                using var context = contextFactory.CreateDbContext();
-
-                Log.Information("Checking if database needs to be migrated/created");
-                var pendingMigrations = context.Database.GetPendingMigrations();
-                foreach (var pendingMigration in pendingMigrations)
-                {
-                    Log.Information("Need to apply migration: {pendingMigration}", pendingMigration);
-                }
-                context.Database.Migrate();
-
-                Log.Information("Initializing database completed");
+                transaction.CategoryId = transaction.TransactionCategories.First().CategoryId;
             }
-            catch (Exception exc)
+
+            context.SaveChanges();
+            
+            Log.Information("Seeding data completed");
+        }
+        catch (Exception exc)
+        {
+            Log.Error(exc, "An error seeding the DB.");
+        }
+    }
+
+    private static void CreateOrMigrateDatabase(IHost host)
+    {
+        using var scope = host.Services.CreateScope();
+
+        var services = scope.ServiceProvider;
+
+        try
+        {
+            var contextFactory = services.GetRequiredService<Storage.IDbContextFactory<SinanceContext>>();
+            using var context = contextFactory.CreateDbContext();
+
+            Log.Information("Checking if database needs to be migrated/created");
+            var pendingMigrations = context.Database.GetPendingMigrations();
+            foreach (var pendingMigration in pendingMigrations)
             {
-                Log.Error(exc, "An error occurred migrating the DB.");
+                Log.Information("Need to apply migration: {pendingMigration}", pendingMigration);
             }
+            context.Database.Migrate();
+
+            Log.Information("Initializing database completed");
+        }
+        catch (Exception exc)
+        {
+            Log.Error(exc, "An error occurred migrating the DB.");
         }
     }
 }

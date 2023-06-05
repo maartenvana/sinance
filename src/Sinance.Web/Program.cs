@@ -1,86 +1,54 @@
-﻿using Autofac.Extensions.DependencyInjection;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
-using Sinance.Storage;
+using Sinance.Web.Extensions;
 using System;
 using System.Globalization;
+using System.Threading.Tasks;
 
-namespace Sinance.Web
+namespace Sinance.Web;
+
+public static class Program
 {
-    public static class Program
+    public static IHostBuilder CreateHostBuilder(string[] args) =>
+        Host.CreateDefaultBuilder(args)
+        .UseSerilog()
+        .ConfigureWebHostDefaults(webBuilder =>
+        {
+            webBuilder.UseStartup<Startup>();
+        });
+
+    public static async Task<int> Main(string[] args)
     {
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-            .UseServiceProviderFactory(new AutofacServiceProviderFactory())
-            .UseSerilog()
-            .ConfigureWebHostDefaults(webBuilder =>
-            {
-                webBuilder.UseStartup<Startup>();
-            });
+        CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("nl-NL");
+        CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("nl-NL");
 
-        public static int Main(string[] args)
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+            .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Information)
+            .Enrich.FromLogContext()
+            .WriteTo.Console()
+            .CreateLogger();
+
+        try
         {
-            CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("nl-NL");
-            CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("nl-NL");
+            Log.Information("Building web host");
+            var host = CreateHostBuilder(args).Build();
 
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                .MinimumLevel.Override("Microsoft.AspNetCore", LogEventLevel.Information)
-                .Enrich.FromLogContext()
-                .WriteTo.Console()
-                .CreateLogger();
+            Log.Information("Starting web host");
+            await host.RunWithStartupTasksAsync();
 
-            try
-            {
-                Log.Information("Building web host");
-                var host = CreateHostBuilder(args).Build();
-
-                CreateOrMigrateDatabase(host);
-
-                Log.Information("Starting web host");
-                host.Run();
-                return 0;
-            }
-            catch (Exception ex)
-            {
-                Log.Fatal(ex, "Host terminated unexpectedly");
-                return 1;
-            }
-            finally
-            {
-                Log.CloseAndFlush();
-            }
+            return 0;
         }
-
-        private static void CreateOrMigrateDatabase(IHost host)
+        catch (Exception ex)
         {
-            using var scope = host.Services.CreateScope();
-
-            var services = scope.ServiceProvider;
-
-            try
-            {
-                var unitOfWorkFunc = services.GetRequiredService<Func<IUnitOfWork>>();
-                using var unitOfWork = unitOfWorkFunc();
-
-                Log.Information("Checking if database needs to be migrated/created");
-                var pendingMigrations = unitOfWork.Context.Database.GetPendingMigrations();
-                foreach (var pendingMigration in pendingMigrations)
-                {
-                    Log.Information("Need to apply migration: {pendingMigration}", pendingMigration);
-                }
-                unitOfWork.Context.Database.Migrate();
-
-                Log.Information("Initializing database completed");
-            }
-            catch (Exception exc)
-            {
-                Log.Error(exc, "An error occurred creating the DB.");
-            }
+            Log.Fatal(ex, "Host terminated unexpectedly");
+            return 1;
+        }
+        finally
+        {
+            Log.CloseAndFlush();
         }
     }
 }

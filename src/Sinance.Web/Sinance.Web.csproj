@@ -10,9 +10,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Autofac" Version="7.0.1" />
-    <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="8.0.0" />
-    <PackageReference Include="AutofacSerilogIntegration" Version="5.0.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.18.1" />
     <PackageReference Include="Serilog.AspNetCore" Version="7.0.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="7.0.0" />
@@ -46,7 +43,7 @@
   <ItemGroup>
     <Watch Remove="Components\SideNavigation.cs" />
     <Watch Remove="Components\SimpleMonthSelector.cs" />
-    <Watch Remove="Extensions\IApplicationBuilderStorageExtensions.cs" />
+    <Watch Remove="Extensions\IHostExtensions.cs" />
     <Watch Remove="Model\AccountOverviewViewModel.cs" />
     <Watch Remove="Model\CustomGraphReportUpsertModel.cs" />
     <Watch Remove="Model\DashboardViewModel.cs" />
@@ -60,6 +57,9 @@
     <Watch Remove="Model\UpsertTransactionViewModel.cs" />
     <Watch Remove="Services\AuthenticationService.cs" />
     <Watch Remove="Services\UserIdProvider.cs" />
+    <Watch Remove="Initialization\DatabaseMigrationTask.cs" />
+    <Watch Remove="Initialization\DataSeedStartupTask.cs" />
+    <Watch Remove="Initialization\IStartupTask.cs" />
     <Watch Remove="ViewComponents\BalanceHistoryGraphViewComponent.cs" />
     <Watch Remove="ViewComponents\ExpensesPerCategoryPieChartViewComponent.cs" />
     <Watch Remove="ViewComponents\ProfitGraphViewComponent.cs" />

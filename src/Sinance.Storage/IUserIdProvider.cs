@@ -1,7 +1,6 @@
-﻿namespace Sinance.Storage
+﻿namespace Sinance.Storage;
+
+public interface IUserIdProvider
 {
-    public interface IUserIdProvider
-    {
-        int GetCurrentUserId();
-    }
+    int GetCurrentUserId();
 }

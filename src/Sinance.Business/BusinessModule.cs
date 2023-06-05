@@ -1,5 +1,5 @@
-﻿using Autofac;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using Sinance.Business.Calculations;
 using Sinance.Business.DataSeeding;
 using Sinance.Business.DataSeeding.Seeds;
@@ -11,53 +11,38 @@ using Sinance.Business.Services.Categories;
 using Sinance.Business.Services.CategoryMappings;
 using Sinance.Business.Services.Imports;
 using Sinance.Business.Services.Transactions;
-using Sinance.Storage;
 using Sinance.Storage.Entities;
 
-namespace Sinance.Business
+namespace Sinance.Business;
+
+public static class BusinessModule
 {
-    public class BusinessModule : Module
+    public static IServiceCollection AddBusinessModule(this IServiceCollection services)
     {
-        protected override void Load(ContainerBuilder builder)
-        {
-            // Services
-            builder.RegisterType<BankAccountService>().As<IBankAccountService>();
-            builder.RegisterType<CategoryService>().As<ICategoryService>();
-            builder.RegisterType<CustomReportService>().As<ICustomReportService>();
-            builder.RegisterType<TransactionService>().As<ITransactionService>();
-            builder.RegisterType<CustomReportService>().As<ICustomReportService>();
-            builder.RegisterType<CategoryMappingService>().As<ICategoryMappingService>();
-            builder.RegisterType<ImportService>().As<IImportService>();
+        // Other services
+        services.AddTransient<IBankAccountService, BankAccountService>();
+        services.AddTransient<ICategoryService, CategoryService>();
+        services.AddTransient<IImportService, ImportService>();
+        services.AddTransient<ITransactionService, TransactionService>();
 
-            // Handlers
-            builder.RegisterType<BankFileImportHandler>().As<IBankFileImportHandler>();
+        // Extra services that might be needed.
+        services.AddTransient<IPasswordHasher<SinanceUserEntity>, PasswordHasher<SinanceUserEntity>>();
+        services.AddTransient<IBankFileImportHandler, BankFileImportHandler>();
+        services.AddTransient<ICustomReportService, CustomReportService>();
+        services.AddTransient<IYearlyOverviewCalculation, YearlyOverviewCalculation>();
+        services.AddTransient<IExpensePercentageCalculation, ExpensePercentageCalculation>();
+        services.AddTransient<IBankAccountCalculationService, BankAccountCalculationService>();
+        services.AddTransient<IExpenseCalculation, ExpenseCalculation>();
+        services.AddTransient<IIncomeCalculation, IncomeCalculation>();
+        services.AddTransient<IProfitCalculation, ProfitLossCalculation>();
+        services.AddTransient<CategorySeed>();
+        services.AddTransient<DemoUserSeed>();
+        services.AddTransient<ICategoryMappingService, CategoryMappingService>();
 
-            // Calculations
-            builder.RegisterType<BalanceHistoryCalculation>().As<IBalanceHistoryCalculation>();
-            builder.RegisterType<ExpensePercentageCalculation>().As<IExpensePercentageCalculation>();
-            builder.RegisterType<ProfitLossCalculation>().As<IProfitCalculation>();
-            builder.RegisterType<ExpenseCalculation>().As<IExpenseCalculation>();
-            builder.RegisterType<IncomeCalculation>().As<IIncomeCalculation>();
-            builder.RegisterType<YearlyOverviewCalculation>().As<IYearlyOverviewCalculation>();
+        services.AddTransient<IBankFileImporter, AbnAmroTxtFileImporter>();
+        services.AddTransient<IBankFileImporter, IngBankCsvFileImporter>();
+        services.AddTransient<IBankFileImporter, RabobankCsvFileImporter>();
 
-            // CalculationServices
-            builder.RegisterType<BankAccountCalculationService>().As<IBankAccountCalculationService>();
-
-            // Other
-            builder.RegisterType<PasswordHasher<SinanceUserEntity>>().As<IPasswordHasher<SinanceUserEntity>>();
-
-            // Storage
-            builder.RegisterModule<StorageModule>();
-
-            // Bank imports
-            builder.RegisterType<AbnAmroTxtFileImporter>().As<IBankFileImporter>();
-            builder.RegisterType<IngBankCsvFileImporter>().As<IBankFileImporter>();
-            builder.RegisterType<RabobankCsvFileImporter>().As<IBankFileImporter>();
-
-            // Data seeding
-            builder.RegisterType<DataSeedService>().As<IDataSeedService>();
-            builder.RegisterType<DemoUserSeed>().AsSelf();
-            builder.RegisterType<CategorySeed>().AsSelf();
-        }
+        return services;
     }
 }

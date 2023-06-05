@@ -1,10 +1,9 @@
 ﻿using Sinance.BlazorApp.Business.Model.Category;
 using System.Collections.Generic;
 
-namespace Sinance.BlazorApp.Business.Services
+namespace Sinance.BlazorApp.Business.Services;
+
+public interface ICategoryService
 {
-    public interface ICategoryService
-    {
-        List<CategoryModel> GetAllCategories();
-    }
+    List<CategoryModel> GetAllCategories();
 }

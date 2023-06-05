@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace Sinance.Business.Exceptions.Authentication
+namespace Sinance.Business.Exceptions.Authentication;
+
+[Serializable]
+public class UserAlreadyExistsException : Exception
 {
-    [Serializable]
-    public class UserAlreadyExistsException : Exception
+    public UserAlreadyExistsException()
     {
-        public UserAlreadyExistsException()
-        {
-        }
+    }
 
-        public UserAlreadyExistsException(string message) : base(message)
-        {
-        }
+    public UserAlreadyExistsException(string message) : base(message)
+    {
+    }
 
-        protected UserAlreadyExistsException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
+    protected UserAlreadyExistsException(SerializationInfo info, StreamingContext context) : base(info, context)
+    {
     }
 }

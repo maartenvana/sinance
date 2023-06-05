@@ -7,24 +7,23 @@ using System.Linq;
 using System.Security.Cryptography.Xml;
 using System.Threading.Tasks;
 
-namespace Sinance.BlazorApp.Business.Extensions
-{
-    public static class TransactionEntityExtensions
-    {
-        public static IEnumerable<TransactionModel> ToDto(this IEnumerable<TransactionEntity> entities)
-            => entities.Select(x => x.ToDto());
+namespace Sinance.BlazorApp.Business.Extensions;
 
-        public static TransactionModel ToDto(this TransactionEntity entity)
+public static class TransactionEntityExtensions
+{
+    public static IEnumerable<TransactionModel> ToDto(this IEnumerable<TransactionEntity> entities)
+        => entities.Select(x => x.ToDto());
+
+    public static TransactionModel ToDto(this TransactionEntity entity)
+    {
+        return new TransactionModel
         {
-            return new TransactionModel
-            {
-                Description = entity.Description,
-                Name = entity.Name,
-                Amount = entity.Amount,
-                Date = entity.Date,
-                CategoryColorCode = entity.Category?.ColorCode,
-                CategoryShortName = entity.Category?.ShortName
-            };
-        }
+            Description = entity.Description,
+            Name = entity.Name,
+            Amount = entity.Amount,
+            Date = entity.Date,
+            CategoryColorCode = entity.Category?.ColorCode,
+            CategoryShortName = entity.Category?.ShortName
+        };
     }
 }

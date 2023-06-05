@@ -1,6 +1,4 @@
-﻿using Autofac;
-using AutofacSerilogIntegration;
-using Microsoft.AspNetCore.Authentication.Cookies;
+﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -13,99 +11,95 @@ using Sinance.Business;
 using Sinance.Business.Services.Authentication;
 using Sinance.Common.Configuration;
 using Sinance.Storage;
-using Sinance.Web.Extensions;
+using Sinance.Web.Initialization;
 using Sinance.Web.Services;
 using System;
 
-namespace Sinance.Web
+namespace Sinance.Web;
+
+public class Startup
 {
-    public class Startup
+    private readonly AppSettings _appSettings;
+
+    private readonly IWebHostEnvironment _environment;
+
+    public Startup(IWebHostEnvironment env)
     {
-        private readonly IConfigurationRoot _configuration;
-        private readonly IWebHostEnvironment _environment;
+        var configuration = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile($"appsettings.{env.EnvironmentName.ToLower()}.json", optional: true)
+            .AddJsonFile("secrets/appsettings.secrets.json", optional: true, reloadOnChange: true)
+            .AddEnvironmentVariables().Build();
 
-        public Startup(IWebHostEnvironment env)
+        _appSettings = configuration.Get<AppSettings>();
+
+        _environment = env;
+    }
+
+    public void Configure(IApplicationBuilder appBuilder)
+    {
+        if (_environment.EnvironmentName == Environments.Development)
         {
-            var builder = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile($"appsettings.{env.EnvironmentName.ToLower()}.json", optional: true)
-                .AddJsonFile("secrets/appsettings.secrets.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables();
-
-            _configuration = builder.Build();
-
-            _environment = env;
+            appBuilder.UseDeveloperExceptionPage();
         }
 
-        public void Configure(IApplicationBuilder appBuilder)
+        appBuilder.UseSerilogRequestLogging();
+
+        appBuilder.UseStaticFiles();
+
+        appBuilder.UseRouting();
+        appBuilder.UseCors();
+
+        appBuilder.UseAuthentication();
+        appBuilder.UseAuthorization();
+
+        appBuilder.UseEndpoints(endpoints =>
         {
-            if (_environment.EnvironmentName == Environments.Development)
+            endpoints.MapRazorPages();
+            endpoints.MapControllerRoute(
+                "default", "{controller=Home}/{action=Index}/{id?}");
+        });
+    }
+
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddHttpContextAccessor();
+
+        services.AddSingleton(_appSettings);
+
+        services.AddTransient<IAuthenticationService, AuthenticationService>();
+        services.AddScoped<IUserIdProvider, UserIdProvider>();
+
+        services.AddScoped<IStartupTask, DatabaseMigrationTask>();
+        services.AddScoped<IStartupTask, DataSeedStartupTask>();
+
+        services.AddBusinessModule();
+        services.AddStorageModule(_appSettings);
+
+        services.AddLogging(loggingBuilder => loggingBuilder.AddSerilog(dispose: true));
+
+        services
+            .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddCookie(options =>
             {
-                appBuilder.UseDeveloperExceptionPage();
-            }
-
-            appBuilder.UseSerilogRequestLogging();
-
-            appBuilder.UseStaticFiles();
-
-            appBuilder.UseRouting();
-            appBuilder.UseCors();
-
-            appBuilder.UseAuthentication();
-            appBuilder.UseAuthorization();
-
-            appBuilder.UseEndpoints(endpoints =>
-            {
-                endpoints.MapRazorPages();
-                endpoints.MapControllerRoute(
-                    "default", "{controller=Home}/{action=Index}/{id?}");
+                options.LoginPath = new PathString("/Account/Login");
+                options.AccessDeniedPath = new PathString("/Account/AccessDenied");
+                options.SlidingExpiration = true;
+                options.ExpireTimeSpan = TimeSpan.FromHours(24);
             });
 
-            appBuilder.ApplyDataSeed();
-        }
+        services.AddControllersWithViews();
 
-        public void ConfigureContainer(ContainerBuilder builder)
+        services.AddRazorPages();
+
+        services.AddLogging(loggingBuilder =>
+            loggingBuilder.AddSerilog(dispose: true));
+
+        services.AddAuthorization(options =>
         {
-            var appSettings = _configuration.Get<AppSettings>();
-
-            builder.RegisterInstance(appSettings);
-            builder.RegisterInstance(_configuration);
-
-            builder.RegisterType<HttpContextAccessor>().As<IHttpContextAccessor>();
-            builder.RegisterType<AuthenticationService>().As<IAuthenticationService>();
-            builder.RegisterType<UserIdProvider>().As<IUserIdProvider>();
-
-            builder.RegisterModule<BusinessModule>();
-            builder.RegisterModule<StorageModule>();
-
-            builder.RegisterLogger();
-        }
-
-        public void ConfigureServices(IServiceCollection services)
-        {
-            services
-                .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-                .AddCookie(options =>
-                {
-                    options.LoginPath = new PathString("/Account/Login");
-                    options.AccessDeniedPath = new PathString("/Account/AccessDenied");
-                    options.SlidingExpiration = true;
-                    options.ExpireTimeSpan = TimeSpan.FromHours(24);
-                });
-
-            var mvc = services.AddControllersWithViews();
-
-            services.AddRazorPages();
-
-            services.AddLogging(loggingBuilder =>
-                loggingBuilder.AddSerilog(dispose: true));
-
-            services.AddAuthorization(options =>
-            {
-                options.DefaultPolicy = new AuthorizationPolicyBuilder()
-                    .RequireAuthenticatedUser()
-                    .Build();
-            });
-        }
+            options.DefaultPolicy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .Build();
+        });
     }
 }

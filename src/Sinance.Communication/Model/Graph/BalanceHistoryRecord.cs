@@ -3,12 +3,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Sinance.Communication.Model.Graph
+namespace Sinance.Communication.Model.Graph;
+
+public class BalanceHistoryRecord
 {
-    public class BalanceHistoryRecord
-    {
-        public List<decimal[]> BalanceHistory { get; set; }
-        
-        public BankAccountType? AccountTypeGroup { get; set; }
-    }
+    public List<decimal[]> BalanceHistory { get; set; }
+    
+    public BankAccountType? AccountTypeGroup { get; set; }
 }

@@ -1,21 +1,20 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace Sinance.Business.Exceptions
+namespace Sinance.Business.Exceptions;
+
+[Serializable]
+public class ImportCacheEntryNotFoundException : Exception
 {
-    [Serializable]
-    public class ImportCacheEntryNotFoundException : Exception
+    public ImportCacheEntryNotFoundException()
     {
-        public ImportCacheEntryNotFoundException()
-        {
-        }
+    }
 
-        public ImportCacheEntryNotFoundException(string message) : base(message)
-        {
-        }
+    public ImportCacheEntryNotFoundException(string message) : base(message)
+    {
+    }
 
-        protected ImportCacheEntryNotFoundException(SerializationInfo info, StreamingContext context) : base(info, context)
-        {
-        }
+    protected ImportCacheEntryNotFoundException(SerializationInfo info, StreamingContext context) : base(info, context)
+    {
     }
 }

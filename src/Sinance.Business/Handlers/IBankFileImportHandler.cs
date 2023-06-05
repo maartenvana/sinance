@@ -6,11 +6,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace Sinance.Business.Handlers
+namespace Sinance.Business.Handlers;
+
+public interface IBankFileImportHandler
 {
-    public interface IBankFileImportHandler
-    {
-        Task<IList<ImportRow>> CreateImportRowsFromFile(IUnitOfWork unitOfWork, Stream fileInputStream, int userId, Guid fileImporterId, int bankAccountId);
-        Task<int> SaveImportResultToDatabase(IUnitOfWork unitOfWork, int bankAccountId, int userId, IList<ImportRow> importRows, IList<ImportRow> cachedImportRows);
-    }
+    Task<IList<ImportRow>> CreateImportRowsFromFile(IUnitOfWork unitOfWork, Stream fileInputStream, int userId, Guid fileImporterId, int bankAccountId);
+    Task<int> SaveImportResultToDatabase(IUnitOfWork unitOfWork, int bankAccountId, int userId, IList<ImportRow> importRows, IList<ImportRow> cachedImportRows);
 }

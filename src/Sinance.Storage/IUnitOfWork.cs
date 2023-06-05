@@ -2,28 +2,27 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Sinance.Storage
+namespace Sinance.Storage;
+
+public interface IUnitOfWork 
 {
-    public interface IUnitOfWork : IDisposable
-    {
-        IGenericRepository<BankAccountEntity> BankAccountRepository { get; }
+    IGenericRepository<BankAccountEntity> BankAccountRepository { get; }
 
-        IGenericRepository<CategoryMappingEntity> CategoryMappingRepository { get; }
+    IGenericRepository<CategoryMappingEntity> CategoryMappingRepository { get; }
 
-        IGenericRepository<CategoryEntity> CategoryRepository { get; }
+    IGenericRepository<CategoryEntity> CategoryRepository { get; }
 
-        SinanceContext Context { get; }
+    SinanceContext Context { get; }
 
-        IGenericRepository<CustomReportCategoryEntity> CustomReportCategoryRepository { get; }
+    IGenericRepository<CustomReportCategoryEntity> CustomReportCategoryRepository { get; }
 
-        IGenericRepository<CustomReportEntity> CustomReportRepository { get; }
+    IGenericRepository<CustomReportEntity> CustomReportRepository { get; }
 
-        IGenericRepository<TransactionCategoryEntity> TransactionCategoryRepository { get; }
+    IGenericRepository<TransactionCategoryEntity> TransactionCategoryRepository { get; }
 
-        IGenericRepository<TransactionEntity> TransactionRepository { get; }
+    IGenericRepository<TransactionEntity> TransactionRepository { get; }
 
-        IGenericRepository<SinanceUserEntity> UserRepository { get; }
+    IGenericRepository<SinanceUserEntity> UserRepository { get; }
 
-        Task<int> SaveAsync();
-    }
+    Task<int> SaveAsync();
 }

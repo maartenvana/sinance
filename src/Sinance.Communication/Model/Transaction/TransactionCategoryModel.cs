@@ -1,16 +1,15 @@
-﻿namespace Sinance.Communication.Model.Transaction
+﻿namespace Sinance.Communication.Model.Transaction;
+
+public class TransactionCategoryModel
 {
-    public class TransactionCategoryModel
-    {
-        /// <summary>
-        /// Amount
-        /// </summary>
-        public decimal? Amount { get; set; }
+    /// <summary>
+    /// Amount
+    /// </summary>
+    public decimal? Amount { get; set; }
 
-        public int CategoryId { get; set; }
+    public int CategoryId { get; set; }
 
-        public string ColorCode { get; set; }
+    public string ColorCode { get; set; }
 
-        public string Name { get; set; }
-    }
+    public string Name { get; set; }
 }

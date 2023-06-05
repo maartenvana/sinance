@@ -1,52 +1,30 @@
-﻿using Autofac;
-using Autofac.Features.OwnedInstances;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Sinance.Common.Configuration;
+using Sinance.Storage.Entities;
 using System;
 
-namespace Sinance.Storage
+namespace Sinance.Storage;
+
+public static class StorageModule 
 {
-    public class StorageModule : Module
+    public static IServiceCollection AddStorageModule(this IServiceCollection services, AppSettings appSettings)
     {
-        protected override void Load(ContainerBuilder builder)
-        {
-            builder.Register<Func<IUnitOfWork>>(x =>
-            {
-                var factory = x.Resolve<Func<Owned<IUnitOfWork>>>();
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-                return () =>
-                {
-                    var newUnitOfWork = factory();
-                    return newUnitOfWork.Value;
-                };
-            });
+        services.AddTransient<IGenericRepository<BankAccountEntity>, GenericRepository<BankAccountEntity>>();
+        services.AddTransient<IGenericRepository<CategoryMappingEntity>, GenericRepository<CategoryMappingEntity>>();
+        services.AddTransient<IGenericRepository<CategoryEntity> , GenericRepository<CategoryEntity>>();
+        services.AddTransient<IGenericRepository<CustomReportCategoryEntity> , GenericRepository<CustomReportCategoryEntity>>();
+        services.AddTransient<IGenericRepository<CustomReportEntity> , GenericRepository<CustomReportEntity>>(); 
+        services.AddTransient<IGenericRepository<TransactionCategoryEntity> , GenericRepository<TransactionCategoryEntity>>();
+        services.AddTransient<IGenericRepository<TransactionEntity> , GenericRepository<TransactionEntity>>();
+        services.AddTransient<IGenericRepository<SinanceUserEntity>, GenericRepository<SinanceUserEntity>>();
 
-            builder.RegisterGeneric(typeof(GenericRepository<>)).As(typeof(IGenericRepository<>));
+        services.AddMySql<SinanceContext>(
+            connectionString: appSettings.ConnectionStrings.Sql,
+            ServerVersion.Parse("5.7"));
 
-            builder.Register(context =>
-            {
-                var appSettings = context.Resolve<AppSettings>();
-                var contextOptionsBuilder = new DbContextOptionsBuilder<SinanceContext>();
-
-                if (appSettings.Database.LoggingEnabled)
-                {
-                    contextOptionsBuilder.UseLoggerFactory(context.Resolve<ILoggerFactory>());
-                }
-                contextOptionsBuilder.UseMySql(appSettings.ConnectionStrings.Sql, new MySqlServerVersion("5.7"));
-
-                return contextOptionsBuilder.Options;
-            }).SingleInstance();
-
-            builder.Register(context =>
-            {
-                var options = context.Resolve<DbContextOptions<SinanceContext>>();
-                var userIdProvider = context.Resolve<IUserIdProvider>();
-
-                return new SinanceContext(options, userIdProvider);
-            }).AsSelf().InstancePerOwned<IUnitOfWork>();
-
-            builder.RegisterType<UnitOfWork>().As<IUnitOfWork>();
-        }
+        return services;
     }
 }

@@ -1,9 +1,8 @@
-﻿namespace Sinance.Communication.Model.User
-{
-    public class SinanceUserModel
-    {
-        public int Id { get; set; }
+﻿namespace Sinance.Communication.Model.User;
 
-        public string Username { get; set; }
-    }
+public class SinanceUserModel
+{
+    public int Id { get; set; }
+
+    public string Username { get; set; }
 }

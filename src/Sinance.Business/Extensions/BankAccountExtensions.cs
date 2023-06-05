@@ -1,45 +1,44 @@
 ﻿using Sinance.Communication.Model.BankAccount;
 using Sinance.Storage.Entities;
 
-namespace Sinance.Business.Extensions
+namespace Sinance.Business.Extensions;
+
+public static class BankAccountExtensions
 {
-    public static class BankAccountExtensions
+    public static BankAccountModel ToDto(this BankAccountEntity bankAccountEntity)
     {
-        public static BankAccountModel ToDto(this BankAccountEntity bankAccountEntity)
+        return new BankAccountModel
         {
-            return new BankAccountModel
-            {
-                AccountType = bankAccountEntity.AccountType,
-                CurrentBalance = bankAccountEntity.CurrentBalance,
-                Disabled = bankAccountEntity.Disabled,
-                StartBalance = bankAccountEntity.StartBalance,
-                Name = bankAccountEntity.Name,
-                Id = bankAccountEntity.Id
-            };
-        }
+            AccountType = bankAccountEntity.AccountType,
+            CurrentBalance = bankAccountEntity.CurrentBalance,
+            Disabled = bankAccountEntity.Disabled,
+            StartBalance = bankAccountEntity.StartBalance,
+            Name = bankAccountEntity.Name,
+            Id = bankAccountEntity.Id
+        };
+    }
 
-        public static BankAccountEntity ToNewEntity(this BankAccountModel model, int userId)
+    public static BankAccountEntity ToNewEntity(this BankAccountModel model, int userId)
+    {
+        return new BankAccountEntity
         {
-            return new BankAccountEntity
-            {
-                Id = model.Id,
-                AccountType = model.AccountType,
-                CurrentBalance = model.StartBalance,
-                Disabled = model.Disabled,
-                StartBalance = model.StartBalance,
-                Name = model.Name,
-                UserId = userId
-            };
-        }
+            Id = model.Id,
+            AccountType = model.AccountType,
+            CurrentBalance = model.StartBalance,
+            Disabled = model.Disabled,
+            StartBalance = model.StartBalance,
+            Name = model.Name,
+            UserId = userId
+        };
+    }
 
-        public static BankAccountEntity UpdateFromModel(this BankAccountEntity bankAccount, BankAccountModel model)
-        {
-            bankAccount.Name = model.Name;
-            bankAccount.StartBalance = model.StartBalance;
-            bankAccount.AccountType = model.AccountType;
-            bankAccount.Disabled = model.Disabled;
+    public static BankAccountEntity UpdateFromModel(this BankAccountEntity bankAccount, BankAccountModel model)
+    {
+        bankAccount.Name = model.Name;
+        bankAccount.StartBalance = model.StartBalance;
+        bankAccount.AccountType = model.AccountType;
+        bankAccount.Disabled = model.Disabled;
 
-            return bankAccount;
-        }
+        return bankAccount;
     }
 }

@@ -7,33 +7,32 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Sinance.BlazorApp.Business.Services
+namespace Sinance.BlazorApp.Business.Services;
+
+public class BankAccountService : IBankAccountService
 {
-    public class BankAccountService : IBankAccountService
+    private readonly IDbContextFactory<SinanceContext> dbContextFactory;
+
+    public BankAccountService(IDbContextFactory<SinanceContext> dbContextFactory)
     {
-        private readonly IDbContextFactory<SinanceContext> dbContextFactory;
+        this.dbContextFactory = dbContextFactory;
+    }
 
-        public BankAccountService(IDbContextFactory<SinanceContext> dbContextFactory)
-        {
-            this.dbContextFactory = dbContextFactory;
-        }
+    public List<BankAccountModel> GetAllBankAccounts()
+    {
+        using var context = this.dbContextFactory.CreateDbContext();
 
-        public List<BankAccountModel> GetAllBankAccounts()
-        {
-            using var context = this.dbContextFactory.CreateDbContext();
+        var bankAccountEntities = context.BankAccounts.ToList();
 
-            var bankAccountEntities = context.BankAccounts.ToList();
+        return bankAccountEntities.ToDto().ToList();
+    }
 
-            return bankAccountEntities.ToDto().ToList();
-        }
+    public List<BankAccountModel> GetAllActiveBankAccounts()
+    {
+        using var context = this.dbContextFactory.CreateDbContext();
 
-        public List<BankAccountModel> GetAllActiveBankAccounts()
-        {
-            using var context = this.dbContextFactory.CreateDbContext();
+        var bankAccountEntities = context.BankAccounts.Where(x => x.Disabled == false).ToList();
 
-            var bankAccountEntities = context.BankAccounts.Where(x => x.Disabled == false).ToList();
-
-            return bankAccountEntities.ToDto().ToList();
-        }
+        return bankAccountEntities.ToDto().ToList();
     }
 }

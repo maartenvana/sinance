@@ -20,18 +20,18 @@ public static class CategoryHandler
     /// <param name="genericRepository">Generic repository to use</param>
     /// <param name="categoryId">Category Id to map</param>
     /// <param name="transactions">Transactions to map</param>
-    public static async Task MapCategoryToTransactions(IUnitOfWork unitOfWork, int categoryId, IEnumerable<TransactionEntity> transactions)
+    public static async Task MapCategoryToTransactions(SinanceContext context, int categoryId, IEnumerable<TransactionEntity> transactions)
     {
         foreach (var transaction in transactions)
         {
             foreach (var transactionCategory in transaction.TransactionCategories.Where(transactionCategory => transactionCategory.CategoryId != categoryId))
             {
-                unitOfWork.TransactionCategoryRepository.Delete(transactionCategory);
+                context.TransactionCategories.Remove(transactionCategory);
             }
 
             if (transaction.TransactionCategories.All(item => item.CategoryId != categoryId))
             {
-                unitOfWork.TransactionCategoryRepository.Insert(new TransactionCategoryEntity
+                await context.TransactionCategories.AddAsync(new TransactionCategoryEntity
                 {
                     TransactionId = transaction.Id,
                     Amount = null,
@@ -40,7 +40,7 @@ public static class CategoryHandler
             }
         }
 
-        await unitOfWork.SaveAsync();
+        await context.SaveChangesAsync();
     }
 
     /// <summary>
@@ -49,14 +49,14 @@ public static class CategoryHandler
     /// <param name="genericRepository">Generic repository to use</param>
     /// <param name="categoryId">Category Id to unmap</param>
     /// <param name="transactions">Transactions to unmap</param>
-    public static async Task RemoveTransactionMappingFromCategory(IUnitOfWork unitOfWork, int categoryId, IEnumerable<TransactionEntity> transactions)
+    public static async Task RemoveTransactionMappingFromCategory(SinanceContext context, int categoryId, IEnumerable<TransactionEntity> transactions)
     {
         foreach (var transaction in transactions)
         {
-            unitOfWork.TransactionCategoryRepository.DeleteRange(transaction.TransactionCategories.Where(item => item.CategoryId == categoryId));
+            context.TransactionCategories.RemoveRange(transaction.TransactionCategories.Where(item => item.CategoryId == categoryId));
         }
 
-        await unitOfWork.SaveAsync();
+        await context.SaveChangesAsync();
     }
 
     /// <summary>

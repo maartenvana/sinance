@@ -1,13 +1,11 @@
-﻿using Sinance.Business.Exceptions;
-using Sinance.Business.Extensions;
+﻿using Microsoft.EntityFrameworkCore;
+using Sinance.Business.Calculations;
+using Sinance.Business.Exceptions;
 using Sinance.Business.Handlers;
-using Sinance.Business.Import;
-using Sinance.Business.Services.BankAccounts;
 using Sinance.Communication.Model.Import;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -17,40 +15,35 @@ namespace Sinance.Business.Services.Imports;
 
 public class ImportService : IImportService
 {
-    private readonly IBankAccountCalculationService _bankAccountCalculationService;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IDbContextFactory<SinanceContext> _dbContextFactory;
     private readonly IUserIdProvider _userIdProvider;
     private readonly IBankFileImportHandler _bankFileImportHandler;
 
     public ImportService(
-        IUnitOfWork unitOfWork,
+        IDbContextFactory<SinanceContext> dbContextFactory,
         IUserIdProvider userIdProvider,
-        IBankFileImportHandler bankFileImportHandler,
-        IBankAccountCalculationService bankAccountService)
+        IBankFileImportHandler bankFileImportHandler)
     {
-        _unitOfWork = unitOfWork;
+        _dbContextFactory = dbContextFactory;
         _userIdProvider = userIdProvider;
         _bankFileImportHandler = bankFileImportHandler;
-        _bankAccountCalculationService = bankAccountService;
     }
 
     public async Task<ImportModel> CreateImportPreview(Stream fileStream, ImportModel model)
     {
+        using var context = _dbContextFactory.CreateDbContext();
+
         var importCacheKey = CreateImportCacheKey(_userIdProvider.GetCurrentUserId());
         SinanceCacheHandler.ClearCache(importCacheKey);
 
-        
-
-        var bankAccount = await _unitOfWork.BankAccountRepository.FindSingle(x => x.Id == model.BankAccountId);
+        var bankAccount = await context.BankAccounts.SingleOrDefaultAsync(x => x.Id == model.BankAccountId);
         if (bankAccount == null)
-        {
             throw new NotFoundException(nameof(BankAccountEntity));
-        }
 
         try
         {
             model.ImportRows = await _bankFileImportHandler.CreateImportRowsFromFile(
-                _unitOfWork,
+                context,
                 fileInputStream: fileStream,
                 userId: bankAccount.UserId,
                 fileImporterId: model.BankFileImporterId,
@@ -72,6 +65,7 @@ public class ImportService : IImportService
 
     public async Task<(int skippedTransactions, int savedTransactions)> SaveImport(ImportModel model)
     {
+        using var context = _dbContextFactory.CreateDbContext();
         var userId = _userIdProvider.GetCurrentUserId();
         var importCacheKey = CreateImportCacheKey(userId);
         var cachedModel = SinanceCacheHandler.RetrieveCache<ImportModel>(importCacheKey);
@@ -80,19 +74,18 @@ public class ImportService : IImportService
             throw new NotFoundException(nameof(ImportModel));
         }
 
-        
-        var bankAccount = await VerifyBankAccount(model, _unitOfWork);
+        var bankAccount = await VerifyBankAccount(model, context);
 
         var skippedTransactions = model.ImportRows.Count(item => item.ExistsInDatabase || !item.Import);
-        var savedTransactions = await _bankFileImportHandler.SaveImportResultToDatabase(unitOfWork: _unitOfWork,
+        var savedTransactions = await BankFileImportHandler.SaveImportResultToDatabase(context,
             bankAccountId: bankAccount.Id,
             userId: userId,
             importRows: model.ImportRows,
             cachedImportRows: cachedModel.ImportRows);
 
         // Update the current balance of bank account and refresh them
-        await _bankAccountCalculationService.UpdateCurrentBalanceForBankAccount(_unitOfWork, model.BankAccountId);
-        await _unitOfWork.SaveAsync();
+        await BankAccountCalculations.UpdateCurrentBalanceForBankAccount(context, model.BankAccountId);
+        await context.SaveChangesAsync();
 
         // Clear the cache entry
         SinanceCacheHandler.ClearCache(importCacheKey);
@@ -100,13 +93,12 @@ public class ImportService : IImportService
         return (skippedTransactions, savedTransactions);
     }
 
-    private static async Task<BankAccountEntity> VerifyBankAccount(ImportModel model, IUnitOfWork unitOfWork)
+    private static async Task<BankAccountEntity> VerifyBankAccount(ImportModel model, SinanceContext context)
     {
-        var bankAccount = await unitOfWork.BankAccountRepository.FindSingle(x => x.Id == model.BankAccountId);
+        var bankAccount = await context.BankAccounts.SingleOrDefaultAsync(x => x.Id == model.BankAccountId);
+
         if (bankAccount == null)
-        {
             throw new NotFoundException(nameof(BankAccountEntity));
-        }
 
         return bankAccount;
     }

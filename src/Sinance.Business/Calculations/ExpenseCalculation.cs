@@ -1,4 +1,5 @@
-﻿using Sinance.Business.Extensions;
+﻿using Microsoft.EntityFrameworkCore;
+using Sinance.Business.Extensions;
 using Sinance.Communication.Model.StandardReport.Expense;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
@@ -11,12 +12,11 @@ namespace Sinance.Business.Calculations;
 
 public class ExpenseCalculation : IExpenseCalculation
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IDbContextFactory<SinanceContext> _dbContextFactory;
 
-    public ExpenseCalculation(
-        IUnitOfWork unitOfWork)
+    public ExpenseCalculation(IDbContextFactory<SinanceContext> dbContextFactory)
     {
-        _unitOfWork = unitOfWork;
+        _dbContextFactory = dbContextFactory;
     }
 
     public async Task<BiMonthlyExpenseReportModel> BiMonthlyExpensePerCategoryReport(DateTime startMonth)
@@ -24,19 +24,19 @@ public class ExpenseCalculation : IExpenseCalculation
         var nextMonthStart = startMonth.AddMonths(1);
         var nextMonthEnd = nextMonthStart.AddMonths(1).AddDays(-1);
 
-        
+        using var context = _dbContextFactory.CreateDbContext();
 
-        var transactions = await _unitOfWork.TransactionRepository.FindAll(
-             findQuery: item =>
-                 item.Date >= startMonth &&
-                 item.Date <= nextMonthEnd &&
-                 item.Amount < 0,
-             includeProperties: nameof(TransactionEntity.TransactionCategories));
+        var transactions = await context.Transactions.Where(item =>
+                       item.Date >= startMonth &&
+                                      item.Date <= nextMonthEnd &&
+                                                     item.Amount < 0)
+            .Include(nameof(TransactionEntity.TransactionCategories))
+            .ToListAsync();
 
-        var allCategories = await _unitOfWork.CategoryRepository.ListAll(
-                nameof(CategoryEntity.ParentCategory),
-                nameof(CategoryEntity.ChildCategories)
-            );
+        var allCategories = await context.Categories
+            .Include(nameof(CategoryEntity.ParentCategory))
+            .Include(nameof(CategoryEntity.ChildCategories))
+            .ToListAsync();
 
         var regularBimonthlyExpenseReport = new BimonthlyExpenseReportItem
         {
@@ -87,20 +87,22 @@ public class ExpenseCalculation : IExpenseCalculation
         var dateRangeStart = new DateTime(year, 1, 1);
         var dateRangeEnd = new DateTime(year, 12, 31);
 
-        
+        using var context = _dbContextFactory.CreateDbContext();
 
-        var transactions = await _unitOfWork.TransactionRepository.FindAll(
-                findQuery: item =>
-                    item.Date >= dateRangeStart &&
-                    item.Date <= dateRangeEnd &&
-                    item.Amount < 0 &&
-                    item.TransactionCategories.Any(transactionCategory =>
-                        categoryIds.Any(reportCategory =>
-                            reportCategory == transactionCategory.CategoryId)),
-                    nameof(TransactionEntity.TransactionCategories)
-                );
+        var transactions = await context.Transactions.Where(item =>
+            item.Date >= dateRangeStart &&
+            item.Date <= dateRangeEnd &&
+            item.Amount < 0 &&
+            item.TransactionCategories.Any(transactionCategory =>
+                           categoryIds.Any(reportCategory =>
+                                              reportCategory == transactionCategory.CategoryId)))
+            .Include(nameof(TransactionEntity.TransactionCategories))
+            .ToListAsync();
 
-        var categories = await _unitOfWork.CategoryRepository.FindAll(x => categoryIds.Any(y => y == x.Id), nameof(CategoryEntity.ParentCategory));
+        var categories = await context.Categories.Where(x => categoryIds.Any(y => y == x.Id))
+            .Include(nameof(CategoryEntity.ParentCategory))
+            .Include(nameof(CategoryEntity.ChildCategories))
+            .ToListAsync();
 
         var reportDictionary = categories.ToDictionary(
             keySelector: x => CreateCategoryNameWithOptionalParent(x),
@@ -150,7 +152,7 @@ public class ExpenseCalculation : IExpenseCalculation
         };
 
         if (bimonthlyParentExpense.AmountNow != bimonthlyParentExpense.AmountPrevious &&
-            secondMonthParentTransactions.Count() < firstMonthParentTransactions.Count())
+            secondMonthParentTransactions.Count < firstMonthParentTransactions.Count)
         {
             bimonthlyExpenseReport.RemainingAmount -= bimonthlyParentExpense.AmountNow - bimonthlyParentExpense.AmountPrevious;
         }
@@ -175,7 +177,7 @@ public class ExpenseCalculation : IExpenseCalculation
                 };
 
                 if (bimonthlyChildExpense.AmountNow != bimonthlyChildExpense.AmountPrevious &&
-                    thisMonthChildTransactions.Count() < lastMonthChildTransactions.Count())
+                    thisMonthChildTransactions.Count < lastMonthChildTransactions.Count)
                 {
                     bimonthlyExpenseReport.RemainingAmount -= bimonthlyChildExpense.AmountNow - bimonthlyChildExpense.AmountPrevious;
                 }
@@ -221,7 +223,7 @@ public class ExpenseCalculation : IExpenseCalculation
     }
 
     private static Dictionary<int, decimal> CreateMonthlyDictionary() =>
-                new Dictionary<int, decimal>
+                new()
                 {
             { 1, 0 },
             { 2, 0 },

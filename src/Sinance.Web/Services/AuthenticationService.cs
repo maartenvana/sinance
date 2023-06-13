@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Sinance.Business.DataSeeding;
 using Sinance.Business.DataSeeding.Seeds;
 using Sinance.Business.Exceptions.Authentication;
@@ -14,37 +15,34 @@ namespace Sinance.Web.Services;
 
 public class AuthenticationService : IAuthenticationService
 {
-    private readonly CategorySeed _categorySeed;
     private readonly IPasswordHasher<SinanceUserEntity> _passwordHasher;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IDbContextFactory<SinanceContext> _dbContextFactory;
 
     public AuthenticationService(
-        CategorySeed categorySeed,
         IPasswordHasher<SinanceUserEntity> passwordHasher,
-        IUnitOfWork unitOfWork)
+        IDbContextFactory<SinanceContext> dbContextFactory)
     {
-        _categorySeed = categorySeed;
         _passwordHasher = passwordHasher;
-        _unitOfWork = unitOfWork;
+        _dbContextFactory = dbContextFactory;
     }
 
     public async Task<SinanceUserModel> CreateUser(string userName, string password)
     {
-        
-        var user = await _unitOfWork.UserRepository.FindSingle(x => x.Username == userName);
+        using var context = _dbContextFactory.CreateDbContext();
+        var user = await context.Users.SingleOrDefaultAsync(x => x.Username == userName);
 
         if (user == null)
         {
-            var newUser = new SinanceUserEntity
+            var newUser = new SinanceUserEntity()
             {
-                Username = userName
+                Username = userName,
+                Password = _passwordHasher.HashPassword(user, password)
             };
-            newUser.Password = _passwordHasher.HashPassword(user, password);
 
-            _unitOfWork.UserRepository.Insert(newUser);
-            await _unitOfWork.SaveAsync();
+            await context.Users.AddAsync(newUser);
+            await context.SaveChangesAsync();
 
-            await _categorySeed.SeedStandardCategoriesForUser(_unitOfWork, newUser.Id);
+            await CategorySeed.SeedStandardCategoriesForUser(context, newUser.Id);
 
             return newUser.ToDto();
         }
@@ -56,8 +54,9 @@ public class AuthenticationService : IAuthenticationService
 
     public async Task<SinanceUserModel> SignIn(string userName, string password)
     {
+        using var context = _dbContextFactory.CreateDbContext();
         
-        var user = await _unitOfWork.UserRepository.FindSingleTracked(x => x.Username == userName);
+        var user = await context.Users.SingleOrDefaultAsync(x => x.Username == userName);
 
         if (user != null)
         {
@@ -69,7 +68,7 @@ public class AuthenticationService : IAuthenticationService
             else if (passwordVerificationResult == PasswordVerificationResult.SuccessRehashNeeded)
             {
                 user.Password = _passwordHasher.HashPassword(user, password);
-                await _unitOfWork.SaveAsync();
+                await context.SaveChangesAsync();
                 return user.ToDto();
             }
             else

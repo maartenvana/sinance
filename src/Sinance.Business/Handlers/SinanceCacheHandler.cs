@@ -10,7 +10,7 @@ namespace Sinance.Business.Handlers;
 public static class SinanceCacheHandler
 {
     // Memory cache for all cache operations
-    private static readonly MemoryCache _memoryCache = new MemoryCache(new MemoryCacheOptions());
+    private static readonly MemoryCache _memoryCache = new(new MemoryCacheOptions());
 
     /// <summary>
     /// Places the result of the action if not present in cache

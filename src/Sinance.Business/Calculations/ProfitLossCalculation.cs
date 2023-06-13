@@ -1,4 +1,5 @@
-﻿using Sinance.Business.Extensions;
+﻿using Microsoft.EntityFrameworkCore;
+using Sinance.Business.Extensions;
 using Sinance.Business.Services.BankAccounts;
 using Sinance.Communication.Model.Graph;
 using Sinance.Storage;
@@ -12,13 +13,13 @@ namespace Sinance.Business.Calculations;
 
 public class ProfitLossCalculation : IProfitCalculation
 {
-    private readonly IUnitOfWork _unitOfWork;
     private readonly IBankAccountService _bankAccountService;
+    private readonly IDbContextFactory<SinanceContext> _dbContextFactory;
 
-    public ProfitLossCalculation(IBankAccountService bankAccountService, IUnitOfWork unitOfWork)
+    public ProfitLossCalculation(IBankAccountService bankAccountService, IDbContextFactory<SinanceContext> dbContextFactory)
     {
         _bankAccountService = bankAccountService;
-        _unitOfWork = unitOfWork;
+        _dbContextFactory = dbContextFactory;
     }
 
     private static List<decimal[]> GetProfitPerMonth(DateTime startDate, DateTime endDate, List<IGrouping<DateTime, TransactionEntity>> transactionsPerMonth)
@@ -41,11 +42,11 @@ public class ProfitLossCalculation : IProfitCalculation
 
     public async Task<List<MonthlyProfitLossRecord>> CalculateMonthlyProfit(DateTime startDate, DateTime endDate)
     {
-        
+        using var context = _dbContextFactory.CreateDbContext();
 
-        // No need to sort this list, we loop through it by month numbers
-        var transactionsPerMonth = (await _unitOfWork.TransactionRepository
-            .FindAll(item => item.Date >= startDate && item.Date <= endDate))
+        var transactionsPerMonth = (await context.Transactions
+            .Where(item => item.Date >= startDate && item.Date <= endDate)
+            .ToListAsync())
             .GroupBy(item => new DateTime(item.Date.Year, item.Date.Month, 1))
             .ToList();
 
@@ -63,10 +64,9 @@ public class ProfitLossCalculation : IProfitCalculation
 
     public async Task<List<MonthlyProfitLossRecord>> CalculateMonthlyProfitGrouped(DateTime startDate, DateTime endDate)
     {
+        using var context = _dbContextFactory.CreateDbContext();
+
         var records = new List<MonthlyProfitLossRecord>();
-
-        
-
         // No need to sort this list, we loop through it by month numbers
         var bankAccounts = await _bankAccountService.GetActiveBankAccountsForCurrentUser();
 
@@ -76,9 +76,10 @@ public class ProfitLossCalculation : IProfitCalculation
         {
             var bankAccountIds = bankAccountGroup.Select(x => x.Id);
 
-            var transactionsPerMonth = (await _unitOfWork.TransactionRepository
-                .FindAll(x => x.Date >= startDate && x.Date <= endDate && bankAccountIds.Any(y => y == x.BankAccountId)))
-                .GroupBy(x => x.Date.BeginningOfMonth())
+            var transactionsPerMonth = (await context.Transactions
+                .Where(item => item.Date >= startDate && item.Date <= endDate && bankAccountIds.Any(y => y == item.BankAccountId))
+                .ToListAsync())
+                .GroupBy(item => new DateTime(item.Date.Year, item.Date.Month, 1))
                 .ToList();
 
             var profitPerMonth = GetProfitPerMonth(startDate, endDate, transactionsPerMonth);

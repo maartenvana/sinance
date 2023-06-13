@@ -1,4 +1,5 @@
-﻿using Sinance.Business.Calculations.Subcalculations;
+﻿using Microsoft.EntityFrameworkCore;
+using Sinance.Business.Calculations.Subcalculations;
 using Sinance.Business.Constants;
 using Sinance.Business.Services.BankAccounts;
 using Sinance.Business.Services.Categories;
@@ -17,16 +18,17 @@ namespace Sinance.Business.Calculations;
 public class YearlyOverviewCalculation : IYearlyOverviewCalculation
 {
     private readonly IBankAccountService _bankAccountService;
+    private readonly IDbContextFactory<SinanceContext> _dbContextFactory;
     private readonly ICategoryService _categoryService;
     private readonly ITransactionService _transactionService;
-    private readonly IUnitOfWork _unitOfWork;
 
-    public YearlyOverviewCalculation(IUnitOfWork unitOfWork,
+    public YearlyOverviewCalculation(
+        IDbContextFactory<SinanceContext> dbContextFactory,
         ICategoryService categoryService,
         IBankAccountService bankAccountService,
         ITransactionService transactionService)
     {
-        _unitOfWork = unitOfWork;
+        _dbContextFactory = dbContextFactory;
         _categoryService = categoryService;
         _bankAccountService = bankAccountService;
         _transactionService = transactionService;
@@ -42,10 +44,10 @@ public class YearlyOverviewCalculation : IYearlyOverviewCalculation
         var startYearDate = new DateTime(year, 01, 01);
         var nextYearDate = new DateTime(year + 1, 01, 01);
 
-        
+        using var context = _dbContextFactory.CreateDbContext();
 
-        var totalStartBalance = await BalanceCalculations.TotalBalanceBeforeDate(_unitOfWork, startYearDate);
-        var totalEndBalance = await BalanceCalculations.TotalBalanceBeforeDate(_unitOfWork, nextYearDate);
+        var totalStartBalance = await BalanceCalculations.TotalBalanceBeforeDate(context, startYearDate);
+        var totalEndBalance = await BalanceCalculations.TotalBalanceBeforeDate(context, nextYearDate);
 
         result.TotalBalance = new YearBalance(totalStartBalance, totalEndBalance);
 
@@ -53,8 +55,8 @@ public class YearlyOverviewCalculation : IYearlyOverviewCalculation
         var totalPerBankAccountType = new Dictionary<BankAccountType, YearAmountAndPercentage>();
         foreach (var bankAccount in bankAccounts)
         {
-            var bankAccountStartBalance = await BalanceCalculations.TotalBalanceForBankAccountBeforeDate(_unitOfWork, startYearDate, bankAccount);
-            var bankAccountEndBalance = await BalanceCalculations.TotalBalanceForBankAccountBeforeDate(_unitOfWork, nextYearDate, bankAccount);
+            var bankAccountStartBalance = await BalanceCalculations.TotalBalanceForBankAccountBeforeDate(context, startYearDate, bankAccount);
+            var bankAccountEndBalance = await BalanceCalculations.TotalBalanceForBankAccountBeforeDate(context, nextYearDate, bankAccount);
 
             result.BalancePerBankAccount.Add(bankAccount, new YearBalance(bankAccountStartBalance, bankAccountEndBalance));
 
@@ -80,9 +82,7 @@ public class YearlyOverviewCalculation : IYearlyOverviewCalculation
         var allCategories = await _categoryService.GetAllCategoriesForCurrentUser();
         var internalCashFlowCategory = allCategories.Single(x => x.Name == StandardCategoryNames.InternalCashFlowName);
 
-        var biggestExpenses = await _transactionService.GetBiggestExpensesForYearForCurrentUser(year, count: 20, skip: 0, excludeCategoryIds: new int[] {
-            internalCashFlowCategory.Id
-        });
+        var biggestExpenses = await _transactionService.GetBiggestExpensesForYearForCurrentUser(year, count: 20, skip: 0, internalCashFlowCategory.Id);
 
         result.BiggestExpenses = biggestExpenses.OrderBy(x => x.Amount).ThenByDescending(x => x.Date).ToList();
 

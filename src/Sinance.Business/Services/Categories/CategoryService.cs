@@ -1,4 +1,5 @@
-﻿using Sinance.Business.Exceptions;
+﻿using Microsoft.EntityFrameworkCore;
+using Sinance.Business.Exceptions;
 using Sinance.Business.Extensions;
 using Sinance.Communication.Model.Category;
 using Sinance.Communication.Model.Import;
@@ -14,42 +15,41 @@ namespace Sinance.Business.Services.Categories;
 
 public class CategoryService : ICategoryService
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IDbContextFactory<SinanceContext> _dbContextFactory;
     private readonly IUserIdProvider _userIdProvider;
 
     public CategoryService(
-        IUnitOfWork unitOfWork,
+        IDbContextFactory<SinanceContext> dbContextFactory,
         IUserIdProvider userIdProvider)
     {
-        _unitOfWork = unitOfWork;
+        _dbContextFactory = dbContextFactory;
         _userIdProvider = userIdProvider;
     }
 
     public async Task<CategoryModel> CreateCategoryForCurrentUser(CategoryModel categoryModel)
     {
+        using var context = _dbContextFactory.CreateDbContext();
         
-        var category = await _unitOfWork.CategoryRepository.FindSingleTracked(item => item.Name == categoryModel.Name);
+        var category = await context.Categories.SingleOrDefaultAsync(item => item.Name == categoryModel.Name);
 
         if (category != null)
-        {
             throw new AlreadyExistsException(nameof(CategoryEntity));
-        }
 
         var newCategory = categoryModel.ToNewEntity(_userIdProvider.GetCurrentUserId());
 
-        _unitOfWork.CategoryRepository.Insert(newCategory);
-        await _unitOfWork.SaveAsync();
+        await context.Categories.AddAsync(newCategory);
+        await context.SaveChangesAsync();
 
         return newCategory.ToDto();
     }
 
     public async Task<List<KeyValuePair<TransactionModel, bool>>> CreateCategoryMappingToTransactionsForUser(CategoryModel category)
     {
-        
+        using var context = _dbContextFactory.CreateDbContext();
 
-        var allTransactions = await _unitOfWork.TransactionRepository.ListAll();
+        var allTransactions = await context.Transactions.ToListAsync();
 
-        var categoryMappings = await _unitOfWork.CategoryMappingRepository.FindAll(item => item.CategoryId == category.Id);
+        var categoryMappings = await context.CategoryMappings.Where(item => item.CategoryId == category.Id).ToListAsync();
 
         var mappedTransactions = MapTransactionsWithCategoryMappings(categoryMappings, allTransactions)
             .Select(item => new KeyValuePair<TransactionModel, bool>(item.ToDto(), true))
@@ -60,77 +60,70 @@ public class CategoryService : ICategoryService
 
     public async Task DeleteCategoryByIdForCurrentUser(int categoryId)
     {
-        
+        using var context = _dbContextFactory.CreateDbContext();
 
-        var category = await _unitOfWork.CategoryRepository.FindSingleTracked(item => item.Id == categoryId);
+        var category = await context.Categories.SingleOrDefaultAsync(item => item.Id == categoryId);
         if (category == null)
-        {
             throw new NotFoundException(nameof(CategoryEntity));
-        }
         else if (category.IsStandard)
-        {
             throw new DeleteStandardCategoryException();
-        }
 
-        var transactionCategories = await _unitOfWork.TransactionCategoryRepository.FindAllTracked(x => x.CategoryId == categoryId);
+        var transactionCategories = await context.TransactionCategories.Where(x => x.CategoryId == categoryId).ToListAsync();
 
-        _unitOfWork.TransactionCategoryRepository.DeleteRange(transactionCategories);
-        _unitOfWork.CategoryRepository.Delete(category);
+        context.TransactionCategories.RemoveRange(transactionCategories);
+        context.Categories.Remove(category);
 
-        await _unitOfWork.SaveAsync();
+        await context.SaveChangesAsync();
     }
 
     public async Task<List<CategoryModel>> GetAllCategoriesForCurrentUser()
     {
-        
+        using var context = _dbContextFactory.CreateDbContext();
 
-        var allCategories = await _unitOfWork.CategoryRepository.ListAll();
+        var allCategories = await context.Categories.ToListAsync();
 
         return allCategories.ToDto().ToList();
     }
 
     public async Task<CategoryModel> GetCategoryByIdForCurrentUser(int categoryId)
     {
-        
+        using var context = _dbContextFactory.CreateDbContext();
 
-        var category = await _unitOfWork.CategoryRepository.FindSingle(item => item.Id == categoryId,
-               includeProperties: new string[] {
-                   nameof(CategoryEntity.ParentCategory),
-                   nameof(CategoryEntity.ChildCategories),
-                   nameof(CategoryEntity.CategoryMappings)
-               });
+        var category = await context.Categories
+            .Include(x => x.ParentCategory)
+            .Include(x => x.ChildCategories)
+            .Include(x => x.CategoryMappings)
+            .SingleOrDefaultAsync(item => item.Id == categoryId);
 
         if (category == null)
-        {
             throw new NotFoundException(nameof(CategoryEntity));
-        }
 
         return category.ToDto();
     }
 
     public async Task<List<CategoryModel>> GetPossibleParentCategoriesForCurrentUser(int categoryId)
     {
-        
+        using var context = _dbContextFactory.CreateDbContext();
 
-        var categories = await _unitOfWork.CategoryRepository.FindAll(item => item.ParentId == null &&
-                                                                    item.Id != categoryId);
+        var categories = await context.Categories
+            .Where(item => item.ParentId == null && item.Id != categoryId)
+            .ToListAsync();
 
         return categories.ToDto().ToList();
     }
 
     public async Task MapCategoryToTransactionsForCurrentUser(int categoryId, IEnumerable<int> transactionIds)
     {
-        
+        using var context = _dbContextFactory.CreateDbContext();
 
-        var category = await _unitOfWork.CategoryRepository.FindSingle(x => x.Id == categoryId);
+        var category = await context.Categories.SingleOrDefaultAsync(x => x.Id == categoryId);
         if (category == null)
-        {
             throw new NotFoundException(nameof(CategoryEntity));
-        }
 
-        var transactions = await _unitOfWork.TransactionRepository.FindAllTracked(
-            x => transactionIds.Any(y => y == x.Id),
-            includeProperties: nameof(TransactionEntity.TransactionCategories));
+        var transactions = await context.Transactions
+            .Include(x => x.TransactionCategories)
+            .Where(x => transactionIds.Any(y => y == x.Id))
+            .ToListAsync();
 
         foreach (var transaction in transactions)
         {
@@ -145,30 +138,24 @@ public class CategoryService : ICategoryService
             };
         }
 
-        await _unitOfWork.SaveAsync();
+        await context.SaveChangesAsync();
     }
 
     public async Task<CategoryModel> UpdateCategoryForCurrentUser(CategoryModel categoryModel)
     {
+        using var context = _dbContextFactory.CreateDbContext();
         
-
-        var category = await _unitOfWork.CategoryRepository.FindSingleTracked(x => x.Id == categoryModel.Id);
+        var category = await context.Categories.SingleOrDefaultAsync(x => x.Id == categoryModel.Id);
 
         if (category == null)
-        {
             throw new NotFoundException(nameof(CategoryEntity));
-        }
 
         if (category.IsStandard)
-        {
             category.UpdateStandardEntity(categoryModel);
-        }
         else
-        {
             category.UpdateEntity(categoryModel);
-        }
 
-        await _unitOfWork.SaveAsync();
+        await context.SaveChangesAsync();
 
         return category.ToDto();
     }

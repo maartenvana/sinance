@@ -10,9 +10,9 @@ namespace Sinance.BlazorApp.Business.Services;
 
 public class TransactionService : ITransactionService
 {
-    private readonly Storage.IDbContextFactory<SinanceContext> dbContextFactory;
+    private readonly IDbContextFactory<SinanceContext> dbContextFactory;
 
-    public TransactionService(Storage.IDbContextFactory<SinanceContext> dbContextFactory)
+    public TransactionService(IDbContextFactory<SinanceContext> dbContextFactory)
     {
         this.dbContextFactory = dbContextFactory;
     }

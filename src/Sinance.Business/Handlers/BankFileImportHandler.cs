@@ -1,4 +1,5 @@
-﻿using Sinance.Business.Exceptions;
+﻿using Microsoft.EntityFrameworkCore;
+using Sinance.Business.Exceptions;
 using Sinance.Business.Extensions;
 using Sinance.Business.Import;
 using Sinance.Communication.Model.Import;
@@ -15,18 +16,18 @@ namespace Sinance.Business.Handlers;
 
 public class BankFileImportHandler : IBankFileImportHandler
 {
-    private readonly IEnumerable<IBankFileImporter> bankFileImporters;
+    private readonly IEnumerable<IBankFileImporter> _bankFileImporters;
 
     public BankFileImportHandler(IEnumerable<IBankFileImporter> bankFileImporters)
     {
-        this.bankFileImporters = bankFileImporters;
+        this._bankFileImporters = bankFileImporters;
     }
 
     public IBankFileImporter GetFileImporterForId(Guid fileImporterId)
     {
         try
         {
-            return bankFileImporters.Single(x => x.Id == fileImporterId);
+            return _bankFileImporters.Single(x => x.Id == fileImporterId);
         }
         catch (InvalidOperationException ex)
         {
@@ -35,7 +36,7 @@ public class BankFileImportHandler : IBankFileImportHandler
     }
 
     public async Task<IList<ImportRow>> CreateImportRowsFromFile(
-        IUnitOfWork unitOfWork, 
+        SinanceContext context, 
         Stream fileInputStream, 
         int userId,
         Guid fileImporterId,
@@ -47,11 +48,11 @@ public class BankFileImportHandler : IBankFileImportHandler
 
         if (importRows.Any())
         {
-            var existingTransactions = await GetExistingTransactionsForImportRows(unitOfWork, userId, bankAccountId, importRows);
+            var existingTransactions = await GetExistingTransactionsForImportRows(context, userId, bankAccountId, importRows);
 
             MatchExistingTransactionsWithImportRows(importRows, existingTransactions);
 
-            await MapCategoriesToRows(unitOfWork, userId, importRows);
+            await MapCategoriesToRows(context, userId, importRows);
         }
 
         return importRows;
@@ -75,7 +76,7 @@ public class BankFileImportHandler : IBankFileImportHandler
             importRow.Transaction.Date == transaction.Date);
 
     private static async Task<List<TransactionEntity>> GetExistingTransactionsForImportRows(
-        IUnitOfWork unitOfWork, 
+        SinanceContext context, 
         int userId,
         int bankAccountId,
         IList<ImportRow> rowsToImport)
@@ -83,18 +84,19 @@ public class BankFileImportHandler : IBankFileImportHandler
         var firstDate = rowsToImport.Min(item => item.Transaction.Date);
         var lastDate = rowsToImport.Max(item => item.Transaction.Date);
 
-        var existingTransactions = await unitOfWork.TransactionRepository
-            .FindAll(transaction => 
-                transaction.BankAccountId == bankAccountId &&
-                transaction.UserId == userId && 
-                transaction.Date >= firstDate && 
-                transaction.Date <= lastDate);
+        var existingTransactions = await context.Transactions
+            .Where(transaction => transaction.BankAccountId == bankAccountId && transaction.UserId == userId && transaction.Date >= firstDate && transaction.Date <= lastDate)
+            .ToListAsync();
+
         return existingTransactions;
     }
 
-    private static async Task MapCategoriesToRows(IUnitOfWork unitOfWork, int userId, IList<ImportRow> rowsToImport)
+    private static async Task MapCategoriesToRows(SinanceContext context, int userId, IList<ImportRow> rowsToImport)
     {
-        var categoryMappings = await unitOfWork.CategoryMappingRepository.FindAll(item => item.Category.UserId == userId, "Category");
+        var categoryMappings = await context.CategoryMappings
+            .Include(x => x.Category)
+            .Where(item => item.Category.UserId == userId)
+            .ToListAsync();
 
         CategoryHandler.SetTransactionCategories(transactions: rowsToImport.Select(item => item.Transaction), categoryMappings: categoryMappings);
     }
@@ -106,25 +108,26 @@ public class BankFileImportHandler : IBankFileImportHandler
         return importer.CreateImport(reader.BaseStream);
     }
 
-    public async Task<int> SaveImportResultToDatabase(IUnitOfWork unitOfWork, int bankAccountId, int userId,
+    public static async Task<int> SaveImportResultToDatabase(SinanceContext context, int bankAccountId, int userId,
         IList<ImportRow> importRows, IList<ImportRow> cachedImportRows)
     {
         var savedTransactions = 0;
 
         // Select all cached import rows that have to be imported
-        foreach (var cachedImportRow in importRows.Where(item => !item.ExistsInDatabase && item.Import)
+        foreach (var cachedTransaction in importRows.Where(item => !item.ExistsInDatabase && item.Import)
             .Select(importRow => cachedImportRows.SingleOrDefault(item => item.ImportRowId == importRow.ImportRowId))
-            .Where(cachedImportRow => cachedImportRow != null))
+            .Where(cachedImportRow => cachedImportRow != null)
+            .Select(x => x.Transaction))
         {
             // Set the application user id and bank account id
-            cachedImportRow.Transaction.BankAccountId = bankAccountId;
+            cachedTransaction.BankAccountId = bankAccountId;
 
-            unitOfWork.TransactionRepository.Insert(cachedImportRow.Transaction.ToNewEntity(userId));
+            await context.Transactions.AddAsync(cachedTransaction.ToNewEntity(userId));
 
             // Count how many we inserted
             savedTransactions++;
         }
-        await unitOfWork.SaveAsync();
+        await context.SaveChangesAsync();
 
         return savedTransactions;
     }

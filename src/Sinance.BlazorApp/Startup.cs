@@ -6,7 +6,6 @@ using Microsoft.Extensions.Hosting;
 using Sinance.Storage;
 using Microsoft.EntityFrameworkCore;
 using Sinance.BlazorApp.Services;
-using Sinance.BlazorApp.Extensions;
 using Sinance.Common.Configuration;
 using Sinance.BlazorApp.Business.Services;
 
@@ -30,9 +29,7 @@ public class Startup
         var appSettings = Configuration.Get<AppSettings>();
         services.AddSingleton(appSettings);
 
-        services.AddDatabase<SinanceContext>(opt => opt
-            .UseMySql(appSettings.ConnectionStrings.Sql, new MySqlServerVersion("5.7"))
-            .EnableSensitiveDataLogging());
+        services.AddStorageModule(appSettings);
 
         services.AddTransient<ITransactionService, TransactionService>();
         services.AddTransient<IBankAccountService, BankAccountService>();

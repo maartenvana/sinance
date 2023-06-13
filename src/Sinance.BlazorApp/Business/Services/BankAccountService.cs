@@ -1,26 +1,24 @@
-﻿using Sinance.BlazorApp.Business.Extensions;
+﻿using Microsoft.EntityFrameworkCore;
+using Sinance.BlazorApp.Business.Extensions;
 using Sinance.BlazorApp.Business.Model.BankAccount;
-using Sinance.BlazorApp.Storage;
 using Sinance.Storage;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace Sinance.BlazorApp.Business.Services;
 
 public class BankAccountService : IBankAccountService
 {
-    private readonly IDbContextFactory<SinanceContext> dbContextFactory;
+    private readonly IDbContextFactory<SinanceContext> _dbContextFactory;
 
     public BankAccountService(IDbContextFactory<SinanceContext> dbContextFactory)
     {
-        this.dbContextFactory = dbContextFactory;
+        _dbContextFactory = dbContextFactory;
     }
 
     public List<BankAccountModel> GetAllBankAccounts()
     {
-        using var context = this.dbContextFactory.CreateDbContext();
+        using var context = _dbContextFactory.CreateDbContext();
 
         var bankAccountEntities = context.BankAccounts.ToList();
 
@@ -29,9 +27,9 @@ public class BankAccountService : IBankAccountService
 
     public List<BankAccountModel> GetAllActiveBankAccounts()
     {
-        using var context = this.dbContextFactory.CreateDbContext();
+        using var context = _dbContextFactory.CreateDbContext();
 
-        var bankAccountEntities = context.BankAccounts.Where(x => x.Disabled == false).ToList();
+        var bankAccountEntities = context.BankAccounts.Where(x => !x.Disabled).ToList();
 
         return bankAccountEntities.ToDto().ToList();
     }

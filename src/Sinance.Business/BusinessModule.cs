@@ -31,7 +31,6 @@ public static class BusinessModule
         services.AddTransient<ICustomReportService, CustomReportService>();
         services.AddTransient<IYearlyOverviewCalculation, YearlyOverviewCalculation>();
         services.AddTransient<IExpensePercentageCalculation, ExpensePercentageCalculation>();
-        services.AddTransient<IBankAccountCalculationService, BankAccountCalculationService>();
         services.AddTransient<IExpenseCalculation, ExpenseCalculation>();
         services.AddTransient<IIncomeCalculation, IncomeCalculation>();
         services.AddTransient<IProfitCalculation, ProfitLossCalculation>();

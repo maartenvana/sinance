@@ -1,7 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Sinance.Storage;
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -9,22 +8,23 @@ namespace Sinance.Web.Initialization;
 
 public class DatabaseMigrationTask : IStartupTask
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IDbContextFactory<SinanceContext> _dbContextFactory;
 
-    public DatabaseMigrationTask(IUnitOfWork unitOfWork)
+    public DatabaseMigrationTask(IDbContextFactory<SinanceContext> dbContextFactory)
     {
-        _unitOfWork = unitOfWork;
+        _dbContextFactory = dbContextFactory;
     }
 
     public async Task RunAsync(CancellationToken cancellationToken = default)
     {
-        var pendingMigrations = await _unitOfWork.Context.Database.GetPendingMigrationsAsync(cancellationToken);
+        using var context = _dbContextFactory.CreateDbContext();
+        var pendingMigrations = await context.Database.GetPendingMigrationsAsync(cancellationToken);
 
         foreach (var pendingMigration in pendingMigrations)
         {
             Log.Information("Need to apply migration: {pendingMigration}", pendingMigration);
         }
 
-        await _unitOfWork.Context.Database.MigrateAsync(cancellationToken);
+        await context.Database.MigrateAsync(cancellationToken);
     }
 }

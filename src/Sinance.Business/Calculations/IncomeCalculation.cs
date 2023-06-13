@@ -1,4 +1,5 @@
-﻿using Sinance.Business.Extensions;
+﻿using Microsoft.EntityFrameworkCore;
+using Sinance.Business.Extensions;
 using Sinance.Communication.Model.StandardReport.Income;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
@@ -11,11 +12,11 @@ namespace Sinance.Business.Calculations;
 
 public class IncomeCalculation : IIncomeCalculation
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IDbContextFactory<SinanceContext> _dbContextFactory;
 
-    public IncomeCalculation(IUnitOfWork unitOfWork)
+    public IncomeCalculation(IDbContextFactory<SinanceContext> dbContextFactory)
     {
-        _unitOfWork = unitOfWork;
+        _dbContextFactory = dbContextFactory;
     }
 
     public async Task<BiMonthlyIncomeReportModel> BiMonthlyIncomePerCategoryReport(DateTime startMonth)
@@ -23,21 +24,20 @@ public class IncomeCalculation : IIncomeCalculation
         var nextMonthStart = startMonth.AddMonths(1);
         var nextMonthEnd = nextMonthStart.AddMonths(1).AddDays(-1);
 
-        
+        using var context = _dbContextFactory.CreateDbContext();
 
-        var transactions = await _unitOfWork.TransactionRepository.FindAll(
-            findQuery: item =>
+        var transactions = await context.Transactions
+            .Include(x => x.TransactionCategories)
+            .Where(item =>
                 item.Date >= startMonth &&
                 item.Date <= nextMonthEnd &&
-                item.Amount > 0,
-            includeProperties: nameof(TransactionEntity.TransactionCategories));
+                item.Amount > 0)
+            .ToListAsync();
 
-        var allCategories = await _unitOfWork.CategoryRepository.ListAll(
-            includeProperties: new string[]
-            {
-                nameof(CategoryEntity.ParentCategory),
-                nameof(CategoryEntity.ChildCategories)
-            });
+        var allCategories = await context.Categories
+            .Include(x => x.ParentCategory)
+            .Include(x => x.ChildCategories)
+            .ToListAsync(); 
 
         var bimonthlyIncomeReport = new BimonthlyIncomeReportItem
         {

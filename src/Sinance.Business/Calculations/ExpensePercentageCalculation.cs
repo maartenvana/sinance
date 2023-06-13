@@ -1,4 +1,5 @@
-﻿using Sinance.Business.Constants;
+﻿using Microsoft.EntityFrameworkCore;
+using Sinance.Business.Constants;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
 using System;
@@ -10,28 +11,24 @@ namespace Sinance.Business.Calculations;
 
 public class ExpensePercentageCalculation : IExpensePercentageCalculation
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IDbContextFactory<SinanceContext> _dbContextFactory;
 
-    public ExpensePercentageCalculation(IUnitOfWork unitOfWork)
+    public ExpensePercentageCalculation(IDbContextFactory<SinanceContext> dbContextFactory)
     {
-        _unitOfWork = unitOfWork;
+        _dbContextFactory = dbContextFactory;
     }
 
     public async Task<IEnumerable<KeyValuePair<string, decimal>>> ExpensePercentagePerCategoryNameForMonth(DateTime startDate, DateTime endDate)
     {
-        
+        using var context = _dbContextFactory.CreateDbContext();
 
         // No need to sort this list, we loop through it by month numbers
-        var transactions = await _unitOfWork.TransactionRepository
-        .FindAll(
-            findQuery: item =>
-                item.Date >= startDate &&
-                item.Date <= endDate &&
-                item.Amount < 0,
-                nameof(TransactionEntity.TransactionCategories)
-            );
+        var transactions = await context.Transactions
+            .Include(x => x.TransactionCategories)
+            .Where(item => item.Date >= startDate && item.Date <= endDate && item.Amount < 0)
+            .ToListAsync();
 
-        var categories = await _unitOfWork.CategoryRepository.ListAll();
+        var categories = await context.Categories.ToListAsync();
 
         var internalCashFlowCategory = categories.Single(x => x.Name == StandardCategoryNames.InternalCashFlowName);
 

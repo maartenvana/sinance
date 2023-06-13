@@ -1,4 +1,6 @@
-﻿using Sinance.Business.Services.BankAccounts;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Internal;
+using Sinance.Business.Services.BankAccounts;
 using Sinance.Communication.Model.Graph;
 using Sinance.Storage;
 using System;
@@ -10,14 +12,14 @@ namespace Sinance.Business.Calculations;
 
 public class BalanceHistoryCalculation : IBalanceHistoryCalculation
 {
+    private readonly IDbContextFactory<SinanceContext> _dbContextFactory;
     private readonly IBankAccountService _bankAccountService;
-    private readonly IUnitOfWork _unitOfWork;
 
     public BalanceHistoryCalculation(
-        IUnitOfWork unitOfWork,
+        IDbContextFactory<SinanceContext> dbContextFactory,
         IBankAccountService bankAccountService)
     {
-        _unitOfWork = unitOfWork;
+        _dbContextFactory = dbContextFactory;
         _bankAccountService = bankAccountService;
     }
 
@@ -82,7 +84,7 @@ public class BalanceHistoryCalculation : IBalanceHistoryCalculation
 
         return new List<BalanceHistoryRecord>
         {
-            new BalanceHistoryRecord 
+            new BalanceHistoryRecord
             {
                 BalanceHistory = await CalculateBalanceHistory(startDate, endDate, includeBankAccounts),
             }
@@ -103,16 +105,17 @@ public class BalanceHistoryCalculation : IBalanceHistoryCalculation
 
         decimal accountBalance = 0;
 
-        var transactions = (await _unitOfWork.TransactionRepository.FindAll(x => bankAccountsIdFilter.Any(y => y == x.BankAccountId) &&
-                                x.Date >= startDate &&
-                                x.Date <= endDate))
-                                .OrderBy(item => item.Date)
-                                .ToList();
+        using var context = await _dbContextFactory.CreateDbContextAsync();
+
+        var transactions = await context.Transactions
+            .Where(x => bankAccountsIdFilter.Any(y => y == x.BankAccountId) && x.Date >= startDate && x.Date <= endDate)
+            .OrderBy(item => item.Date)
+            .ToListAsync();
 
         accountBalance = bankAccounts.Sum(item => item.StartBalance);
-        accountBalance += await _unitOfWork.TransactionRepository.Sum(
-            findQuery: x => bankAccountsIdFilter.Any(y => y == x.BankAccountId) && x.Date <= startDate,
-            sumQuery: x => x.Amount);
+        accountBalance += await context.Transactions
+            .Where(x => bankAccountsIdFilter.Any(y => y == x.BankAccountId) && x.Date <= startDate)
+            .SumAsync(x => x.Amount);
 
         // Group by the date part, discard the time
         var transactionsPerDate = transactions.GroupBy(item => item.Date.Date).ToList();

@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
-using Sinance.BlazorApp.Storage;
 using Sinance.Storage;
 
 namespace Sinance.BlazorApp;
@@ -64,7 +62,7 @@ public class Program
 
         try
         {
-            var contextFactory = services.GetRequiredService<Storage.IDbContextFactory<SinanceContext>>();
+            var contextFactory = services.GetRequiredService<IDbContextFactory<SinanceContext>>();
             using var context = contextFactory.CreateDbContext();
 
             Log.Information("Seeding data");
@@ -95,7 +93,7 @@ public class Program
 
         try
         {
-            var contextFactory = services.GetRequiredService<Storage.IDbContextFactory<SinanceContext>>();
+            var contextFactory = services.GetRequiredService<IDbContextFactory<SinanceContext>>();
             using var context = contextFactory.CreateDbContext();
 
             Log.Information("Checking if database needs to be migrated/created");

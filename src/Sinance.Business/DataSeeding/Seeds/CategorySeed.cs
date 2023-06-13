@@ -1,8 +1,8 @@
-﻿using Serilog;
+﻿using Microsoft.EntityFrameworkCore;
+using Serilog;
 using Sinance.Business.Constants;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,44 +11,44 @@ namespace Sinance.Business.DataSeeding.Seeds;
 
 public class CategorySeed
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IDbContextFactory<SinanceContext> _dbContextFactory;
 
-    public CategorySeed(
-        IUnitOfWork unitOfWork)
+    public CategorySeed(IDbContextFactory<SinanceContext> dbContextFactory)
     {
-        _unitOfWork = unitOfWork;
+        _dbContextFactory = dbContextFactory;
     }
 
     public async Task SeedStandardCategoriesForAllUsers()
     {
         Log.Information("Seeding standard categories for all users");
-        
 
-        var allUsers = await _unitOfWork.UserRepository.ListAll();
+        using var context = _dbContextFactory.CreateDbContext();
+
+        var allUsers = await context.Users.ToListAsync();
 
         foreach (var userId in allUsers.Select(x => x.Id))
         {
-            _unitOfWork.Context.OverwriteUserIdProvider(new SeedUserIdProvider(userId));
-            await SeedStandardCategoriesForUser(_unitOfWork, userId);
+            context.OverwriteUserIdProvider(new SeedUserIdProvider(userId));
+            await SeedStandardCategoriesForUser(context, userId);
         }
 
-        await _unitOfWork.SaveAsync();
+        await context.SaveChangesAsync();
 
         Log.Information("Standard categories seeding completed");
     }
 
-    public async Task SeedStandardCategoriesForUser(IUnitOfWork unitOfWork, int userId)
+    public static async Task SeedStandardCategoriesForUser(SinanceContext context, int userId)
     {
-        var standardCategoriesForUser = await _unitOfWork.CategoryRepository.FindAll(x => x.IsStandard);
+        var standardCategoriesForUser = await context.Categories.Where(x => x.IsStandard).ToListAsync();
 
-        CreateOrUpdateCashFlowCategory(unitOfWork, standardCategoriesForUser, userId);
+        await CreateOrUpdateCashFlowCategory(context, standardCategoriesForUser, userId);
     }
 
-    private void CreateOrUpdateCashFlowCategory(IUnitOfWork unitOfWork, List<CategoryEntity> standardCategoriesForUser, int userId)
+    private static async Task CreateOrUpdateCashFlowCategory(SinanceContext context, List<CategoryEntity> standardCategoriesForUser, int userId)
     {
         if (!standardCategoriesForUser.Any(x => x.Name == StandardCategoryNames.InternalCashFlowName))
         {
-            unitOfWork.CategoryRepository.Insert(new CategoryEntity
+            await context.Categories.AddAsync(new CategoryEntity
             {
                 IsStandard = true,
                 IsRegular = false,

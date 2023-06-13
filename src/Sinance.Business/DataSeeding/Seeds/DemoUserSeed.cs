@@ -1,6 +1,6 @@
-﻿#pragma warning disable S107 // Methods should not have too many parameters
-
+﻿using Microsoft.EntityFrameworkCore;
 using Serilog;
+using Sinance.Business.Calculations;
 using Sinance.Business.Constants;
 using Sinance.Business.Services.Authentication;
 using Sinance.Business.Services.BankAccounts;
@@ -9,6 +9,7 @@ using Sinance.Storage;
 using Sinance.Storage.Entities;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Sinance.Business.DataSeeding.Seeds;
@@ -16,96 +17,88 @@ namespace Sinance.Business.DataSeeding.Seeds;
 public class DemoUserSeed
 {
     private readonly IAuthenticationService _authenticationService;
-    private readonly IBankAccountCalculationService _bankAccountCalculationService;
-    private readonly CategorySeed _categorySeed;
+    private readonly IDbContextFactory<SinanceContext> _dbContextFactory;
     private readonly Random _random;
-    private readonly IUnitOfWork _unitOfWork;
 
     public DemoUserSeed(
-        CategorySeed categorySeed,
-        IBankAccountCalculationService bankAccountCalculationService,
         IAuthenticationService authenticationService,
-        IUnitOfWork unitOfWork)
+        IDbContextFactory<SinanceContext> dbContextFactory)
     {
         _random = new Random();
-        _categorySeed = categorySeed;
-        _bankAccountCalculationService = bankAccountCalculationService;
         _authenticationService = authenticationService;
-        _unitOfWork = unitOfWork;
+        _dbContextFactory = dbContextFactory;
     }
 
     public async Task SeedData(bool overwrite)
     {
-        
+        using var context = _dbContextFactory.CreateDbContext();
 
         const string demoUserName = "DemoUser";
-        var user = await _unitOfWork.UserRepository.FindSingleTracked(x => x.Username == demoUserName);
+        var user = await context.Users.SingleOrDefaultAsync(x => x.Username == demoUserName);
         if (user != null)
         {
-            if (overwrite)
-            {
-                Log.Information("DemoUser already exists, will delete all existing data for demo user");
-            }
-            else
+            if (!overwrite)
             {
                 Log.Information("DemoUser already exists, overwrite is disabled. Not seeding new data");
                 return;
             }
+
+            Log.Information("DemoUser already exists, will delete all existing data for demo user");
         }
         else
         {
             Log.Information("Creating demo user");
             await _authenticationService.CreateUser(demoUserName, demoUserName);
-            user = await _unitOfWork.UserRepository.FindSingleTracked(x => x.Username == demoUserName);
+            user = await context.Users.SingleOrDefaultAsync(x => x.Username == demoUserName);
         }
 
-        _unitOfWork.Context.OverwriteUserIdProvider(new SeedUserIdProvider(user.Id));
+        context.OverwriteUserIdProvider(new SeedUserIdProvider(user.Id));
 
-        await DeleteExistingBankAccounts(_unitOfWork);
-        await _categorySeed.SeedStandardCategoriesForUser(_unitOfWork, user.Id);
+        await DeleteExistingBankAccounts(context);
+        await CategorySeed.SeedStandardCategoriesForUser(context, user.Id);
 
-        await _unitOfWork.SaveAsync();
+        await context.SaveChangesAsync();
 
         Log.Information("Creating demo bank accounts");
-        var mainBankAccount = InsertBankAccount(_unitOfWork, user, "Checking 1", BankAccountType.Checking);
-        var secondaryBankAccount = InsertBankAccount(_unitOfWork, user, "Checking 2", BankAccountType.Checking);
-        var savingsAccount = InsertBankAccount(_unitOfWork, user, "Savings", BankAccountType.Savings);
-        var investmentAccount = InsertBankAccount(_unitOfWork, user, "Investments", BankAccountType.Investment);
+        var mainBankAccount = await InsertBankAccountAsync(context, user, "Checking 1", BankAccountType.Checking);
+        var secondaryBankAccount = await InsertBankAccountAsync(context, user, "Checking 2", BankAccountType.Checking);
+        var savingsAccount = await InsertBankAccountAsync(context, user, "Savings", BankAccountType.Savings);
+        var investmentAccount = await InsertBankAccountAsync(context, user, "Investments", BankAccountType.Investment);
 
-        await DeleteCategoriesAndTransactions(_unitOfWork);
-        await InsertCategoriesAndTransactions(_unitOfWork, user, mainBankAccount, savingsAccount);
+        await DeleteCategoriesAndTransactions(context);
+        await InsertCategoriesAndTransactions(context, user, mainBankAccount, savingsAccount);
 
-        await _bankAccountCalculationService.UpdateCurrentBalanceForBankAccount(_unitOfWork, mainBankAccount.Id);
-        await _bankAccountCalculationService.UpdateCurrentBalanceForBankAccount(_unitOfWork, secondaryBankAccount.Id);
-        await _bankAccountCalculationService.UpdateCurrentBalanceForBankAccount(_unitOfWork, savingsAccount.Id);
-        await _bankAccountCalculationService.UpdateCurrentBalanceForBankAccount(_unitOfWork, investmentAccount.Id);
+        await BankAccountCalculations.UpdateCurrentBalanceForBankAccount(context, mainBankAccount.Id);
+        await BankAccountCalculations.UpdateCurrentBalanceForBankAccount(context, secondaryBankAccount.Id);
+        await BankAccountCalculations.UpdateCurrentBalanceForBankAccount(context, savingsAccount.Id);
+        await BankAccountCalculations.UpdateCurrentBalanceForBankAccount(context, investmentAccount.Id);
 
-        await _unitOfWork.SaveAsync();
+        await context.SaveChangesAsync();
 
         Log.Information("Data seed completed, login with DemoUser/DemoUser");
     }
 
-    private async Task DeleteCategoriesAndTransactions(IUnitOfWork unitOfWork)
+    private static async Task DeleteCategoriesAndTransactions(SinanceContext context)
     {
         Log.Information("Deleting existing demo categories and transactions");
-        var existingCategories = await _unitOfWork.CategoryRepository.FindAll(x => !x.IsStandard);
-        unitOfWork.CategoryRepository.DeleteRange(existingCategories);
+        var existingCategories = await context.Categories.Where(x => !x.IsStandard).ToListAsync();
+        context.Categories.RemoveRange(existingCategories);
 
-        var existingTransactions = await _unitOfWork.TransactionRepository.ListAll();
-        unitOfWork.TransactionRepository.DeleteRange(existingTransactions);
-        await _unitOfWork.SaveAsync();
+        var existingTransactions = await context.Transactions.ToListAsync();
+        context.Transactions.RemoveRange(existingTransactions);
+        await context.SaveChangesAsync();
     }
 
-    private async Task DeleteExistingBankAccounts(IUnitOfWork unitOfWork)
+    private static async Task DeleteExistingBankAccounts(SinanceContext context)
     {
         Log.Information("Deleting existing demo bank accounts");
 
-        var existingBankAccounts = await _unitOfWork.BankAccountRepository.ListAll();
-        unitOfWork.BankAccountRepository.DeleteRange(existingBankAccounts);
-        await _unitOfWork.SaveAsync();
+        var existingBankAccounts = await context.BankAccounts.ToListAsync();
+        context.BankAccounts.RemoveRange(existingBankAccounts);
+        await context.SaveChangesAsync();
     }
 
-    private BankAccountEntity InsertBankAccount(IUnitOfWork unitOfWork, SinanceUserEntity user, string name, BankAccountType bankAccountType)
+    private static async Task<BankAccountEntity> InsertBankAccountAsync(SinanceContext context, SinanceUserEntity user, string name, BankAccountType bankAccountType)
     {
         var bankAccount = new BankAccountEntity
         {
@@ -115,56 +108,56 @@ public class DemoUserSeed
             User = user
         };
 
-        unitOfWork.BankAccountRepository.Insert(bankAccount);
+        await context.BankAccounts.AddAsync(bankAccount);
 
         return bankAccount;
     }
 
-    private async Task InsertCategoriesAndTransactions(IUnitOfWork unitOfWork, SinanceUserEntity user, BankAccountEntity primaryChecking, BankAccountEntity savingsAccount)
+    private async Task InsertCategoriesAndTransactions(SinanceContext context, SinanceUserEntity user, BankAccountEntity primaryChecking, BankAccountEntity savingsAccount)
     {
         Log.Information("Creating demo categories and transactions");
 
-        var mortgageCategory = InsertCategory(unitOfWork, user, "Mortgage", true);
-        InsertMonthlyTransactionsForCategory(unitOfWork, primaryChecking, mortgageCategory, 3, "Mortgage payment", "Bank", -1000, -1000);
+        var mortgageCategory = await InsertCategoryAsync(context, user, "Mortgage", true);
+        await InsertMonthlyTransactionsForCategoryAsync(context, primaryChecking, mortgageCategory, 3, "Mortgage payment", "Bank", -1000, -1000);
 
-        var foodCategory = InsertCategory(unitOfWork, user, "Food", false);
-        InsertWeeklyTransactionsForCategory(unitOfWork, primaryChecking, foodCategory, DayOfWeek.Saturday, "FoodMarket", "Groceries", -60, -40);
-        InsertRandomMonthlyTransactionsForCategory(unitOfWork, primaryChecking, foodCategory, "Dinner for 2", "Restaurant", -100, -75);
+        var foodCategory = await InsertCategoryAsync(context, user, "Food", false);
+        await InsertWeeklyTransactionsForCategoryAsync(context, primaryChecking, foodCategory, DayOfWeek.Saturday, "FoodMarket", "Groceries", -60, -40);
+        await InsertRandomMonthlyTransactionsForCategoryAsync(context, primaryChecking, foodCategory, "Dinner for 2", "Restaurant", -100, -75);
 
-        var salaryCategory = InsertCategory(unitOfWork, user, "Salary", true);
-        InsertMonthlyTransactionsForCategory(unitOfWork, primaryChecking, salaryCategory, 25, "Salary", "Company", 2000, 2000);
+        var salaryCategory = await InsertCategoryAsync(context, user, "Salary", true);
+        await InsertMonthlyTransactionsForCategoryAsync(context, primaryChecking, salaryCategory, 25, "Salary", "Company", 2000, 2000);
 
-        var electricityAndGasCategory = InsertCategory(unitOfWork, user, "Electricity and Gas", true);
-        InsertMonthlyTransactionsForCategory(unitOfWork, primaryChecking, electricityAndGasCategory, 4, "Electricity and Gas", "Electricity and Gas Company", -120, -120);
+        var electricityAndGasCategory = await InsertCategoryAsync(context, user, "Electricity and Gas", true);
+        await InsertMonthlyTransactionsForCategoryAsync(context, primaryChecking, electricityAndGasCategory, 4, "Electricity and Gas", "Electricity and Gas Company", -120, -120);
 
-        var waterCategory = InsertCategory(unitOfWork, user, "Water", true);
-        InsertMonthlyTransactionsForCategory(unitOfWork, primaryChecking, waterCategory, 8, "Water", "Water Company", -30, -30);
+        var waterCategory = await InsertCategoryAsync(context, user, "Water", true);
+        await InsertMonthlyTransactionsForCategoryAsync(context, primaryChecking, waterCategory, 8, "Water", "Water Company", -30, -30);
 
-        var internetCategory = InsertCategory(unitOfWork, user, "Internet", true);
-        InsertMonthlyTransactionsForCategory(unitOfWork, primaryChecking, internetCategory, 25, "Internet", "Internet Company", -60, -60);
+        var internetCategory = await InsertCategoryAsync(context, user, "Internet", true);
+        await InsertMonthlyTransactionsForCategoryAsync(context, primaryChecking, internetCategory, 25, "Internet", "Internet Company", -60, -60);
 
-        var clothesCategory = InsertCategory(unitOfWork, user, "Clothes", false);
-        InsertRandomMonthlyTransactionsForCategory(unitOfWork, primaryChecking, clothesCategory, "Clothes", "Clothes store", -200, -50);
+        var clothesCategory = await InsertCategoryAsync(context, user, "Clothes", false);
+        await InsertRandomMonthlyTransactionsForCategoryAsync(context, primaryChecking, clothesCategory, "Clothes", "Clothes store", -200, -50);
 
-        var electronicsCategory = InsertCategory(unitOfWork, user, "Electronics", false);
-        InsertRandomMonthlyTransactionsForCategory(unitOfWork, primaryChecking, electronicsCategory, "Electronics", "Electronics store", -100, -50);
+        var electronicsCategory = await InsertCategoryAsync(context, user, "Electronics", false);
+        await InsertRandomMonthlyTransactionsForCategoryAsync(context, primaryChecking, electronicsCategory, "Electronics", "Electronics store", -100, -50);
 
-        var hobbyCategory = InsertCategory(unitOfWork, user, "Hobby", false);
-        var gamesCategory = InsertCategory(unitOfWork, user, "Games", false, hobbyCategory);
-        InsertRandomMonthlyTransactionsForCategory(unitOfWork, primaryChecking, gamesCategory, "Games", "Games store", -50, -10);
+        var hobbyCategory = await InsertCategoryAsync(context, user, "Hobby", false);
+        var gamesCategory = await InsertCategoryAsync(context, user, "Games", false, hobbyCategory);
+        await InsertRandomMonthlyTransactionsForCategoryAsync(context, primaryChecking, gamesCategory, "Games", "Games store", -50, -10);
 
-        var knittingCategory = InsertCategory(unitOfWork, user, "Knitting", false, hobbyCategory);
-        InsertRandomMonthlyTransactionsForCategory(unitOfWork, primaryChecking, knittingCategory, "Knitting", "Knitting store", -60, -10);
+        var knittingCategory = await InsertCategoryAsync(context, user, "Knitting", false, hobbyCategory);
+        await InsertRandomMonthlyTransactionsForCategoryAsync(context, primaryChecking, knittingCategory, "Knitting", "Knitting store", -60, -10);
 
-        var subscriptionsCategory = InsertCategory(unitOfWork, user, "Subscriptions", true);
-        var netflixCategory = InsertCategory(unitOfWork, user, "Netflix", true, subscriptionsCategory);
-        InsertMonthlyTransactionsForCategory(unitOfWork, primaryChecking, netflixCategory, 25, "Netflix", "Netflix subscription", -8, -8);
+        var subscriptionsCategory = await InsertCategoryAsync(context, user, "Subscriptions", true);
+        var netflixCategory = await InsertCategoryAsync(context, user, "Netflix", true, subscriptionsCategory);
+        await InsertMonthlyTransactionsForCategoryAsync(context, primaryChecking, netflixCategory, 25, "Netflix", "Netflix subscription", -8, -8);
 
-        var internalCashFlowCategory = await _unitOfWork.CategoryRepository.FindSingleTracked(x => x.IsStandard && x.UserId == user.Id && x.Name == StandardCategoryNames.InternalCashFlowName);
-        InsertMonthlySavingTransaction(unitOfWork, primaryChecking, savingsAccount, internalCashFlowCategory, 26, 100);
+        var internalCashFlowCategory = await context.Categories.SingleOrDefaultAsync(x => x.IsStandard && x.UserId == user.Id && x.Name == StandardCategoryNames.InternalCashFlowName);
+        await InsertMonthlySavingTransactionAsync(context, primaryChecking, savingsAccount, internalCashFlowCategory, 26, 100);
     }
 
-    private CategoryEntity InsertCategory(IUnitOfWork unitOfWork, SinanceUserEntity demoUser, string categoryName, bool isRegular, CategoryEntity parentCategory = null)
+    private async Task<CategoryEntity> InsertCategoryAsync(SinanceContext context, SinanceUserEntity demoUser, string categoryName, bool isRegular, CategoryEntity parentCategory = null)
     {
         var category = new CategoryEntity
         {
@@ -175,17 +168,17 @@ public class DemoUserSeed
             IsRegular = isRegular
         };
 
-        unitOfWork.CategoryRepository.Insert(category);
+        await context.Categories.AddAsync(category);
 
         return category;
     }
 
-    private void InsertMonthlySavingTransaction(IUnitOfWork unitOfWork, BankAccountEntity primaryChecking, BankAccountEntity savingsAccount,
+    private static async Task InsertMonthlySavingTransactionAsync(SinanceContext context, BankAccountEntity primaryChecking, BankAccountEntity savingsAccount,
         CategoryEntity internalCashflowCategory, int dayOfMonth, int amount)
     {
         var today = DateTime.Now.Date;
 
-        DateTime startDate = new DateTime(today.Year, today.Month, dayOfMonth);
+        DateTime startDate = new(today.Year, today.Month, dayOfMonth);
         // Make sure its a historical transaction
         if (today.Day < dayOfMonth)
         {
@@ -236,16 +229,16 @@ public class DemoUserSeed
                 User = savingsAccount.User
             });
         }
-        unitOfWork.TransactionRepository.InsertRange(transactions);
+        await context.Transactions.AddRangeAsync(transactions);
     }
 
-    private void InsertMonthlyTransactionsForCategory(
-        IUnitOfWork unitOfWork, BankAccountEntity bankAccount, CategoryEntity category, int dayInMonth,
+    private async Task InsertMonthlyTransactionsForCategoryAsync(
+        SinanceContext context, BankAccountEntity bankAccount, CategoryEntity category, int dayInMonth,
         string transactionName, string transactionDescription, int amountMinValue, int amountMaxValue)
     {
         var today = DateTime.Now.Date;
 
-        DateTime startDate = new DateTime(today.Year, today.Month, dayInMonth);
+        DateTime startDate = new(today.Year, today.Month, dayInMonth);
         // Make sure its a historical transaction
         if (today.Day < dayInMonth)
         {
@@ -279,17 +272,17 @@ public class DemoUserSeed
                 User = bankAccount.User
             });
         }
-        unitOfWork.TransactionRepository.InsertRange(transactions);
+        await context.Transactions.AddRangeAsync(transactions);
     }
 
-    private void InsertRandomMonthlyTransactionsForCategory(IUnitOfWork unitOfWork,
+    private async Task InsertRandomMonthlyTransactionsForCategoryAsync(SinanceContext context,
         BankAccountEntity bankAccount, CategoryEntity category, string transactionName, string transactionDescription, int amountMinValue, int amountMaxValue)
     {
         var today = DateTime.Now.Date;
 
         var dayInMonth = _random.Next(1, 25);
 
-        DateTime transactionDate = new DateTime(today.Year, today.Month, dayInMonth);
+        DateTime transactionDate = new(today.Year, today.Month, dayInMonth);
         // Make sure its a historical transaction
         if (today.Day < dayInMonth)
         {
@@ -329,11 +322,11 @@ public class DemoUserSeed
             transactionDate = transactionDate.AddMonths(-1);
         }
 
-        unitOfWork.TransactionRepository.InsertRange(transactions);
+        await context.Transactions.AddRangeAsync(transactions);
     }
 
-    private void InsertWeeklyTransactionsForCategory(
-        IUnitOfWork unitOfWork, BankAccountEntity bankAccount, CategoryEntity category, DayOfWeek transactionDayOfWeek,
+    private async Task InsertWeeklyTransactionsForCategoryAsync(
+        SinanceContext context, BankAccountEntity bankAccount, CategoryEntity category, DayOfWeek transactionDayOfWeek,
         string transactionName, string transactionDescription, int amountMinValue, int amountMaxValue)
     {
         var today = DateTime.Now.Date;
@@ -370,8 +363,6 @@ public class DemoUserSeed
                 User = bankAccount.User
             });
         }
-        unitOfWork.TransactionRepository.InsertRange(transactions);
+        await context.Transactions.AddRangeAsync(transactions);
     }
 }
-
-#pragma warning restore S107 // Methods should not have too many parameters

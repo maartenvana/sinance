@@ -1,5 +1,4 @@
 ﻿using Serilog;
-using Sinance.Business.DataSeeding;
 using Sinance.Business.DataSeeding.Seeds;
 using Sinance.Common.Configuration;
 using System.Threading;
@@ -15,7 +14,7 @@ public class DataSeedStartupTask : IStartupTask
 
     public DataSeedStartupTask(
         AppSettings appSettings,
-        CategorySeed categorySeed, 
+        CategorySeed categorySeed,
         DemoUserSeed demoUserSeed)
     {
         _appSettings = appSettings;

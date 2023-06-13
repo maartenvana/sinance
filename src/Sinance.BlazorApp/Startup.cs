@@ -3,11 +3,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Sinance.Storage;
-using Microsoft.EntityFrameworkCore;
+using Sinance.BlazorApp.Business.Services;
 using Sinance.BlazorApp.Services;
 using Sinance.Common.Configuration;
-using Sinance.BlazorApp.Business.Services;
+using Sinance.Storage;
 
 namespace Sinance.BlazorApp;
 

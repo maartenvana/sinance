@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
-namespace Sinance.BlazorApp.Business.Model.Category;
+﻿namespace Sinance.BlazorApp.Business.Model.Category;
 
 public class CategoryModel
 {

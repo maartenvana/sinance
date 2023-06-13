@@ -6,5 +6,6 @@ namespace Sinance.BlazorApp.Business.Services;
 public interface IBankAccountService
 {
     List<BankAccountModel> GetAllActiveBankAccounts();
+
     List<BankAccountModel> GetAllBankAccounts();
 }

@@ -19,7 +19,7 @@ public class IngBankCsvFileImporter : IBankFileImporter
         return importer.CreateImport(fileStream);
     }
 
-    private CsvBankFileImporter CreateImporter() => 
+    private CsvBankFileImporter CreateImporter() =>
         new CsvBankFileImporter(delimiter: ";", importContainsHeader: true, columnMappings: GetColumnMappings());
 
     private List<CsvBankFileColumnMapping> GetColumnMappings() => new List<CsvBankFileColumnMapping>

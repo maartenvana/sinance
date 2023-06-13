@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 using Sinance.Business.Services.BankAccounts;
 using Sinance.Communication.Model.Graph;
 using Sinance.Storage;

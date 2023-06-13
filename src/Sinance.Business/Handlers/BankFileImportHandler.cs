@@ -9,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Sinance.Business.Handlers;
@@ -36,8 +35,8 @@ public class BankFileImportHandler : IBankFileImportHandler
     }
 
     public async Task<IList<ImportRow>> CreateImportRowsFromFile(
-        SinanceContext context, 
-        Stream fileInputStream, 
+        SinanceContext context,
+        Stream fileInputStream,
         int userId,
         Guid fileImporterId,
         int bankAccountId)
@@ -69,14 +68,14 @@ public class BankFileImportHandler : IBankFileImportHandler
         }
     }
 
-    private static bool ImportRowHasExistingTransaction(List<TransactionEntity> existingTransactions, ImportRow importRow) => 
-        existingTransactions.Any(transaction => 
+    private static bool ImportRowHasExistingTransaction(List<TransactionEntity> existingTransactions, ImportRow importRow) =>
+        existingTransactions.Any(transaction =>
             importRow.Transaction.Amount == transaction.Amount &&
             importRow.Transaction.Name.Equals(transaction.Name.Trim(), StringComparison.CurrentCultureIgnoreCase) &&
             importRow.Transaction.Date == transaction.Date);
 
     private static async Task<List<TransactionEntity>> GetExistingTransactionsForImportRows(
-        SinanceContext context, 
+        SinanceContext context,
         int userId,
         int bankAccountId,
         IList<ImportRow> rowsToImport)

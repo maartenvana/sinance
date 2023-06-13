@@ -1,8 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Sinance.Business.Calculations;
+using Sinance.Business.Extensions;
 using Sinance.Communication.Model.BankAccount;
 using Sinance.Web.Model;
-using Sinance.Business.Extensions;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,12 +20,12 @@ public class ProfitGraphViewComponent : ViewComponent
 
     public async Task<IViewComponentResult> InvokeAsync(DateTime startDate, DateTime endDate, bool grouped)
     {
-        var profitPerMonth = grouped ? 
+        var profitPerMonth = grouped ?
             await profitLossCalculation.CalculateMonthlyProfitGrouped(
-                startDate.BeginningOfMonth(), 
-                endDate.EndOfTheMonth()) : 
+                startDate.BeginningOfMonth(),
+                endDate.EndOfTheMonth()) :
             await profitLossCalculation.CalculateMonthlyProfit(
-                startDate.BeginningOfMonth(), 
+                startDate.BeginningOfMonth(),
                 endDate.EndOfTheMonth());
 
         var series = profitPerMonth.Select(x => new GraphSeriesEntry<decimal[]>

@@ -4,7 +4,6 @@ using Sinance.Business.Extensions;
 using Sinance.Communication.Model.CustomReport;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;

@@ -3,7 +3,6 @@ using Serilog;
 using Sinance.Business.Calculations;
 using Sinance.Business.Constants;
 using Sinance.Business.Services.Authentication;
-using Sinance.Business.Services.BankAccounts;
 using Sinance.Communication.Model.BankAccount;
 using Sinance.Storage;
 using Sinance.Storage.Entities;

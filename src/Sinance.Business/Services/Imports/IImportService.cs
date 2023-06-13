@@ -1,5 +1,4 @@
 ﻿using Sinance.Communication.Model.Import;
-using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 

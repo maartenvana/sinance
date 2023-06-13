@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,6 +5,8 @@ using Microsoft.Extensions.Hosting;
 using Serilog;
 using Serilog.Events;
 using Sinance.Storage;
+using System;
+using System.Linq;
 
 namespace Sinance.BlazorApp;
 
@@ -14,11 +14,10 @@ public class Program
 {
     public static IHostBuilder CreateHostBuilder(string[] args) =>
         Host.CreateDefaultBuilder(args)
+        .UseSerilog()
         .ConfigureWebHostDefaults(webBuilder =>
         {
-            webBuilder
-            .UseStartup<Startup>()
-            .UseSerilog();
+            webBuilder .UseStartup<Startup>();
         });
 
     public static int Main(string[] args)
@@ -76,7 +75,7 @@ public class Program
             }
 
             context.SaveChanges();
-            
+
             Log.Information("Seeding data completed");
         }
         catch (Exception exc)

@@ -29,7 +29,7 @@ public class CategoryService : ICategoryService
     public async Task<CategoryModel> CreateCategoryForCurrentUser(CategoryModel categoryModel)
     {
         using var context = _dbContextFactory.CreateDbContext();
-        
+
         var category = await context.Categories.SingleOrDefaultAsync(item => item.Name == categoryModel.Name);
 
         if (category != null)
@@ -144,7 +144,7 @@ public class CategoryService : ICategoryService
     public async Task<CategoryModel> UpdateCategoryForCurrentUser(CategoryModel categoryModel)
     {
         using var context = _dbContextFactory.CreateDbContext();
-        
+
         var category = await context.Categories.SingleOrDefaultAsync(x => x.Id == categoryModel.Id);
 
         if (category == null)

@@ -37,7 +37,7 @@ public class IncomeCalculation : IIncomeCalculation
         var allCategories = await context.Categories
             .Include(x => x.ParentCategory)
             .Include(x => x.ChildCategories)
-            .ToListAsync(); 
+            .ToListAsync();
 
         var bimonthlyIncomeReport = new BimonthlyIncomeReportItem
         {

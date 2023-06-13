@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Sinance.Business.Calculations;
-using Sinance.Business.DataSeeding;
 using Sinance.Business.DataSeeding.Seeds;
 using Sinance.Business.Handlers;
 using Sinance.Business.Import;

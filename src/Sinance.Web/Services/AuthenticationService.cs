@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Sinance.Business.DataSeeding;
 using Sinance.Business.DataSeeding.Seeds;
 using Sinance.Business.Exceptions.Authentication;
 using Sinance.Business.Extensions;
@@ -8,7 +7,6 @@ using Sinance.Business.Services.Authentication;
 using Sinance.Communication.Model.User;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
-using System;
 using System.Threading.Tasks;
 
 namespace Sinance.Web.Services;
@@ -55,7 +53,7 @@ public class AuthenticationService : IAuthenticationService
     public async Task<SinanceUserModel> SignIn(string userName, string password)
     {
         using var context = _dbContextFactory.CreateDbContext();
-        
+
         var user = await context.Users.SingleOrDefaultAsync(x => x.Username == userName);
 
         if (user != null)

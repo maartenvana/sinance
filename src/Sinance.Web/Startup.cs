@@ -39,9 +39,10 @@ public class Startup
 
     public void Configure(IApplicationBuilder appBuilder)
     {
-        if (_environment.EnvironmentName == Environments.Development)
+        if (!_environment.IsDevelopment())
         {
-            appBuilder.UseDeveloperExceptionPage();
+            appBuilder.UseExceptionHandler("/Error");
+            appBuilder.UseHsts();
         }
 
         appBuilder.UseSerilogRequestLogging();
@@ -69,7 +70,7 @@ public class Startup
         services.AddSingleton(_appSettings);
 
         services.AddTransient<IAuthenticationService, AuthenticationService>();
-        services.AddScoped<IUserIdProvider, UserIdProvider>();
+        services.AddTransient<IUserIdProvider, UserIdProvider>();
 
         services.AddTransient<IStartupTask, DatabaseMigrationTask>();
         services.AddTransient<IStartupTask, DataSeedStartupTask>();

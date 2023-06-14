@@ -1,19 +1,19 @@
 #See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
-FROM mcr.microsoft.com/dotnet/aspnet:7.0-alpine AS base
+FROM mcr.microsoft.com/dotnet/aspnet:7.0 AS base
 
-RUN apk add tzdata
-ENV TZ "Europe/Amsterdam"
-
-ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
-RUN apk add --no-cache icu-libs
-ENV LC_ALL=nl_NL.UTF-8
-ENV LANG=nl_NL.UTF-8
-
+#RUN apk add tzdata
+#ENV TZ "Europe/Amsterdam"
+#
+#ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+#RUN apk add --no-cache icu-libs
+#ENV LC_ALL=nl_NL.UTF-8
+#ENV LANG=nl_NL.UTF-8
+#
 WORKDIR /app
 EXPOSE 80
 
-FROM mcr.microsoft.com/dotnet/sdk:7.0-alpine AS build
+FROM mcr.microsoft.com/dotnet/sdk:7.0 AS build
 WORKDIR /src
 COPY ["NuGet.config", "."]
 COPY ["Sinance.Web/Sinance.Web.csproj", "Sinance.Web/"]

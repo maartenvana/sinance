@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Serilog;
+using Sinance.Business.DataSeeding;
 using Sinance.Business.DataSeeding.Seeds;
 using Sinance.Business.Exceptions.Authentication;
 using Sinance.Business.Extensions;
@@ -40,6 +42,7 @@ public class AuthenticationService : IAuthenticationService
             await context.Users.AddAsync(newUser);
             await context.SaveChangesAsync();
 
+            context.OverwriteUserIdProvider(new SeedUserIdProvider(newUser.Id));
             await CategorySeed.SeedStandardCategoriesForUser(context, newUser.Id);
 
             return newUser.ToDto();
@@ -71,12 +74,14 @@ public class AuthenticationService : IAuthenticationService
             }
             else
             {
-                throw new IncorrectPasswordException($"Incorrect password for user {userName}");
+                Log.Warning("Incorrect password for user {userName}", userName);
+                return null;
             }
         }
         else
         {
-            throw new UserNotFoundException($"No user found for username {userName}");
+            Log.Warning("No user found for username {userName}", userName);
+            return null;
         }
     }
 }

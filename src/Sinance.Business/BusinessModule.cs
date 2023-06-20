@@ -33,6 +33,7 @@ public static class BusinessModule
         services.AddTransient<IExpenseCalculation, ExpenseCalculation>();
         services.AddTransient<IIncomeCalculation, IncomeCalculation>();
         services.AddTransient<IProfitCalculation, ProfitLossCalculation>();
+        services.AddTransient<IBalanceHistoryCalculation, BalanceHistoryCalculation>();
         services.AddTransient<CategorySeed>();
         services.AddTransient<DemoUserSeed>();
         services.AddTransient<ICategoryMappingService, CategoryMappingService>();

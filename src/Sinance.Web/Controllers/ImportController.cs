@@ -16,119 +16,118 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Sinance.Controllers
+namespace Sinance.Controllers;
+
+/// <summary>
+/// Controller handling the importing of csv files
+/// </summary>
+[Authorize]
+public class ImportController : Controller
 {
-    /// <summary>
-    /// Controller handling the importing of csv files
-    /// </summary>
-    [Authorize]
-    public class ImportController : Controller
+    private readonly IBankAccountService _bankAccountService;
+    private readonly IEnumerable<IBankFileImporter> _bankFileImporters;
+    private readonly IImportService _importService;
+
+    public ImportController(
+        IImportService importService,
+        IEnumerable<IBankFileImporter> bankFileImporters,
+        IBankAccountService bankAccountService)
     {
-        private readonly IBankAccountService _bankAccountService;
-        private readonly IEnumerable<IBankFileImporter> _bankFileImporters;
-        private readonly IImportService _importService;
+        _importService = importService;
+        _bankFileImporters = bankFileImporters;
+        _bankAccountService = bankAccountService;
+    }
 
-        public ImportController(
-            IImportService importService,
-            IEnumerable<IBankFileImporter> bankFileImporters,
-            IBankAccountService bankAccountService)
+    /// <summary>
+    /// Prepares a file upload for processing
+    /// </summary>
+    /// <param name="file">File to prepare for import</param>
+    /// <param name="model">Posted model</param>
+    /// <returns>Preparation result</returns>
+    [HttpPost]
+    public async Task<IActionResult> Import(IFormFile file, ImportModel model)
+    {
+        try
         {
-            _importService = importService;
-            _bankFileImporters = bankFileImporters;
-            _bankAccountService = bankAccountService;
+            using var stream = file.OpenReadStream();
+
+            await _importService.CreateImportPreview(stream, model);
+
+            return View("ImportResult", model);
         }
-
-        /// <summary>
-        /// Prepares a file upload for processing
-        /// </summary>
-        /// <param name="file">File to prepare for import</param>
-        /// <param name="model">Posted model</param>
-        /// <returns>Preparation result</returns>
-        [HttpPost]
-        public async Task<IActionResult> Import(IFormFile file, ImportModel model)
+        catch (NotFoundException exc)
         {
-            try
-            {
-                using var stream = file.OpenReadStream();
+            Log.Error(exc, "Exception during Import");
 
-                await _importService.CreateImportPreview(stream, model);
-
-                return View("ImportResult", model);
-            }
-            catch (NotFoundException exc)
-            {
-                Log.Error(exc, "Exception during Import");
-
-                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, message: Resources.BankAccountNotFound);
-                return RedirectToAction("Index");
-            }
-            catch (ImportFileException exc)
-            {
-                Log.Error(exc, "Exception during Import");
-
-                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, message: Resources.ErrorWhileProcessingImport);
-                return RedirectToAction("Index");
-            }
-            catch (Exception exc)
-            {
-                Log.Error(exc, "Exception during Import");
-
-                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, message: Resources.Error);
-                return RedirectToAction("Index");
-            }
+            TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, message: Resources.BankAccountNotFound);
+            return RedirectToAction("Index");
         }
-
-        /// <summary>
-        /// Index page for importing
-        /// </summary>
-        /// <returns>ActionResult for user</returns>
-        public async Task<IActionResult> Index()
+        catch (ImportFileException exc)
         {
-            var bankAccounts = await _bankAccountService.GetActiveBankAccountsForCurrentUser();
-            var importBanks = _bankFileImporters.Select(bankFileImporter => new ImportBankModel
-            {
-                Id = bankFileImporter.Id,
-                Name = bankFileImporter.FriendlyName
-            }).ToList();
+            Log.Error(exc, "Exception during Import");
 
-            return View("Index", new ImportModel
-            {
-                AvailableImportBanks = importBanks,
-                AvailableAccounts = bankAccounts
-            });
+            TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, message: Resources.ErrorWhileProcessingImport);
+            return RedirectToAction("Index");
         }
-
-        /// <summary>
-        /// Save action for import
-        /// </summary>
-        /// <param name="model">Model to save</param>
-        /// <returns>View with the save result</returns>
-        [HttpPost]
-        public async Task<IActionResult> SaveImport(ImportModel model)
+        catch (Exception exc)
         {
-            try
-            {
-                var (skippedTransactions, savedTransactions) = await _importService.SaveImport(model);
+            Log.Error(exc, "Exception during Import");
 
-                var message = string.Format(CultureInfo.CurrentCulture, Resources.TransactionsAddedAndSkippedFormat, savedTransactions, skippedTransactions);
+            TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, message: Resources.Error);
+            return RedirectToAction("Index");
+        }
+    }
 
-                TempDataHelper.SetTemporaryMessage(tempData: TempData,
-                    state: savedTransactions != 0 ? MessageState.Success : MessageState.Warning,
-                    message: message);
-                return RedirectToAction("Index", "AccountOverview", new { @bankAccountId = model.BankAccountId });
-            }
-            catch (NotFoundException exc)
+    /// <summary>
+    /// Index page for importing
+    /// </summary>
+    /// <returns>ActionResult for user</returns>
+    public async Task<IActionResult> Index()
+    {
+        var bankAccounts = await _bankAccountService.GetActiveBankAccountsForCurrentUser();
+        var importBanks = _bankFileImporters.Select(bankFileImporter => new ImportBankModel
+        {
+            Id = bankFileImporter.Id,
+            Name = bankFileImporter.FriendlyName
+        }).ToList();
+
+        return View("Index", new ImportModel
+        {
+            AvailableImportBanks = importBanks,
+            AvailableAccounts = bankAccounts
+        });
+    }
+
+    /// <summary>
+    /// Save action for import
+    /// </summary>
+    /// <param name="model">Model to save</param>
+    /// <returns>View with the save result</returns>
+    [HttpPost]
+    public async Task<IActionResult> SaveImport(ImportModel model)
+    {
+        try
+        {
+            var (skippedTransactions, savedTransactions) = await _importService.SaveImport(model);
+
+            var message = string.Format(CultureInfo.CurrentCulture, Resources.TransactionsAddedAndSkippedFormat, savedTransactions, skippedTransactions);
+
+            TempDataHelper.SetTemporaryMessage(tempData: TempData,
+                state: savedTransactions != 0 ? MessageState.Success : MessageState.Warning,
+                message: message);
+            return RedirectToAction("Index", "AccountOverview", new { @bankAccountId = model.BankAccountId });
+        }
+        catch (NotFoundException exc)
+        {
+            if (exc.ItemName == nameof(ImportModel))
             {
-                if (exc.ItemName == nameof(ImportModel))
-                {
-                    TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.ImportTimeOut);
-                }
-                else
-                {
-                    TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.BankAccountNotFound);
-                }
-                return RedirectToAction("Index", "Home");
+                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.ImportTimeOut);
             }
+            else
+            {
+                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.BankAccountNotFound);
+            }
+            return RedirectToAction("Index", "Home");
         }
     }
 }

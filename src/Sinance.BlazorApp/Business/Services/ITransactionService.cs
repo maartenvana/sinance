@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Sinance.BlazorApp.Business.Services
+namespace Sinance.BlazorApp.Business.Services;
+
+public interface ITransactionService
 {
-    public interface ITransactionService
-    {
-        Task<List<TransactionModel>> SearchTransactionsPaged(SearchTransactionsFilterModel filter);
-    }
+    Task<List<TransactionModel>> SearchTransactionsPaged(SearchTransactionsFilterModel filter);
 }

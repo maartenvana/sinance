@@ -1,4 +1,5 @@
-﻿using Sinance.Business.Calculations.Subcalculations;
+﻿using Microsoft.EntityFrameworkCore;
+using Sinance.Business.Calculations.Subcalculations;
 using Sinance.Business.Constants;
 using Sinance.Business.Services.BankAccounts;
 using Sinance.Business.Services.Categories;
@@ -12,81 +13,79 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Sinance.Business.Calculations
+namespace Sinance.Business.Calculations;
+
+public class YearlyOverviewCalculation : IYearlyOverviewCalculation
 {
-    public class YearlyOverviewCalculation : IYearlyOverviewCalculation
+    private readonly IBankAccountService _bankAccountService;
+    private readonly IDbContextFactory<SinanceContext> _dbContextFactory;
+    private readonly ICategoryService _categoryService;
+    private readonly ITransactionService _transactionService;
+
+    public YearlyOverviewCalculation(
+        IDbContextFactory<SinanceContext> dbContextFactory,
+        ICategoryService categoryService,
+        IBankAccountService bankAccountService,
+        ITransactionService transactionService)
     {
-        private readonly IBankAccountService _bankAccountService;
-        private readonly ICategoryService _categoryService;
-        private readonly ITransactionService _transactionService;
-        private readonly Func<IUnitOfWork> _unitOfWork;
+        _dbContextFactory = dbContextFactory;
+        _categoryService = categoryService;
+        _bankAccountService = bankAccountService;
+        _transactionService = transactionService;
+    }
 
-        public YearlyOverviewCalculation(Func<IUnitOfWork> unitOfWork,
-            ICategoryService categoryService,
-            IBankAccountService bankAccountService,
-            ITransactionService transactionService)
+    public async Task<YearlyOverviewModel> CalculateForYear(int year)
+    {
+        var result = new YearlyOverviewModel
         {
-            _unitOfWork = unitOfWork;
-            _categoryService = categoryService;
-            _bankAccountService = bankAccountService;
-            _transactionService = transactionService;
-        }
+            Year = year
+        };
 
-        public async Task<YearlyOverviewModel> CalculateForYear(int year)
+        var startYearDate = new DateTime(year, 01, 01);
+        var nextYearDate = new DateTime(year + 1, 01, 01);
+
+        using var context = _dbContextFactory.CreateDbContext();
+
+        var totalStartBalance = await BalanceCalculations.TotalBalanceBeforeDate(context, startYearDate);
+        var totalEndBalance = await BalanceCalculations.TotalBalanceBeforeDate(context, nextYearDate);
+
+        result.TotalBalance = new YearBalance(totalStartBalance, totalEndBalance);
+
+        var bankAccounts = await _bankAccountService.GetActiveBankAccountsForCurrentUser();
+        var totalPerBankAccountType = new Dictionary<BankAccountType, YearAmountAndPercentage>();
+        foreach (var bankAccount in bankAccounts)
         {
-            var result = new YearlyOverviewModel
+            var bankAccountStartBalance = await BalanceCalculations.TotalBalanceForBankAccountBeforeDate(context, startYearDate, bankAccount);
+            var bankAccountEndBalance = await BalanceCalculations.TotalBalanceForBankAccountBeforeDate(context, nextYearDate, bankAccount);
+
+            result.BalancePerBankAccount.Add(bankAccount, new YearBalance(bankAccountStartBalance, bankAccountEndBalance));
+
+            if (!totalPerBankAccountType.ContainsKey(bankAccount.AccountType))
             {
-                Year = year
-            };
-
-            var startYearDate = new DateTime(year, 01, 01);
-            var nextYearDate = new DateTime(year + 1, 01, 01);
-
-            using var unitOfWork = _unitOfWork();
-
-            var totalStartBalance = await BalanceCalculations.TotalBalanceBeforeDate(unitOfWork, startYearDate);
-            var totalEndBalance = await BalanceCalculations.TotalBalanceBeforeDate(unitOfWork, nextYearDate);
-
-            result.TotalBalance = new YearBalance(totalStartBalance, totalEndBalance);
-
-            var bankAccounts = await _bankAccountService.GetActiveBankAccountsForCurrentUser();
-            var totalPerBankAccountType = new Dictionary<BankAccountType, YearAmountAndPercentage>();
-            foreach (var bankAccount in bankAccounts)
-            {
-                var bankAccountStartBalance = await BalanceCalculations.TotalBalanceForBankAccountBeforeDate(unitOfWork, startYearDate, bankAccount);
-                var bankAccountEndBalance = await BalanceCalculations.TotalBalanceForBankAccountBeforeDate(unitOfWork, nextYearDate, bankAccount);
-
-                result.BalancePerBankAccount.Add(bankAccount, new YearBalance(bankAccountStartBalance, bankAccountEndBalance));
-
-                if (!totalPerBankAccountType.ContainsKey(bankAccount.AccountType))
-                {
-                    totalPerBankAccountType.Add(bankAccount.AccountType, new YearAmountAndPercentage(
-                        start: new AmountAndPercentage(bankAccountStartBalance, bankAccountStartBalance / totalStartBalance * 100),
-                        end: new AmountAndPercentage(bankAccountEndBalance, bankAccountEndBalance / totalEndBalance * 100))
-                    );
-                }
-                else
-                {
-                    totalPerBankAccountType[bankAccount.AccountType].Start.Amount += bankAccountStartBalance;
-                    totalPerBankAccountType[bankAccount.AccountType].Start.Percentage = totalPerBankAccountType[bankAccount.AccountType].Start.Amount / totalStartBalance * 100;
-
-                    totalPerBankAccountType[bankAccount.AccountType].End.Amount += bankAccountEndBalance;
-                    totalPerBankAccountType[bankAccount.AccountType].End.Percentage = totalPerBankAccountType[bankAccount.AccountType].End.Amount / totalEndBalance * 100;
-                }
+                totalPerBankAccountType.Add(bankAccount.AccountType, new YearAmountAndPercentage(
+                    start: new AmountAndPercentage(bankAccountStartBalance, bankAccountStartBalance / totalStartBalance * 100),
+                    end: new AmountAndPercentage(bankAccountEndBalance, bankAccountEndBalance / totalEndBalance * 100))
+                );
             }
+            else
+            {
+                totalPerBankAccountType[bankAccount.AccountType].Start.Amount += bankAccountStartBalance;
+                totalPerBankAccountType[bankAccount.AccountType].Start.Percentage = totalPerBankAccountType[bankAccount.AccountType].Start.Amount / totalStartBalance * 100;
 
-            result.BalancePerBankAccountType = totalPerBankAccountType;
-
-            var allCategories = await _categoryService.GetAllCategoriesForCurrentUser();
-            var internalCashFlowCategory = allCategories.Single(x => x.Name == StandardCategoryNames.InternalCashFlowName);
-
-            var biggestExpenses = await _transactionService.GetBiggestExpensesForYearForCurrentUser(year, count: 20, skip: 0, excludeCategoryIds: new int[] {
-                internalCashFlowCategory.Id
-            });
-
-            result.BiggestExpenses = biggestExpenses.OrderBy(x => x.Amount).ThenByDescending(x => x.Date).ToList();
-
-            return result;
+                totalPerBankAccountType[bankAccount.AccountType].End.Amount += bankAccountEndBalance;
+                totalPerBankAccountType[bankAccount.AccountType].End.Percentage = totalPerBankAccountType[bankAccount.AccountType].End.Amount / totalEndBalance * 100;
+            }
         }
+
+        result.BalancePerBankAccountType = totalPerBankAccountType;
+
+        var allCategories = await _categoryService.GetAllCategoriesForCurrentUser();
+        var internalCashFlowCategory = allCategories.Single(x => x.Name == StandardCategoryNames.InternalCashFlowName);
+
+        var biggestExpenses = await _transactionService.GetBiggestExpensesForYearForCurrentUser(year, count: 20, skip: 0, internalCashFlowCategory.Id);
+
+        result.BiggestExpenses = biggestExpenses.OrderBy(x => x.Amount).ThenByDescending(x => x.Date).ToList();
+
+        return result;
     }
 }

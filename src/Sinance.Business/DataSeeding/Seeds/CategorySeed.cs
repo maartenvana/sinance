@@ -1,65 +1,61 @@
-﻿using Serilog;
+﻿using Microsoft.EntityFrameworkCore;
+using Serilog;
 using Sinance.Business.Constants;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Sinance.Business.DataSeeding.Seeds
+namespace Sinance.Business.DataSeeding.Seeds;
+
+public class CategorySeed
 {
-    public class CategorySeed
+    private readonly IDbContextFactory<SinanceContext> _dbContextFactory;
+
+    public CategorySeed(IDbContextFactory<SinanceContext> dbContextFactory)
     {
-        private readonly ILogger _logger;
-        private readonly Func<IUnitOfWork> _unitOfWork;
+        _dbContextFactory = dbContextFactory;
+    }
 
-        public CategorySeed(
-            ILogger logger,
-            Func<IUnitOfWork> unitOfWork)
+    public async Task SeedStandardCategoriesForAllUsers()
+    {
+        Log.Information("Seeding standard categories for all users");
+
+        using var context = _dbContextFactory.CreateDbContext();
+
+        var allUsers = await context.Users.ToListAsync();
+
+        foreach (var userId in allUsers.Select(x => x.Id))
         {
-            _logger = logger;
-            _unitOfWork = unitOfWork;
+            context.OverwriteUserIdProvider(new SeedUserIdProvider(userId));
+            await SeedStandardCategoriesForUser(context, userId);
         }
 
-        public async Task SeedStandardCategoriesForAllUsers()
+        await context.SaveChangesAsync();
+
+        Log.Information("Standard categories seeding completed");
+    }
+
+    public static async Task SeedStandardCategoriesForUser(SinanceContext context, int userId)
+    {
+        var standardCategoriesForUser = await context.Categories.Where(x => x.IsStandard).ToListAsync();
+
+        await CreateOrUpdateCashFlowCategory(context, standardCategoriesForUser, userId);
+    }
+
+    private static async Task CreateOrUpdateCashFlowCategory(SinanceContext context, List<CategoryEntity> standardCategoriesForUser, int userId)
+    {
+        if (!standardCategoriesForUser.Any(x => x.Name == StandardCategoryNames.InternalCashFlowName))
         {
-            _logger.Information("Seeding standard categories for all users");
-            using var unitOfWork = _unitOfWork();
-
-            var allUsers = await unitOfWork.UserRepository.ListAll();
-
-            foreach (var user in allUsers)
+            await context.Categories.AddAsync(new CategoryEntity
             {
-                unitOfWork.Context.OverwriteUserIdProvider(new SeedUserIdProvider(user.Id));
-                await SeedStandardCategoriesForUser(unitOfWork, user.Id);
-            }
-
-            await unitOfWork.SaveAsync();
-
-            _logger.Information("Standard categories seeding completed");
-        }
-
-        public async Task SeedStandardCategoriesForUser(IUnitOfWork unitOfWork, int userId)
-        {
-            var standardCategoriesForUser = await unitOfWork.CategoryRepository.FindAll(x => x.IsStandard);
-
-            CreateOrUpdateCashFlowCategory(unitOfWork, standardCategoriesForUser, userId);
-        }
-
-        private void CreateOrUpdateCashFlowCategory(IUnitOfWork unitOfWork, List<CategoryEntity> standardCategoriesForUser, int userId)
-        {
-            if (!standardCategoriesForUser.Any(x => x.Name == StandardCategoryNames.InternalCashFlowName))
-            {
-                unitOfWork.CategoryRepository.Insert(new CategoryEntity
-                {
-                    IsStandard = true,
-                    IsRegular = false,
-                    Name = StandardCategoryNames.InternalCashFlowName,
-                    ColorCode = "#00ff00",
-                    UserId = userId
-                });
-            }
+                IsStandard = true,
+                IsRegular = false,
+                Name = StandardCategoryNames.InternalCashFlowName,
+                ColorCode = "#00ff00",
+                UserId = userId
+            });
         }
     }
 }

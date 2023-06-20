@@ -1,26 +1,28 @@
-﻿using Sinance.Communication.Model.BankAccount;
+﻿using Microsoft.EntityFrameworkCore;
+using Sinance.Communication.Model.BankAccount;
 using Sinance.Storage;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
-namespace Sinance.Business.Calculations.Subcalculations
+namespace Sinance.Business.Calculations.Subcalculations;
+
+public static class BalanceCalculations
 {
-    public static class BalanceCalculations
+    public static async Task<decimal> TotalBalanceBeforeDate(SinanceContext context, DateTime date)
     {
-        public static async Task<decimal> TotalBalanceBeforeDate(IUnitOfWork unitOfWork, DateTime date)
-        {
-            var totalStartBalance = await unitOfWork.BankAccountRepository.Sum(x => !x.Disabled, x => x.StartBalance);
-            var totalTransactionBalance = await unitOfWork.TransactionRepository.Sum(x => x.Date < date && !x.BankAccount.Disabled, x => x.Amount);
+        var totalStartBalance = await context.BankAccounts.Where(x => !x.Disabled).SumAsync(x => x.StartBalance);
+        var totalTransactionBalance = await context.Transactions.Where(x => x.Date < date && !x.BankAccount.Disabled).SumAsync(x => x.Amount);
 
-            return totalStartBalance + totalTransactionBalance;
-        }
+        return totalStartBalance + totalTransactionBalance;
+    }
 
-        public static async Task<decimal> TotalBalanceForBankAccountBeforeDate(IUnitOfWork unitOfWork, DateTime date, BankAccountModel bankAccount)
-        {
-            var totalTransactionBalance = await unitOfWork.TransactionRepository
-                .Sum(x => x.BankAccountId == bankAccount.Id && x.Date < date, x => x.Amount);
+    public static async Task<decimal> TotalBalanceForBankAccountBeforeDate(SinanceContext context, DateTime date, BankAccountModel bankAccount)
+    {
+        var totalTransactionBalance = await context.Transactions
+            .Where(x => x.BankAccountId == bankAccount.Id && x.Date < date)
+            .SumAsync(x => x.Amount);
 
-            return bankAccount.StartBalance + totalTransactionBalance;
-        }
+        return bankAccount.StartBalance + totalTransactionBalance;
     }
 }

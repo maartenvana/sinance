@@ -3,14 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace Sinance.Business.Import
+namespace Sinance.Business.Import;
+
+public interface IBankFileImporter
 {
-    public interface IBankFileImporter
-    {
-        Guid Id { get; }
+    Guid Id { get; }
 
-        string FriendlyName { get; }
+    string FriendlyName { get; }
 
-        IList<ImportRow> CreateImport(Stream fileStream);
-    }
+    IList<ImportRow> CreateImport(Stream fileStream);
 }

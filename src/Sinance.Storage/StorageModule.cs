@@ -1,52 +1,23 @@
-﻿using Autofac;
-using Autofac.Features.OwnedInstances;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 using Sinance.Common.Configuration;
 using System;
 
-namespace Sinance.Storage
+namespace Sinance.Storage;
+
+public static class StorageModule
 {
-    public class StorageModule : Module
+    public static IServiceCollection AddStorageModule(this IServiceCollection services, AppSettings appSettings)
     {
-        protected override void Load(ContainerBuilder builder)
-        {
-            builder.Register<Func<IUnitOfWork>>(x =>
-            {
-                var factory = x.Resolve<Func<Owned<IUnitOfWork>>>();
+        services.AddDbContextFactory<SinanceContext>(opt => opt
+            .UseMySql(appSettings.ConnectionStrings.Sql, new MySqlServerVersion(new Version(5,7,42)))
+            .EnableSensitiveDataLogging());
 
-                return () =>
-                {
-                    var newUnitOfWork = factory();
-                    return newUnitOfWork.Value;
-                };
-            });
+        services.AddDbContext<SinanceContext>(opt => opt
+            .UseMySql(appSettings.ConnectionStrings.Sql, new MySqlServerVersion(new Version(5,7,42)))
+            .EnableSensitiveDataLogging());
 
-            builder.RegisterGeneric(typeof(GenericRepository<>)).As(typeof(IGenericRepository<>));
-
-            builder.Register(context =>
-            {
-                var appSettings = context.Resolve<AppSettings>();
-                var contextOptionsBuilder = new DbContextOptionsBuilder<SinanceContext>();
-
-                if (appSettings.Database.LoggingEnabled)
-                {
-                    contextOptionsBuilder.UseLoggerFactory(context.Resolve<ILoggerFactory>());
-                }
-                contextOptionsBuilder.UseMySql(appSettings.ConnectionStrings.Sql, new MySqlServerVersion("5.7"));
-
-                return contextOptionsBuilder.Options;
-            }).SingleInstance();
-
-            builder.Register(context =>
-            {
-                var options = context.Resolve<DbContextOptions<SinanceContext>>();
-                var userIdProvider = context.Resolve<IUserIdProvider>();
-
-                return new SinanceContext(options, userIdProvider);
-            }).AsSelf().InstancePerOwned<IUnitOfWork>();
-
-            builder.RegisterType<UnitOfWork>().As<IUnitOfWork>();
-        }
+        return services;
     }
 }

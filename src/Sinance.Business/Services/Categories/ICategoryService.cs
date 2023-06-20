@@ -2,22 +2,21 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Sinance.Business.Services.Categories
+namespace Sinance.Business.Services.Categories;
+
+public interface ICategoryService
 {
-    public interface ICategoryService
-    {
-        Task<CategoryModel> CreateCategoryForCurrentUser(CategoryModel categoryModel);
+    Task<CategoryModel> CreateCategoryForCurrentUser(CategoryModel categoryModel);
 
-        Task DeleteCategoryByIdForCurrentUser(int categoryId);
+    Task DeleteCategoryByIdForCurrentUser(int categoryId);
 
-        Task<List<CategoryModel>> GetAllCategoriesForCurrentUser();
+    Task<List<CategoryModel>> GetAllCategoriesForCurrentUser();
 
-        Task<CategoryModel> GetCategoryByIdForCurrentUser(int categoryId);
+    Task<CategoryModel> GetCategoryByIdForCurrentUser(int categoryId);
 
-        Task<List<CategoryModel>> GetPossibleParentCategoriesForCurrentUser(int categoryId);
+    Task<List<CategoryModel>> GetPossibleParentCategoriesForCurrentUser(int categoryId);
 
-        Task MapCategoryToTransactionsForCurrentUser(int categoryId, IEnumerable<int> transactionIds);
+    Task MapCategoryToTransactionsForCurrentUser(int categoryId, IEnumerable<int> transactionIds);
 
-        Task<CategoryModel> UpdateCategoryForCurrentUser(CategoryModel categoryModel);
-    }
+    Task<CategoryModel> UpdateCategoryForCurrentUser(CategoryModel categoryModel);
 }

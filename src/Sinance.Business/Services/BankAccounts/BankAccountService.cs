@@ -1,127 +1,110 @@
-﻿using Sinance.Business.Exceptions;
+﻿using Microsoft.EntityFrameworkCore;
+using Sinance.Business.Calculations;
+using Sinance.Business.Exceptions;
 using Sinance.Business.Extensions;
 using Sinance.Communication.Model.BankAccount;
 using Sinance.Storage;
 using Sinance.Storage.Entities;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Sinance.Business.Services.BankAccounts
+namespace Sinance.Business.Services.BankAccounts;
+
+public class BankAccountService : IBankAccountService
 {
-    public class BankAccountService : IBankAccountService
+    private readonly IDbContextFactory<SinanceContext> _dbContextFactory;
+    private readonly IUserIdProvider _userIdProvider;
+
+    public BankAccountService(
+        IDbContextFactory<SinanceContext> dbContextFactory,
+        IUserIdProvider userIdProvider)
     {
-        private readonly IBankAccountCalculationService _bankAccountCalculationService;
-        private readonly Func<IUnitOfWork> _unitOfWork;
-        private readonly IUserIdProvider _userIdProvider;
+        _dbContextFactory = dbContextFactory;
+        _userIdProvider = userIdProvider;
+    }
 
-        public BankAccountService(
-            Func<IUnitOfWork> unitOfWork,
-            IBankAccountCalculationService bankAccountCalculationService,
-            IUserIdProvider userIdProvider)
-        {
-            _unitOfWork = unitOfWork;
-            _bankAccountCalculationService = bankAccountCalculationService;
-            _userIdProvider = userIdProvider;
-        }
+    public async Task<BankAccountModel> CreateBankAccountForCurrentUser(BankAccountModel model)
+    {
+        using var context = _dbContextFactory.CreateDbContext();
 
-        public async Task<BankAccountModel> CreateBankAccountForCurrentUser(BankAccountModel model)
-        {
-            using var unitOfWork = _unitOfWork();
-            var bankAccount = await unitOfWork.BankAccountRepository.FindSingle(x => x.Name == model.Name);
+        var bankAccount = await context.BankAccounts.SingleOrDefaultAsync(x => x.Name == model.Name);
 
-            if (bankAccount != null)
-            {
-                throw new AlreadyExistsException(nameof(BankAccountEntity));
-            }
+        if (bankAccount != null)
+            throw new AlreadyExistsException(nameof(BankAccountEntity));
 
-            var bankAccountEntity = model.ToNewEntity(_userIdProvider.GetCurrentUserId());
-            unitOfWork.BankAccountRepository.Insert(bankAccountEntity);
-            await unitOfWork.SaveAsync();
+        var bankAccountEntity = model.ToNewEntity(_userIdProvider.GetCurrentUserId());
+        await context.BankAccounts.AddAsync(bankAccountEntity);
+        await context.SaveChangesAsync();
 
-            return bankAccountEntity.ToDto();
-        }
+        return bankAccountEntity.ToDto();
+    }
 
-        public async Task DeleteBankAccountByIdForCurrentUser(int accountId)
-        {
-            using var unitOfWork = _unitOfWork();
+    public async Task DeleteBankAccountByIdForCurrentUser(int accountId)
+    {
+        using var context = _dbContextFactory.CreateDbContext();
+        var bankAccount = await context.BankAccounts.SingleOrDefaultAsync(x => x.Id == accountId);
 
-            var bankAccount = await unitOfWork.BankAccountRepository.FindSingleTracked(x => x.Id == accountId);
+        if (bankAccount == null)
+            throw new NotFoundException(nameof(BankAccountEntity));
 
-            if (bankAccount == null)
-            {
-                throw new NotFoundException(nameof(BankAccountEntity));
-            }
+        context.BankAccounts.Remove(bankAccount);
 
-            unitOfWork.BankAccountRepository.Delete(bankAccount);
+        await context.SaveChangesAsync();
+    }
 
-            await unitOfWork.SaveAsync();
-        }
+    public async Task<List<BankAccountModel>> GetActiveBankAccountsForCurrentUser()
+    {
+        using var context = _dbContextFactory.CreateDbContext();
 
-        public async Task<List<BankAccountModel>> GetActiveBankAccountsForCurrentUser()
-        {
-            using var unitOfWork = _unitOfWork();
+        var bankAccounts = await context.BankAccounts.Where(x => !x.Disabled)
+            .OrderBy(x => x.Name)
+            .ToListAsync();
 
-            var bankAccounts = (await unitOfWork.BankAccountRepository
-                .FindAll(x => !x.Disabled))
-                .OrderBy(x => x.Name)
-                .Select(x => x.ToDto())
-                .ToList();
+        return bankAccounts.Select(x => x.ToDto()).ToList();
+    }
 
-            return bankAccounts;
-        }
+    public async Task<List<BankAccountModel>> GetAllBankAccountsForCurrentUser()
+    {
+        using var context = _dbContextFactory.CreateDbContext();
 
-        public async Task<List<BankAccountModel>> GetAllBankAccountsForCurrentUser()
-        {
-            using var unitOfWork = _unitOfWork();
-            var bankAccounts = (await unitOfWork.BankAccountRepository
-                .ListAll())
-                .OrderBy(x => x.Name)
-                .Select(x => x.ToDto())
-                .ToList();
+        var bankAccounts = await context.BankAccounts
+            .OrderBy(x => x.Name)
+            .ToListAsync();
 
-            return bankAccounts;
-        }
+        return bankAccounts.Select(x => x.ToDto()).ToList();
+    }
 
-        public async Task<BankAccountModel> GetBankAccountByIdForCurrentUser(int bankAccountId)
-        {
-            using var unitOfWork = _unitOfWork();
+    public async Task<BankAccountModel> GetBankAccountByIdForCurrentUser(int bankAccountId)
+    {
+        using var context = _dbContextFactory.CreateDbContext();
 
-            var bankAccount = await unitOfWork.BankAccountRepository.FindSingle(x => x.Id == bankAccountId);
+        var bankAccount = await context.BankAccounts.SingleOrDefaultAsync(x => x.Id == bankAccountId);
 
-            if (bankAccount == null)
-            {
-                throw new NotFoundException(nameof(BankAccountEntity));
-            }
+        if (bankAccount == null)
+            throw new NotFoundException(nameof(BankAccountEntity));
 
-            return bankAccount.ToDto();
-        }
+        return bankAccount.ToDto();
+    }
 
-        public async Task<BankAccountModel> UpdateBankAccountForCurrentUser(BankAccountModel model)
-        {
-            using var unitOfWork = _unitOfWork();
+    public async Task<BankAccountModel> UpdateBankAccountForCurrentUser(BankAccountModel model)
+    {
+        using var context = _dbContextFactory.CreateDbContext();
 
-            var bankAccountEntity = await unitOfWork.BankAccountRepository.FindSingleTracked(x => x.Id == model.Id);
+        var bankAccountEntity = await context.BankAccounts.SingleOrDefaultAsync(x => x.Id == model.Id);
 
-            if (bankAccountEntity == null)
-            {
-                throw new NotFoundException(nameof(BankAccountEntity));
-            }
+        if (bankAccountEntity == null)
+            throw new NotFoundException(nameof(BankAccountEntity));
 
-            var recalculateCurrentBalance = bankAccountEntity.StartBalance != model.StartBalance;
+        var recalculateCurrentBalance = bankAccountEntity.StartBalance != model.StartBalance;
 
-            bankAccountEntity.UpdateFromModel(model);
+        bankAccountEntity.UpdateFromModel(model);
 
-            if (recalculateCurrentBalance)
-            {
-                bankAccountEntity.CurrentBalance = await _bankAccountCalculationService.CalculateCurrentBalanceForBankAccount(unitOfWork, bankAccountEntity);
-            }
+        if (recalculateCurrentBalance)
+            bankAccountEntity.CurrentBalance = await BankAccountCalculations.CalculateCurrentBalanceForBankAccount(context, bankAccountEntity);
 
-            unitOfWork.BankAccountRepository.Update(bankAccountEntity);
-            await unitOfWork.SaveAsync();
+        await context.SaveChangesAsync();
 
-            return bankAccountEntity.ToDto();
-        }
+        return bankAccountEntity.ToDto();
     }
 }

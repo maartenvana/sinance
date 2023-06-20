@@ -1,7 +1,6 @@
-﻿namespace Sinance.Common.Configuration
+﻿namespace Sinance.Common.Configuration;
+
+public class ConnectionStrings
 {
-    public class ConnectionStrings
-    {
-        public string Sql { get; set; }
-    }
+    public string Sql { get; set; }
 }

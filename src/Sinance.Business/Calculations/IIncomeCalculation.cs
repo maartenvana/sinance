@@ -2,10 +2,9 @@
 using System;
 using System.Threading.Tasks;
 
-namespace Sinance.Business.Calculations
+namespace Sinance.Business.Calculations;
+
+public interface IIncomeCalculation
 {
-    public interface IIncomeCalculation
-    {
-        Task<BiMonthlyIncomeReportModel> BiMonthlyIncomePerCategoryReport(DateTime startMonth);
-    }
+    Task<BiMonthlyIncomeReportModel> BiMonthlyIncomePerCategoryReport(DateTime startMonth);
 }

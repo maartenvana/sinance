@@ -19,9 +19,8 @@ public class SinanceContext : DbContext
 
     public DbSet<CustomReportEntity> CustomReports { get; set; }
 
-    public DbSet<TransactionCategoryEntity> TransactionCategories { get; set; }
-
     public DbSet<TransactionEntity> Transactions { get; set; }
+    public DbSet<ImportTransactionEntity> ImportTransactions { get; set; }
 
     public DbSet<SinanceUserEntity> Users { get; set; }
 
@@ -58,8 +57,7 @@ public class SinanceContext : DbContext
         modelBuilder.Entity<CategoryEntity>().ToTable("Category").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
 
         modelBuilder.Entity<CategoryMappingEntity>().ToTable("CategoryMapping").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
-        modelBuilder.Entity<TransactionEntity>().ToTable("Transaction").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
-        modelBuilder.Entity<TransactionCategoryEntity>().ToTable("TransactionCategory").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
+        modelBuilder.Entity<TransactionEntity>().ToTable("Transactions").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
         modelBuilder.Entity<CustomReportEntity>().ToTable("CustomReport").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
         modelBuilder.Entity<CustomReportCategoryEntity>().ToTable("CustomReportCategory").Property(x => x.Id).HasAnnotation("MySql:ValueGeneratedOnAdd", MySqlValueGenerationStrategy.IdentityColumn).ValueGeneratedOnAdd();
 
@@ -68,11 +66,6 @@ public class SinanceContext : DbContext
         modelBuilder.Entity<CategoryMappingEntity>().HasQueryFilter(x => x.UserId == _userIdProvider.GetCurrentUserId());
         modelBuilder.Entity<TransactionEntity>().HasQueryFilter(x => x.UserId == _userIdProvider.GetCurrentUserId());
         modelBuilder.Entity<CustomReportEntity>().HasQueryFilter(x => x.UserId == _userIdProvider.GetCurrentUserId());
-
-        modelBuilder.Entity<CategoryEntity>().HasIndex(x => x.ShortName).IsUnique(true);
-        modelBuilder.Entity<CategoryEntity>().HasIndex(x => x.Name).IsUnique(true);
-
-        modelBuilder.Entity<BankAccountEntity>().HasIndex(x => x.Name).IsUnique(true);
 
         base.OnModelCreating(modelBuilder);
     }

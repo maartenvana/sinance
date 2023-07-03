@@ -15,9 +15,9 @@ services:
       context: .
       dockerfile: Sinance.Web/Dockerfile
     environment:
-      - Database__SeedDemoData=true
-      - Database__OverrideSeedDemoData=true
-      - ConnectionStrings__SQL=Server=mysql;Port=3306;Database=Sinance_Legacy;User=root;Password=development;
+      - Database__SeedDemoData=false
+      - Database__OverrideSeedDemoData=false
+      - ConnectionStrings__SQL=Server=server=192.168.1.7;port=3307;database=Finance_Core_dev;user=root;password=my-secret-pw;
   mysql:
     image: mysql:5.7.42
     ports:

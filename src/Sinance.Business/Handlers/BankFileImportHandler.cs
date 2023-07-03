@@ -107,14 +107,12 @@ public class BankFileImportHandler : IBankFileImportHandler
         return importer.CreateImport(reader.BaseStream);
     }
 
-    public static async Task<int> SaveImportResultToDatabase(SinanceContext context, int bankAccountId, int userId,
-        IList<ImportRow> importRows, IList<ImportRow> cachedImportRows)
+    public static async Task<int> SaveImportResultToDatabase(SinanceContext context, int bankAccountId, int userId, IList<ImportRow> importRows)
     {
         var savedTransactions = 0;
 
         // Select all cached import rows that have to be imported
         foreach (var cachedTransaction in importRows.Where(item => !item.ExistsInDatabase && item.Import)
-            .Select(importRow => cachedImportRows.SingleOrDefault(item => item.ImportRowId == importRow.ImportRowId))
             .Where(cachedImportRow => cachedImportRow != null)
             .Select(x => x.Transaction))
         {

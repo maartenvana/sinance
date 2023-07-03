@@ -68,9 +68,12 @@ public class CategoryService : ICategoryService
         else if (category.IsStandard)
             throw new DeleteStandardCategoryException();
 
-        var transactionCategories = await context.TransactionCategories.Where(x => x.CategoryId == categoryId).ToListAsync();
+        var transactions = await context.Transactions.Where(x => x.CategoryId == categoryId).ToListAsync();
+        foreach (var transaction in transactions)
+        {
+            transaction.CategoryId = null;
+        }
 
-        context.TransactionCategories.RemoveRange(transactionCategories);
         context.Categories.Remove(category);
 
         await context.SaveChangesAsync();
@@ -121,21 +124,13 @@ public class CategoryService : ICategoryService
             throw new NotFoundException(nameof(CategoryEntity));
 
         var transactions = await context.Transactions
-            .Include(x => x.TransactionCategories)
+            .Include(x => x.Category)
             .Where(x => transactionIds.Any(y => y == x.Id))
             .ToListAsync();
 
         foreach (var transaction in transactions)
         {
-            transaction.TransactionCategories = new List<TransactionCategoryEntity>
-            {
-                new TransactionCategoryEntity
-                {
-                    TransactionId = transaction.Id,
-                    Amount = null,
-                    CategoryId = category.Id
-                }
-            };
+            transaction.CategoryId = category.Id;
         }
 
         await context.SaveChangesAsync();

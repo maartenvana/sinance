@@ -18,7 +18,7 @@ public static class TransactionExtensions
             BankAccountId = transaction.BankAccountId,
             Amount = transaction.Amount,
             Date = transaction.Date,
-            Categories = transaction.TransactionCategories != null ? transaction.TransactionCategories.ToDto().ToList() : new List<TransactionCategoryModel>(),
+            Category = transaction.Category?.ToDto(),
             Description = transaction.Description,
             DestinationAccount = transaction.DestinationAccount
         };
@@ -35,17 +35,9 @@ public static class TransactionExtensions
             Date = transactionModel.Date,
             BankAccountId = transactionModel.BankAccountId,
             AccountNumber = transactionModel.FromAccount,
-            UserId = userId
+            UserId = userId,
+            CategoryId = transactionModel.CategoryId
         };
-
-        if (transactionModel.Categories != null)
-        {
-            entity.TransactionCategories = transactionModel.Categories.Select(x => new TransactionCategoryEntity
-            {
-                Amount = x.Amount,
-                CategoryId = x.CategoryId
-            }).ToList();
-        }
 
         return entity;
     }

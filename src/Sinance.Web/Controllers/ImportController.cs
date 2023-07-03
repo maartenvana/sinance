@@ -51,9 +51,15 @@ public class ImportController : Controller
         {
             using var stream = file.OpenReadStream();
 
-            await _importService.CreateImportPreview(stream, model);
+            var (skippedTransactions, savedTransactions) = await _importService.ImportTransactions(stream, model);
 
-            return View("ImportResult", model);
+            var message = string.Format(CultureInfo.CurrentCulture, Resources.TransactionsAddedAndSkippedFormat, savedTransactions, skippedTransactions);
+
+            TempDataHelper.SetTemporaryMessage(tempData: TempData,
+                state: savedTransactions != 0 ? MessageState.Success : MessageState.Warning,
+                message: message);
+
+            return RedirectToAction("Index", "AccountOverview", new { @bankAccountId = model.BankAccountId });
         }
         catch (NotFoundException exc)
         {
@@ -96,38 +102,5 @@ public class ImportController : Controller
             AvailableImportBanks = importBanks,
             AvailableAccounts = bankAccounts
         });
-    }
-
-    /// <summary>
-    /// Save action for import
-    /// </summary>
-    /// <param name="model">Model to save</param>
-    /// <returns>View with the save result</returns>
-    [HttpPost]
-    public async Task<IActionResult> SaveImport(ImportModel model)
-    {
-        try
-        {
-            var (skippedTransactions, savedTransactions) = await _importService.SaveImport(model);
-
-            var message = string.Format(CultureInfo.CurrentCulture, Resources.TransactionsAddedAndSkippedFormat, savedTransactions, skippedTransactions);
-
-            TempDataHelper.SetTemporaryMessage(tempData: TempData,
-                state: savedTransactions != 0 ? MessageState.Success : MessageState.Warning,
-                message: message);
-            return RedirectToAction("Index", "AccountOverview", new { @bankAccountId = model.BankAccountId });
-        }
-        catch (NotFoundException exc)
-        {
-            if (exc.ItemName == nameof(ImportModel))
-            {
-                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.ImportTimeOut);
-            }
-            else
-            {
-                TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.BankAccountNotFound);
-            }
-            return RedirectToAction("Index", "Home");
-        }
     }
 }

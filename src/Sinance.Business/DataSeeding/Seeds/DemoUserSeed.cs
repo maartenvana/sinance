@@ -195,14 +195,7 @@ public class DemoUserSeed
                 BankAccount = primaryChecking,
                 Description = "Savings deposit",
                 Date = startDate.AddMonths(-i),
-                TransactionCategories = new List<TransactionCategoryEntity>
-                {
-                    new TransactionCategoryEntity
-                    {
-                        Amount = amount,
-                        Category = internalCashflowCategory
-                    }
-                },
+                Category = internalCashflowCategory,
                 DestinationAccount = "NL83RABO2338418883",
                 Name = "Savings",
                 User = primaryChecking.User
@@ -215,14 +208,7 @@ public class DemoUserSeed
                 BankAccount = savingsAccount,
                 Description = "Savings deposit",
                 Date = startDate.AddMonths(-i),
-                TransactionCategories = new List<TransactionCategoryEntity>
-                {
-                    new TransactionCategoryEntity
-                    {
-                        Amount = amount,
-                        Category = internalCashflowCategory
-                    }
-                },
+                Category = internalCashflowCategory,
                 DestinationAccount = "",
                 Name = "Savings",
                 User = savingsAccount.User
@@ -258,14 +244,7 @@ public class DemoUserSeed
                 BankAccount = bankAccount,
                 Description = transactionDescription,
                 Date = startDate.AddMonths(-i),
-                TransactionCategories = new List<TransactionCategoryEntity>
-                {
-                    new TransactionCategoryEntity
-                    {
-                        Amount = amount,
-                        Category = category
-                    }
-                },
+                Category = category,
                 DestinationAccount = "NL83RABO2338418883",
                 Name = transactionName,
                 User = bankAccount.User
@@ -305,14 +284,7 @@ public class DemoUserSeed
                 BankAccount = bankAccount,
                 Description = transactionDescription,
                 Date = transactionDate,
-                TransactionCategories = new List<TransactionCategoryEntity>
-                {
-                    new TransactionCategoryEntity
-                    {
-                        Amount = amount,
-                        Category = category
-                    }
-                },
+                Category = category,
                 DestinationAccount = "NL83RABO2338418883",
                 Name = transactionName,
                 User = bankAccount.User
@@ -349,14 +321,7 @@ public class DemoUserSeed
                 BankAccount = bankAccount,
                 Description = transactionDescription,
                 Date = startDate.AddDays(-7 * i),
-                TransactionCategories = new List<TransactionCategoryEntity>
-                {
-                    new TransactionCategoryEntity
-                    {
-                        Amount = amount,
-                        Category = category
-                    }
-                },
+                Category = category,
                 DestinationAccount = "NL83RABO2338418883",
                 Name = transactionName,
                 User = bankAccount.User

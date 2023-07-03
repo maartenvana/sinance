@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Sinance.Communication.Model.Category;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
@@ -23,7 +24,12 @@ public class TransactionModel
     /// <summary>
     /// Categories applied to the transaction
     /// </summary>
-    public List<TransactionCategoryModel> Categories { get; set; } = new List<TransactionCategoryModel>();
+    public CategoryModel Category { get; set; }
+
+    /// <summary>
+    /// Categories applied to the transaction
+    /// </summary>
+    public int? CategoryId { get; set; }
 
     /// <summary>
     /// Date

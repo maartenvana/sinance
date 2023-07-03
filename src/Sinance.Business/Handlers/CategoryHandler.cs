@@ -15,51 +15,6 @@ namespace Sinance.Business.Handlers;
 public static class CategoryHandler
 {
     /// <summary>
-    /// Maps categories to transactions
-    /// </summary>
-    /// <param name="genericRepository">Generic repository to use</param>
-    /// <param name="categoryId">Category Id to map</param>
-    /// <param name="transactions">Transactions to map</param>
-    public static async Task MapCategoryToTransactions(SinanceContext context, int categoryId, IEnumerable<TransactionEntity> transactions)
-    {
-        foreach (var transaction in transactions)
-        {
-            foreach (var transactionCategory in transaction.TransactionCategories.Where(transactionCategory => transactionCategory.CategoryId != categoryId))
-            {
-                context.TransactionCategories.Remove(transactionCategory);
-            }
-
-            if (transaction.TransactionCategories.All(item => item.CategoryId != categoryId))
-            {
-                await context.TransactionCategories.AddAsync(new TransactionCategoryEntity
-                {
-                    TransactionId = transaction.Id,
-                    Amount = null,
-                    CategoryId = categoryId
-                });
-            }
-        }
-
-        await context.SaveChangesAsync();
-    }
-
-    /// <summary>
-    /// Unmaps the category from the given transactions
-    /// </summary>
-    /// <param name="genericRepository">Generic repository to use</param>
-    /// <param name="categoryId">Category Id to unmap</param>
-    /// <param name="transactions">Transactions to unmap</param>
-    public static async Task RemoveTransactionMappingFromCategory(SinanceContext context, int categoryId, IEnumerable<TransactionEntity> transactions)
-    {
-        foreach (var transaction in transactions)
-        {
-            context.TransactionCategories.RemoveRange(transaction.TransactionCategories.Where(item => item.CategoryId == categoryId));
-        }
-
-        await context.SaveChangesAsync();
-    }
-
-    /// <summary>
     /// Sets the transactioncategory to the first found match of the given category mappings
     /// </summary>
     /// <param name="transactions">Transaction to set category for</param>
@@ -92,15 +47,7 @@ public static class CategoryHandler
 
                 if (isMatch)
                 {
-                    transaction.Categories = new List<TransactionCategoryModel>
-                    {
-                        new TransactionCategoryEntity
-                        {
-                            CategoryId = mapping.CategoryId,
-                            TransactionId = transaction.Id,
-                            Category = mapping.Category
-                        }.ToDto()
-                    };
+                    transaction.CategoryId = mapping.CategoryId;
                     break;
                 }
             }

@@ -67,9 +67,4 @@ public class TransactionEntity : UserEntityBase
     public CategoryEntity Category { get; set; }
 
     public int? CategoryId { get; set; }
-
-    /// <summary>
-    /// Transaction categories
-    /// </summary>
-    public List<TransactionCategoryEntity> TransactionCategories { get; set; }
 }

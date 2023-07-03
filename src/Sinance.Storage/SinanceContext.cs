@@ -20,7 +20,6 @@ public class SinanceContext : DbContext
     public DbSet<CustomReportEntity> CustomReports { get; set; }
 
     public DbSet<TransactionEntity> Transactions { get; set; }
-    public DbSet<ImportTransactionEntity> ImportTransactions { get; set; }
 
     public DbSet<SinanceUserEntity> Users { get; set; }
 

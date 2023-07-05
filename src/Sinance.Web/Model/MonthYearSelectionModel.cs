@@ -1,13 +1,12 @@
 ﻿using System;
 
-namespace Sinance.Web.Model
+namespace Sinance.Web.Model;
+
+public class MonthYearSelectionModel
 {
-    public class MonthYearSelectionModel
-    {
-        public string Action { get; set; }
+    public string Action { get; set; }
 
-        public string Controller { get; set; }
+    public string Controller { get; set; }
 
-        public DateTime CurrentDate { get; set; }
-    }
+    public DateTime CurrentDate { get; set; }
 }

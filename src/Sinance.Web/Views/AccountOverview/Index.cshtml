@@ -153,17 +153,17 @@
             <div class="transactionCategoryBox-sm" style="background-color: #FFFFFF"></div><span> Geen categorie</span>
         </div>
         @foreach (var category in Model.AvailableCategories.Where(x => x.ParentId == null).OrderBy(x => x.Name))
-        {
-            <div class="categoryPopoverListItem category@(category.Id)" onclick="SetTransactionCategory(@category.Id);">
+    {
+        <div class="categoryPopoverListItem category@(category.Id)" onclick="SetTransactionCategory(@category.Id);">
                 <div class="transactionCategoryBox-sm" style="background-color: @(category.ColorCode)"></div><span> @category.Name</span>
             </div>
-            foreach (var subCategory in Model.AvailableCategories.Where(x => x.ParentId == category.Id).OrderBy(x => x.Name))
-            {
-                <div class="categoryPopoverListItem category@(subCategory.Id)" onclick="SetTransactionCategory(@subCategory.Id);">
+        foreach (var subCategory in Model.AvailableCategories.Where(x => x.ParentId == category.Id).OrderBy(x => x.Name))
+        {
+            <div class="categoryPopoverListItem category@(subCategory.Id)" onclick="SetTransactionCategory(@subCategory.Id);">
                     <span>-</span>
                     <div class="transactionCategoryBox-sm" style="background-color: @(subCategory.ColorCode)"></div><span> @subCategory.Name</span>
                 </div>
-            }
         }
+    }
     </div>
 </div>

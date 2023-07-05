@@ -1,14 +1,13 @@
 ﻿using Sinance.Storage;
 
-namespace Sinance.Business.Tests
-{
-    public class TestUserIdProvider : IUserIdProvider
-    {
-        public int CurrentUserId { get; set; }
+namespace Sinance.Business.Tests;
 
-        public int GetCurrentUserId()
-        {
-            return CurrentUserId;
-        }
+public class TestUserIdProvider : IUserIdProvider
+{
+    public int CurrentUserId { get; set; }
+
+    public int GetCurrentUserId()
+    {
+        return CurrentUserId;
     }
 }

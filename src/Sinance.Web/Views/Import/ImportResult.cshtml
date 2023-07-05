@@ -6,7 +6,7 @@
 
 @{
     ViewBag.Title = "ImportResult";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <h2>Importeer resultaat</h2>
@@ -31,40 +31,40 @@
                 </thead>
                 <tbody>
                     @for (int rowIndex = 0; rowIndex < Model.ImportRows.Count; rowIndex++)
-                    {
-                        int index = rowIndex;
-                        bool rowExists = Model.ImportRows[index].ExistsInDatabase;
+                {
+                    int index = rowIndex;
+                    bool rowExists = Model.ImportRows[index].ExistsInDatabase;
 
-                        string cssClass = rowExists ? "existingRow" : "newRow";
+                    string cssClass = rowExists ? "existingRow" : "newRow";
 
-                        <tr class="@cssClass">
+                    <tr class="@cssClass">
                             @Html.HiddenFor(item => item.ImportRows[index].ImportRowId)
                             <td>
                                 @if (!rowExists)
-                                {
-                                    @Html.CheckBoxFor(item => item.ImportRows[index].Import)
-                                }
+                            {
+                                @Html.CheckBoxFor(item => item.ImportRows[index].Import)
+                            }
                             </td>
                             <td>
                                 @Model.ImportRows[index].Transaction.Date.ToString("dd-MM-yyyy")
                             </td>
                             <td>
                                 @if (Model.ImportRows[index].Transaction.Name.Length > 40)
-                                {
-                                    @(Model.ImportRows[index].Transaction.Name.Substring(0, 40) + "...")
-                                }
-                                else
-                                {
-                                    @Model.ImportRows[index].Transaction.Name
-                                }
+                            {
+                                @(Model.ImportRows[index].Transaction.Name.Substring(0, 40) + "...")
+                            }
+                            else
+                            {
+                                @Model.ImportRows[index].Transaction.Name
+                            }
                             </td>
                             <td>
                                 <a class="transactionCategoryBox">
                                     @{
-                                        string style = Model.ImportRows[index].Transaction.Category != null ?
-                                            $"width:50px;background-color:{Model.ImportRows[index].Transaction.Category.ColorCode};" :
-                                            "width:50px;";
-                                    }
+                                    string style = Model.ImportRows[index].Transaction.Category != null ?
+                                        $"width:50px;background-color:{Model.ImportRows[index].Transaction.Category.ColorCode};" :
+                                        "width:50px;";
+                                }
                                     <div class="transactionCategoryFillBox" style="@style"></div>
                                 </a>
                             </td>
@@ -76,16 +76,16 @@
                             <td>
 
                                 @if (!string.IsNullOrEmpty(Model.ImportRows[index].Transaction.Description) && Model.ImportRows[index].Transaction.Description.Length > 40)
-                                {
-                                    @(Model.ImportRows[index].Transaction.Description.Substring(0, 40) + "...")
-                                }
-                                else
-                                {
-                                    @Model.ImportRows[index].Transaction.Description
-                                }
+                            {
+                                @(Model.ImportRows[index].Transaction.Description.Substring(0, 40) + "...")
+                            }
+                            else
+                            {
+                                @Model.ImportRows[index].Transaction.Description
+                            }
                             </td>
                         </tr>
-                    }
+                }
                 </tbody>
             </table>
             <div class="clearfix">

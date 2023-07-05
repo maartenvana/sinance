@@ -1,7 +1,6 @@
-﻿namespace Sinance.BlazorApp.Business.Model
+﻿namespace Sinance.BlazorApp.Business.Model;
+
+public class SinanceDefaults
 {
-    public class SinanceDefaults
-    {
-        public const int TransactionPageSize = 100;
-    }
+    public const int TransactionPageSize = 100;
 }

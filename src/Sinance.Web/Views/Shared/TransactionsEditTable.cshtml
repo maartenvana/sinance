@@ -58,9 +58,9 @@
         </thead>
         <tbody>
             @foreach (var transaction in Model)
-            {
-                @await Html.PartialAsync("TransactionEditRow", transaction)
-            }
+        {
+            @await Html.PartialAsync("TransactionEditRow", transaction)
+        }
             <tr id="LoadMoreTransactionsPlaceholder"></tr>
             <tr id="LoadMoreTransactionsRow">
                 <td colspan="6">

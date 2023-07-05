@@ -21,16 +21,16 @@
                 <span class="oi oi-copywriting" aria-hidden="true"></span> Checking
             </NavLink>
             @if (expandChecking)
-            {
-                <div class="sub-menu rounded ml-2">
+        {
+            <div class="sub-menu rounded ml-2">
                     @foreach (var bankAccount in checkingBankAccounts)
-                    {
-                        <NavLink class="nav-link" href="@GetHrefForBankAccount(bankAccount)" Match="NavLinkMatch.All">
+                {
+                    <NavLink class="nav-link" href="@GetHrefForBankAccount(bankAccount)" Match="NavLinkMatch.All">
                             @bankAccount.Name
                         </NavLink>
-                    }
+                }
                 </div>
-            }
+        }
         </li>
 
         <li class="nav-item px-3">
@@ -38,16 +38,16 @@
                 <span class="oi oi-copywriting" aria-hidden="true"></span> Saving
             </NavLink>
             @if (expandSaving)
-            {
-                <div class="sub-menu rounded ml-2">
+        {
+            <div class="sub-menu rounded ml-2">
                     @foreach (var bankAccount in savingBankAccounts)
-                    {
-                        <NavLink class="nav-link" href="@GetHrefForBankAccount(bankAccount)" Match="NavLinkMatch.All">
+                {
+                    <NavLink class="nav-link" href="@GetHrefForBankAccount(bankAccount)" Match="NavLinkMatch.All">
                             @bankAccount.Name
                         </NavLink>
-                    }
+                }
                 </div>
-            }
+        }
         </li>
 
 
@@ -56,16 +56,16 @@
                 <span class="oi oi-copywriting" aria-hidden="true"></span> Other
             </NavLink>
             @if (expandOther)
-            {
-                <div class="sub-menu rounded ml-2">
+        {
+            <div class="sub-menu rounded ml-2">
                     @foreach (var bankAccount in otherBankAccounts)
-                    {
-                        <NavLink class="nav-link" href="@GetHrefForBankAccount(bankAccount)" Match="NavLinkMatch.All">
+                {
+                    <NavLink class="nav-link" href="@GetHrefForBankAccount(bankAccount)" Match="NavLinkMatch.All">
                             @bankAccount.Name
                         </NavLink>
-                    }
+                }
                 </div>
-            }
+        }
         </li>
 
         <li class="nav-item px-3">
@@ -73,8 +73,8 @@
                 <span class="oi oi-transfer" aria-hidden="true"></span> Transactions
             </NavLink>
             @if (expandTransactions)
-            {
-        <div class="sub-menu rounded ml-2">
+        {
+    <div class="sub-menu rounded ml-2">
             <NavLink class="nav-link" href="Transactions/Search" Match="NavLinkMatch.All">
                 <span class="oi oi-magnifying-glass" aria-hidden="true"></span> Search
             </NavLink>
@@ -82,7 +82,7 @@
                 <span class="oi oi-magnifying-glass" aria-hidden="true"></span> Import
             </NavLink>
         </div>
-            }
+        }
         </li>
 
         <li class="nav-item px-3">
@@ -90,13 +90,13 @@
                 <span class="oi oi-transfer" aria-hidden="true"></span> Reports
             </NavLink>
             @if (expandReports)
-            {
-                <div class="sub-menu rounded ml-2">
+        {
+            <div class="sub-menu rounded ml-2">
                     <NavLink class="nav-link" href="Reports/YearOverview" Match="NavLinkMatch.All">
                         <span class="oi oi-magnifying-glass" aria-hidden="true"></span> Year
                     </NavLink>
                 </div>
-            }
+        }
         </li>
 
         <li class="nav-item px-3">
@@ -104,8 +104,8 @@
                 <span class="oi oi-wrench" aria-hidden="true"></span> Settings
             </NavLink>
             @if (expandSettings)
-            {
-                <div class="sub-menu rounded ml-2">
+        {
+            <div class="sub-menu rounded ml-2">
                     <NavLink class="nav-link" href="Settings/BankAccounts" Match="NavLinkMatch.All">
                         <span class="oi oi-copywriting" aria-hidden="true"></span> Accounts
                     </NavLink>
@@ -113,50 +113,50 @@
                         <span class="oi oi-bookmark" aria-hidden="true"></span> Categories
                     </NavLink>
                 </div>
-            }
+        }
         </li>
     </ul>
 </div>
 
 @code {
-    private bool expandReports = false;
+private bool expandReports = false;
 
-    private bool expandChecking = false;
-    private bool expandSaving = false;
-    private bool expandOther = false;
+private bool expandChecking = false;
+private bool expandSaving = false;
+private bool expandOther = false;
 
-    private bool expandSettings = false;
-    private bool expandTransactions = false;
+private bool expandSettings = false;
+private bool expandTransactions = false;
 
-    private bool collapseNavMenu = true;
+private bool collapseNavMenu = true;
 
-    private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
-    private List<BankAccountModel> checkingBankAccounts;
-    private List<BankAccountModel> savingBankAccounts;
-    private List<BankAccountModel> otherBankAccounts;
+private List<BankAccountModel> checkingBankAccounts;
+private List<BankAccountModel> savingBankAccounts;
+private List<BankAccountModel> otherBankAccounts;
 
-    protected override void OnInitialized()
-    {
-        var activeBankAccounts = bankAccountService.GetAllActiveBankAccounts();
+protected override void OnInitialized()
+{
+    var activeBankAccounts = bankAccountService.GetAllActiveBankAccounts();
 
-        checkingBankAccounts = activeBankAccounts.Where(x => x.Type == Communication.Model.BankAccount.BankAccountType.Checking).ToList();
-        savingBankAccounts = activeBankAccounts.Where(x => x.Type == Communication.Model.BankAccount.BankAccountType.Savings).ToList();
-        otherBankAccounts = activeBankAccounts.Where(x =>
-                x.Type != Communication.Model.BankAccount.BankAccountType.Savings &&
-                x.Type != Communication.Model.BankAccount.BankAccountType.Checking)
-            .ToList();
+    checkingBankAccounts = activeBankAccounts.Where(x => x.Type == Communication.Model.BankAccount.BankAccountType.Checking).ToList();
+    savingBankAccounts = activeBankAccounts.Where(x => x.Type == Communication.Model.BankAccount.BankAccountType.Savings).ToList();
+    otherBankAccounts = activeBankAccounts.Where(x =>
+            x.Type != Communication.Model.BankAccount.BankAccountType.Savings &&
+            x.Type != Communication.Model.BankAccount.BankAccountType.Checking)
+        .ToList();
 
-        base.OnInitialized();
-    }
+    base.OnInitialized();
+}
 
-    private string GetHrefForBankAccount(BankAccountModel bankAccount)
-    {
-        return $"BankAccount/{bankAccount.Id}";
-    }
+private string GetHrefForBankAccount(BankAccountModel bankAccount)
+{
+    return $"BankAccount/{bankAccount.Id}";
+}
 
-    private void ToggleNavMenu()
-    {
-        collapseNavMenu = !collapseNavMenu;
-    }
+private void ToggleNavMenu()
+{
+    collapseNavMenu = !collapseNavMenu;
+}
 }

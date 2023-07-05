@@ -1,7 +1,6 @@
-﻿namespace Sinance.Infrastructure.Model
+﻿namespace Sinance.Infrastructure.Model;
+
+public interface IUnitOfWork
 {
-    public interface IUnitOfWork
-    {
-        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
-    }
+    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

@@ -17,8 +17,8 @@
     </thead>
     <tbody>
         @foreach (KeyValuePair<TransactionModel, bool> transaction in Model)
-        {
-            <tr class="@(transaction.Value == true ? "success" : "danger")" data-toggle="modal" data-target="#overviewModal" onclick="selectedTransaction = @transaction.Key.Id; action = 'details';">
+    {
+        <tr class="@(transaction.Value == true ? "success" : "danger")" data-toggle="modal" data-target="#overviewModal" onclick="selectedTransaction = @transaction.Key.Id; action = 'details';">
                 <td class="dateColumn">
                     @transaction.Key.Date.ToString("dd-MM-yyyy")
                 </td>
@@ -27,9 +27,9 @@
                 </td>
                 <td class="categoryColumn">
                     @if (transaction.Key.Category != null)
-                    {
-                        <div style="width:52px;height:22px;border:solid 1px gray;background-color:@transaction.Key.Category.ColorCode;"></div>
-                    }
+                {
+                    <div style="width:52px;height:22px;border:solid 1px gray;background-color:@transaction.Key.Category.ColorCode;"></div>
+                }
                 </td>
                 <td class="amountColumn ">
                     <span class="label @(transaction.Key.Amount > 0 ? "label-success" : "label label-danger")">
@@ -40,6 +40,6 @@
                     @transaction.Key.Description
                 </td>
             </tr>
-        }
+    }
     </tbody>
 </table>

@@ -6,17 +6,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Sinance.Domain.Events
-{
-    public class AccountTransactionAmountChangedDomainEvent : INotification
-    {
-        public AccountTransactionAmountChangedDomainEvent(AccountTransaction transaction, decimal oldAmount)
-        {
-            Transaction = transaction;
-            OldAmount = oldAmount;
-        }
+namespace Sinance.Domain.Events;
 
-        public decimal OldAmount { get; }
-        public AccountTransaction Transaction { get; }
+public class AccountTransactionAmountChangedDomainEvent : INotification
+{
+    public AccountTransactionAmountChangedDomainEvent(AccountTransaction transaction, decimal oldAmount)
+    {
+        Transaction = transaction;
+        OldAmount = oldAmount;
     }
+
+    public decimal OldAmount { get; }
+    public AccountTransaction Transaction { get; }
 }

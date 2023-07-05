@@ -1,23 +1,22 @@
 ﻿using Newtonsoft.Json;
 
-namespace Sinance.Web.Model
+namespace Sinance.Web.Model;
+
+/// <summary>
+/// Graph data to provide for Highcharts graphs
+/// </summary>
+[JsonObject]
+public class GraphData
 {
     /// <summary>
-    /// Graph data to provide for Highcharts graphs
+    /// Y-axis point data
     /// </summary>
-    [JsonObject]
-    public class GraphData
-    {
-        /// <summary>
-        /// Y-axis point data
-        /// </summary>
-        [JsonProperty("data")]
-        public decimal[] Data { get; set; }
+    [JsonProperty("data")]
+    public decimal[] Data { get; set; }
 
-        /// <summary>
-        /// Name of the data
-        /// </summary>
-        [JsonProperty("name")]
-        public string Name { get; set; }
-    }
+    /// <summary>
+    /// Name of the data
+    /// </summary>
+    [JsonProperty("name")]
+    public string Name { get; set; }
 }

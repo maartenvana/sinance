@@ -7,122 +7,121 @@ using Sinance.Infrastructure.Extensions;
 using Sinance.Infrastructure.Model;
 using System.Data;
 
-namespace Sinance.Infrastructure
+namespace Sinance.Infrastructure;
+
+public class SinanceContext : DbContext, IUnitOfWork
 {
-    public class SinanceContext : DbContext, IUnitOfWork
+    private readonly IMediator _mediator;
+    private readonly IUserIdProvider _userIdProvider;
+
+    private IDbContextTransaction _currentTransaction;
+
+    public IDbContextTransaction GetCurrentTransaction() => _currentTransaction;
+
+    public bool HasActiveTransaction => _currentTransaction != null;
+
+    public DbSet<Account> BankAccounts { get; set; }
+
+    public DbSet<Category> Categories { get; set; }
+
+    public DbSet<CategoryMapping> CategoryMappings { get; set; }
+
+    public DbSet<AccountTransaction> Transactions { get; set; }
+
+    public DbSet<ImportTransaction> SourceTransactions { get; set; }
+
+    public DbSet<SinanceUser> Users { get; set; }
+
+    /// <summary>
+    /// Default constructors
+    /// </summary>
+    public SinanceContext(
+        DbContextOptions<SinanceContext> options,
+        IMediator mediator,
+        IUserIdProvider userIdProvider)
+        : base(options)
     {
-        private readonly IMediator _mediator;
-        private readonly IUserIdProvider _userIdProvider;
+        _mediator = mediator;
+        _userIdProvider = userIdProvider;
+    }
 
-        private IDbContextTransaction _currentTransaction;
+    public async Task<IDbContextTransaction> BeginTransactionAsync()
+    {
+        if (_currentTransaction != null) return null;
 
-        public IDbContextTransaction GetCurrentTransaction() => _currentTransaction;
+        _currentTransaction = await Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
 
-        public bool HasActiveTransaction => _currentTransaction != null;
+        return _currentTransaction;
+    }
 
-        public DbSet<Account> BankAccounts { get; set; }
+    public async Task CommitTransactionAsync(IDbContextTransaction transaction)
+    {
+        ValidateTransactionCommit(transaction);
 
-        public DbSet<Category> Categories { get; set; }
-
-        public DbSet<CategoryMapping> CategoryMappings { get; set; }
-
-        public DbSet<AccountTransaction> Transactions { get; set; }
-
-        public DbSet<ImportTransaction> SourceTransactions { get; set; }
-
-        public DbSet<SinanceUser> Users { get; set; }
-
-        /// <summary>
-        /// Default constructors
-        /// </summary>
-        public SinanceContext(
-            DbContextOptions<SinanceContext> options,
-            IMediator mediator,
-            IUserIdProvider userIdProvider)
-            : base(options)
+        try
         {
-            _mediator = mediator;
-            _userIdProvider = userIdProvider;
+            await SaveChangesAsync();
+            transaction.Commit();
         }
-
-        public async Task<IDbContextTransaction> BeginTransactionAsync()
+        catch
         {
-            if (_currentTransaction != null) return null;
-
-            _currentTransaction = await Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
-
-            return _currentTransaction;
+            RollbackTransaction();
+            throw;
         }
-
-        public async Task CommitTransactionAsync(IDbContextTransaction transaction)
+        finally
         {
-            ValidateTransactionCommit(transaction);
-
-            try
+            if (_currentTransaction != null)
             {
-                await SaveChangesAsync();
-                transaction.Commit();
-            }
-            catch
-            {
-                RollbackTransaction();
-                throw;
-            }
-            finally
-            {
-                if (_currentTransaction != null)
-                {
-                    _currentTransaction.Dispose();
-                    _currentTransaction = null;
-                }
+                _currentTransaction.Dispose();
+                _currentTransaction = null;
             }
         }
+    }
 
-        private void ValidateTransactionCommit(IDbContextTransaction transaction)
+    private void ValidateTransactionCommit(IDbContextTransaction transaction)
+    {
+        if (transaction == null) throw new ArgumentNullException(nameof(transaction));
+        if (transaction != _currentTransaction) throw new InvalidOperationException($"Transaction {transaction.TransactionId} is not current");
+    }
+
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        // Dispatch Domain Events collection. 
+        // Choices:
+        // A) Right BEFORE committing data (EF SaveChanges) into the DB will make a single transaction including  
+        // side effects from the domain event handlers which are using the same DbContext with "InstancePerLifetimeScope" or "scoped" lifetime
+        // B) Right AFTER committing data (EF SaveChanges) into the DB will make multiple transactions. 
+        // You will need to handle eventual consistency and compensatory actions in case of failures in any of the Handlers. 
+        await _mediator.DispatchDomainEventsAsync(this);
+
+        // After executing this line all the changes (from the Command Handler and Domain Event Handlers) 
+        // performed through the DbContext will be committed
+        return await base.SaveChangesAsync(cancellationToken);
+    }
+
+    public void RollbackTransaction()
+    {
+        try
         {
-            if (transaction == null) throw new ArgumentNullException(nameof(transaction));
-            if (transaction != _currentTransaction) throw new InvalidOperationException($"Transaction {transaction.TransactionId} is not current");
+            _currentTransaction?.Rollback();
         }
-
-        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        finally
         {
-            // Dispatch Domain Events collection. 
-            // Choices:
-            // A) Right BEFORE committing data (EF SaveChanges) into the DB will make a single transaction including  
-            // side effects from the domain event handlers which are using the same DbContext with "InstancePerLifetimeScope" or "scoped" lifetime
-            // B) Right AFTER committing data (EF SaveChanges) into the DB will make multiple transactions. 
-            // You will need to handle eventual consistency and compensatory actions in case of failures in any of the Handlers. 
-            await _mediator.DispatchDomainEventsAsync(this);
-
-            // After executing this line all the changes (from the Command Handler and Domain Event Handlers) 
-            // performed through the DbContext will be committed
-            return await base.SaveChangesAsync(cancellationToken);
-        }
-
-        public void RollbackTransaction()
-        {
-            try
+            if (_currentTransaction != null)
             {
-                _currentTransaction?.Rollback();
-            }
-            finally
-            {
-                if (_currentTransaction != null)
-                {
-                    _currentTransaction.Dispose();
-                    _currentTransaction = null;
-                }
+                _currentTransaction.Dispose();
+                _currentTransaction = null;
             }
         }
+    }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.ApplyConfiguration(new AccountEntityTypeConfiguration(_userIdProvider));
-            modelBuilder.ApplyConfiguration(new ImportTransactionEntityTypeConfiguration(_userIdProvider));
-            modelBuilder.ApplyConfiguration(new AccountTransactionEntityTypeConfiguration(_userIdProvider));
-            modelBuilder.ApplyConfiguration(new CategoryMappingEntityTypeConfiguration(_userIdProvider));
-            modelBuilder.ApplyConfiguration(new CategoryEntityTypeConfiguration(_userIdProvider));
-            modelBuilder.ApplyConfiguration(new SinanceUserEntityTypeConfiguration());
-        }
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.ApplyConfiguration(new AccountEntityTypeConfiguration(_userIdProvider));
+        modelBuilder.ApplyConfiguration(new ImportTransactionEntityTypeConfiguration(_userIdProvider));
+        modelBuilder.ApplyConfiguration(new AccountTransactionEntityTypeConfiguration(_userIdProvider));
+        modelBuilder.ApplyConfiguration(new CategoryMappingEntityTypeConfiguration(_userIdProvider));
+        modelBuilder.ApplyConfiguration(new CategoryEntityTypeConfiguration(_userIdProvider));
+        modelBuilder.ApplyConfiguration(new SinanceUserEntityTypeConfiguration());
     }
 }

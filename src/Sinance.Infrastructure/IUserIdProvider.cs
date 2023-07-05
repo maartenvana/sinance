@@ -1,7 +1,6 @@
-﻿namespace Sinance.Infrastructure
+﻿namespace Sinance.Infrastructure;
+
+public interface IUserIdProvider
 {
-    public interface IUserIdProvider
-    {
-        int GetCurrentUserId();
-    }
+    int GetCurrentUserId();
 }

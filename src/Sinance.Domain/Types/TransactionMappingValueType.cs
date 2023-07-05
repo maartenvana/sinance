@@ -1,8 +1,7 @@
-﻿namespace Sinance.Domain.Types
+﻿namespace Sinance.Domain.Types;
+
+public enum TransactionMappingValueType
 {
-    public enum TransactionMappingValueType
-    {
-        Description = 5,
-        Name = 6,
-    }
+    Description = 5,
+    Name = 6,
 }

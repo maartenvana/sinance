@@ -2,13 +2,12 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Sinance.BlazorApp.Business.Services
+namespace Sinance.BlazorApp.Business.Services;
+
+public interface IBankAccountService
 {
-    public interface IBankAccountService
-    {
-        BankAccountModel GetBankAccount(int id);
-        List<BankAccountModel> GetAllActiveBankAccounts();
-        List<BankAccountModel> GetAllBankAccounts();
-        Task RecalculateBalanceAsync(int bankAccountId);
-    }
+    BankAccountModel GetBankAccount(int id);
+    List<BankAccountModel> GetAllActiveBankAccounts();
+    List<BankAccountModel> GetAllBankAccounts();
+    Task RecalculateBalanceAsync(int bankAccountId);
 }

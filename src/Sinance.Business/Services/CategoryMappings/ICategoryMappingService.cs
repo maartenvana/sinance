@@ -1,16 +1,15 @@
 ﻿using Sinance.Communication.Model.CategoryMapping;
 using System.Threading.Tasks;
 
-namespace Sinance.Business.Services.CategoryMappings
+namespace Sinance.Business.Services.CategoryMappings;
+
+public interface ICategoryMappingService
 {
-    public interface ICategoryMappingService
-    {
-        Task<CategoryMappingModel> CreateCategoryMappingForCurrentUser(CategoryMappingModel model);
+    Task<CategoryMappingModel> CreateCategoryMappingForCurrentUser(CategoryMappingModel model);
 
-        Task DeleteCategoryMappingByIdForCurrentUser(int categoryMappingId);
+    Task DeleteCategoryMappingByIdForCurrentUser(int categoryMappingId);
 
-        Task<CategoryMappingModel> GetCategoryMappingByIdForCurrentUser(int categoryMappingId);
+    Task<CategoryMappingModel> GetCategoryMappingByIdForCurrentUser(int categoryMappingId);
 
-        Task<CategoryMappingModel> UpdateCategoryMappingForCurrentUser(CategoryMappingModel model);
-    }
+    Task<CategoryMappingModel> UpdateCategoryMappingForCurrentUser(CategoryMappingModel model);
 }

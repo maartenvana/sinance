@@ -53,12 +53,12 @@
                 <a class="navbar-brand" href="/">Sinance</a>
             </div>
             @if (User.Identity.IsAuthenticated)
+        {
+            using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
             {
-                using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
-                {
-                    @Html.AntiForgeryToken()
+                @Html.AntiForgeryToken()
 
-                    <ul class="nav navbar-top-links navbar-right">
+                <ul class="nav navbar-top-links navbar-right">
                         <li class="dropdown">
                             <a class="dropdown-toggle" data-toggle="dropdown" href="#">
                                 <em class="fa fa-user fa-fw"></em> Logged in<em class="fa fa-caret-down"></em>
@@ -74,8 +74,8 @@
                             </ul>
                         </li>
                     </ul>
-                }
             }
+        }
 
             @await Component.InvokeAsync(nameof(SideNavigation))
         </nav>

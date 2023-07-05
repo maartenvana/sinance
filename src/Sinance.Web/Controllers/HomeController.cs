@@ -9,72 +9,71 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Sinance.Controllers
+namespace Sinance.Controllers;
+
+/// <summary>
+/// Home controller
+/// </summary>
+[Authorize]
+public class HomeController : Controller
 {
-    /// <summary>
-    /// Home controller
-    /// </summary>
-    [Authorize]
-    public class HomeController : Controller
+    private readonly IBankAccountService _bankAccountService;
+    private readonly ICategoryService _categoryService;
+    private readonly ITransactionService _transactionService;
+
+    public HomeController(
+        ICategoryService categoryService,
+        ITransactionService transactionService,
+        IBankAccountService bankAccountService)
     {
-        private readonly IBankAccountService _bankAccountService;
-        private readonly ICategoryService _categoryService;
-        private readonly ITransactionService _transactionService;
+        _categoryService = categoryService;
+        _transactionService = transactionService;
+        _bankAccountService = bankAccountService;
+    }
 
-        public HomeController(
-            ICategoryService categoryService,
-            ITransactionService transactionService,
-            IBankAccountService bankAccountService)
-        {
-            _categoryService = categoryService;
-            _transactionService = transactionService;
-            _bankAccountService = bankAccountService;
-        }
+    /// <summary>
+    /// Index action of the home controller
+    /// </summary>
+    /// <returns>View containing the overview</returns>
+    public async Task<IActionResult> Index()
+    {
+        var bankAccounts = await _bankAccountService.GetActiveBankAccountsForCurrentUser();
 
-        /// <summary>
-        /// Index action of the home controller
-        /// </summary>
-        /// <returns>View containing the overview</returns>
-        public async Task<IActionResult> Index()
-        {
-            var bankAccounts = await _bankAccountService.GetActiveBankAccountsForCurrentUser();
+        var monthYearDate = DateTime.Now.AddMonths(-1);
 
-            var monthYearDate = DateTime.Now.AddMonths(-1);
+        var transactions = await _transactionService.GetTransactionsForMonthForCurrentUser(monthYearDate.Year, monthYearDate.Month);
 
-            var transactions = await _transactionService.GetTransactionsForMonthForCurrentUser(monthYearDate.Year, monthYearDate.Month);
+        var allCategories = await _categoryService.GetAllCategoriesForCurrentUser();
+        var internalCashFlowCategory = allCategories.Single(x => x.Name == StandardCategoryNames.InternalCashFlowName);
 
-            var allCategories = await _categoryService.GetAllCategoriesForCurrentUser();
-            var internalCashFlowCategory = allCategories.Single(x => x.Name == StandardCategoryNames.InternalCashFlowName);
+        // No need to sort this list, we loop through it by month numbers
+        var totalProfitLossLastMonth = transactions.Sum(x => x.Amount);
 
-            // No need to sort this list, we loop through it by month numbers
-            var totalProfitLossLastMonth = transactions.Sum(x => x.Amount);
-
-            var totalIncomeLastMonth = transactions.Where(x =>
-                        x.Category?.CategoryId != internalCashFlowCategory.Id && // Cashflow
-                        x.Amount > 0).Sum(x => x.Amount);
-
-            var totalExpensesLastMonth = transactions.Where(x =>
-                        x.Category?.CategoryId != internalCashFlowCategory.Id && // Cashflow
-                        x.Amount < 0).Sum(x => x.Amount * -1);
-
-            // Yes it's ascending cause we are looking for the lowest amount
-            var topExpenses = transactions.Where(x =>
+        var totalIncomeLastMonth = transactions.Where(x =>
                     x.Category?.CategoryId != internalCashFlowCategory.Id && // Cashflow
-                    x.Amount < 0)
-                .OrderBy(x => x.Amount)
-                .Take(15)
-                .ToList();
+                    x.Amount > 0).Sum(x => x.Amount);
 
-            var dashboardModel = new DashboardViewModel
-            {
-                BankAccounts = bankAccounts,
-                BiggestExpenses = topExpenses,
-                LastMonthProfitLoss = totalProfitLossLastMonth,
-                LastMonthExpenses = totalExpensesLastMonth,
-                LastMonthIncome = totalIncomeLastMonth
-            };
+        var totalExpensesLastMonth = transactions.Where(x =>
+                    x.Category?.CategoryId != internalCashFlowCategory.Id && // Cashflow
+                    x.Amount < 0).Sum(x => x.Amount * -1);
 
-            return View(dashboardModel);
-        }
+        // Yes it's ascending cause we are looking for the lowest amount
+        var topExpenses = transactions.Where(x =>
+                x.Category?.CategoryId != internalCashFlowCategory.Id && // Cashflow
+                x.Amount < 0)
+            .OrderBy(x => x.Amount)
+            .Take(15)
+            .ToList();
+
+        var dashboardModel = new DashboardViewModel
+        {
+            BankAccounts = bankAccounts,
+            BiggestExpenses = topExpenses,
+            LastMonthProfitLoss = totalProfitLossLastMonth,
+            LastMonthExpenses = totalExpensesLastMonth,
+            LastMonthIncome = totalIncomeLastMonth
+        };
+
+        return View(dashboardModel);
     }
 }

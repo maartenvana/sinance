@@ -5,48 +5,47 @@ using Microsoft.Extensions.Logging;
 using Sinance.Common.Configuration;
 using System;
 
-namespace Sinance.Storage
+namespace Sinance.Storage;
+
+public class StorageModule : Module
 {
-    public class StorageModule : Module
+    protected override void Load(ContainerBuilder builder)
     {
-        protected override void Load(ContainerBuilder builder)
+        builder.Register<Func<IUnitOfWork>>(x =>
         {
-            builder.Register<Func<IUnitOfWork>>(x =>
+            var factory = x.Resolve<Func<Owned<IUnitOfWork>>>();
+
+            return () =>
             {
-                var factory = x.Resolve<Func<Owned<IUnitOfWork>>>();
+                var newUnitOfWork = factory();
+                return newUnitOfWork.Value;
+            };
+        });
 
-                return () =>
-                {
-                    var newUnitOfWork = factory();
-                    return newUnitOfWork.Value;
-                };
-            });
+        builder.RegisterGeneric(typeof(GenericRepository<>)).As(typeof(IGenericRepository<>));
 
-            builder.RegisterGeneric(typeof(GenericRepository<>)).As(typeof(IGenericRepository<>));
+        builder.Register(context =>
+        {
+            var appSettings = context.Resolve<AppSettings>();
+            var contextOptionsBuilder = new DbContextOptionsBuilder<SinanceContext>();
 
-            builder.Register(context =>
+            if (appSettings.Database.LoggingEnabled)
             {
-                var appSettings = context.Resolve<AppSettings>();
-                var contextOptionsBuilder = new DbContextOptionsBuilder<SinanceContext>();
+                contextOptionsBuilder.UseLoggerFactory(context.Resolve<ILoggerFactory>());
+            }
+            contextOptionsBuilder.UseMySql(appSettings.ConnectionStrings.Sql, new MySqlServerVersion("5.7"));
 
-                if (appSettings.Database.LoggingEnabled)
-                {
-                    contextOptionsBuilder.UseLoggerFactory(context.Resolve<ILoggerFactory>());
-                }
-                contextOptionsBuilder.UseMySql(appSettings.ConnectionStrings.Sql, new MySqlServerVersion("5.7"));
+            return contextOptionsBuilder.Options;
+        }).SingleInstance();
 
-                return contextOptionsBuilder.Options;
-            }).SingleInstance();
+        builder.Register(context =>
+        {
+            var options = context.Resolve<DbContextOptions<SinanceContext>>();
+            var userIdProvider = context.Resolve<IUserIdProvider>();
 
-            builder.Register(context =>
-            {
-                var options = context.Resolve<DbContextOptions<SinanceContext>>();
-                var userIdProvider = context.Resolve<IUserIdProvider>();
+            return new SinanceContext(options, userIdProvider);
+        }).AsSelf().InstancePerOwned<IUnitOfWork>();
 
-                return new SinanceContext(options, userIdProvider);
-            }).AsSelf().InstancePerOwned<IUnitOfWork>();
-
-            builder.RegisterType<UnitOfWork>().As<IUnitOfWork>();
-        }
+        builder.RegisterType<UnitOfWork>().As<IUnitOfWork>();
     }
 }

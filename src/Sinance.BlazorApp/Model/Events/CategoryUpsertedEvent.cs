@@ -1,11 +1,10 @@
 ﻿using Sinance.BlazorApp.Business.Model.Category;
 
-namespace Sinance.BlazorApp.Model.Events
-{
-    public class CategoryUpsertedEvent
-    {
-        public bool Created { get; set; }
+namespace Sinance.BlazorApp.Model.Events;
 
-        public CategoryModel Model { get; set; }
-    }
+public class CategoryUpsertedEvent
+{
+    public bool Created { get; set; }
+
+    public CategoryModel Model { get; set; }
 }

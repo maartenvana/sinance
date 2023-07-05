@@ -11,11 +11,11 @@
     <Header>@ModalHeader</Header>
     <Content>
         @if (upsertTransaction != null)
-        {
-            <UpsertTransactionForm FormId="UpsertTransactionForm"
+    {
+        <UpsertTransactionForm FormId="UpsertTransactionForm"
                                UpsertTransaction="upsertTransaction"
                                OnValidSubmit="async(transaction) => await UpsertTransaction(transaction)" />
-        }
+    }
     </Content>
     <Footer Context="modal">
         <button class="btn btn-default" Color="BSColor.Secondary" @onclick="modal.HideAsync" type="button">Close</button>
@@ -24,95 +24,95 @@
 </BSModal>
 
 @code {
-    private UpsertTransactionModel upsertTransaction;
+private UpsertTransactionModel upsertTransaction;
 
-    [Parameter]
-    public EventCallback<TransactionUpsertedEvent> OnTransactionsUpserted { get; set; }
+[Parameter]
+public EventCallback<TransactionUpsertedEvent> OnTransactionsUpserted { get; set; }
 
-    private BSModal modal { get; set; }
+private BSModal modal { get; set; }
 
-    private string ModalHeader => upsertTransaction?.IsNew == true ? "Create Transaction" : "Update transaction";
+private string ModalHeader => upsertTransaction?.IsNew == true ? "Create Transaction" : "Update transaction";
 
-    public async Task OpenForNewTransactionAsync(int? bankAccountId)
+public async Task OpenForNewTransactionAsync(int? bankAccountId)
+{
+    upsertTransaction = new()
+        {
+            BankAccountId = bankAccountId,
+            Date = DateTime.Today
+        };
+
+    await modal.ShowAsync();
+}
+
+public void OnHide()
+{
+    upsertTransaction = null;
+}
+
+public async Task OpenForNewTransactionFromSourceAsync(TransactionModel transaction, int bankAccountId)
+{
+    upsertTransaction = transaction.ToUpsertModel(bankAccountId);
+    upsertTransaction.MarkAsNew();
+
+    await modal.ShowAsync();
+}
+
+public async Task OpenForExistingTransactionAsync(TransactionModel transaction, int bankAccountId)
+{
+    upsertTransaction = transaction.ToUpsertModel(bankAccountId);
+
+    await modal.ShowAsync();
+}
+
+public async Task UpsertTransaction(UpsertTransactionModel validTransaction)
+{
+    var upsertedTransaction = await CreateOrUpdateTransaction(validTransaction);
+
+    await OnTransactionsUpserted.InvokeAsync(new TransactionUpsertedEvent
+        {
+            Created = validTransaction.IsNew,
+            Transaction = upsertedTransaction.ToTransactionModel()
+        });
+
+    await modal.HideAsync();
+}
+private async Task<AccountTransaction> CreateOrUpdateTransaction(UpsertTransactionModel validTransaction)
+{
+    if (validTransaction.IsNew)
     {
-        upsertTransaction = new()
+        return await _mediator.Send(new CreateAccountTransactionCommand
             {
-                BankAccountId = bankAccountId,
-                Date = DateTime.Today
-            };
-
-        await modal.ShowAsync();
-    }
-
-    public void OnHide()
-    {
-        upsertTransaction = null;
-    }
-
-    public async Task OpenForNewTransactionFromSourceAsync(TransactionModel transaction, int bankAccountId)
-    {
-        upsertTransaction = transaction.ToUpsertModel(bankAccountId);
-        upsertTransaction.MarkAsNew();
-
-        await modal.ShowAsync();
-    }
-
-    public async Task OpenForExistingTransactionAsync(TransactionModel transaction, int bankAccountId)
-    {
-        upsertTransaction = transaction.ToUpsertModel(bankAccountId);
-
-        await modal.ShowAsync();
-    }
-
-    public async Task UpsertTransaction(UpsertTransactionModel validTransaction)
-    {
-        var upsertedTransaction = await CreateOrUpdateTransaction(validTransaction);
-
-        await OnTransactionsUpserted.InvokeAsync(new TransactionUpsertedEvent
-            {
-                Created = validTransaction.IsNew,
-                Transaction = upsertedTransaction.ToTransactionModel()
+                UserId = _userProvider.GetCurrentUserId(),
+                CreationModel = new Application.Model.AccountTransactionCreationModel
+                {
+                    Amount = validTransaction.Amount,
+                    BankAccountId = validTransaction.BankAccountId.Value,
+                    CategoryId = validTransaction.CategoryId,
+                    Date = validTransaction.Date,
+                    Description = validTransaction.Description,
+                    DestinationAccountNumber = validTransaction.DestinationAccountNumber,
+                    Name = validTransaction.Name,
+                    SourceAccountNumber = validTransaction.SourceAccountNumber
+                }
             });
-
-        await modal.HideAsync();
     }
-    private async Task<AccountTransaction> CreateOrUpdateTransaction(UpsertTransactionModel validTransaction)
+    else
     {
-        if (validTransaction.IsNew)
-        {
-            return await _mediator.Send(new CreateAccountTransactionCommand
+        return await _mediator.Send(new UpdateAccountTransactionCommand
+            {
+                UserId = _userProvider.GetCurrentUserId(),
+                TransactionId = validTransaction.Id,
+                UpdateModel = new Application.Model.AccountTransactionUpdateModel
                 {
-                    UserId = _userProvider.GetCurrentUserId(),
-                    CreationModel = new Application.Model.AccountTransactionCreationModel
-                    {
-                        Amount = validTransaction.Amount,
-                        BankAccountId = validTransaction.BankAccountId.Value,
-                        CategoryId = validTransaction.CategoryId,
-                        Date = validTransaction.Date,
-                        Description = validTransaction.Description,
-                        DestinationAccountNumber = validTransaction.DestinationAccountNumber,
-                        Name = validTransaction.Name,
-                        SourceAccountNumber = validTransaction.SourceAccountNumber
-                    }
-                });
-        }
-        else
-        {
-            return await _mediator.Send(new UpdateAccountTransactionCommand
-                {
-                    UserId = _userProvider.GetCurrentUserId(),
-                    TransactionId = validTransaction.Id,
-                    UpdateModel = new Application.Model.AccountTransactionUpdateModel
-                    {
-                        Amount = validTransaction.Amount,
-                        CategoryId = validTransaction.CategoryId,
-                        Date = validTransaction.Date,
-                        Description = validTransaction.Description,
-                        DestinationAccountNumber = validTransaction.DestinationAccountNumber,
-                        Name = validTransaction.Name,
-                        SourceAccountNumber = validTransaction.SourceAccountNumber
-                    }
-                });
-        }
+                    Amount = validTransaction.Amount,
+                    CategoryId = validTransaction.CategoryId,
+                    Date = validTransaction.Date,
+                    Description = validTransaction.Description,
+                    DestinationAccountNumber = validTransaction.DestinationAccountNumber,
+                    Name = validTransaction.Name,
+                    SourceAccountNumber = validTransaction.SourceAccountNumber
+                }
+            });
     }
+}
 }

@@ -87,145 +87,145 @@
 </div>
 
 @code {
-    [Parameter]
-    public FindAccountTransactionsFilter FilterModel { get; set; } = new();
+[Parameter]
+public FindAccountTransactionsFilter FilterModel { get; set; } = new();
 
-    private SelectTransactionCategoryModal selectTransactionCategoryModal;
-    private SplitTransactionModal splitTransactionModal;
-    private UpsertTransactionModal upsertTransactionModal;
+private SelectTransactionCategoryModal selectTransactionCategoryModal;
+private SplitTransactionModal splitTransactionModal;
+private UpsertTransactionModal upsertTransactionModal;
 
-    private List<CategoryModel> AllCategories { get; set; }
+private List<CategoryModel> AllCategories { get; set; }
 
-    private ConfirmModal<TransactionModel> confirmDeleteTransactionModal;
+private ConfirmModal<TransactionModel> confirmDeleteTransactionModal;
 
-    private SelectablePagingTable<TransactionModel> table;
+private SelectablePagingTable<TransactionModel> table;
 
-    public async Task RefreshAsync() => await table.RefreshAsync();
+public async Task RefreshAsync() => await table.RefreshAsync();
 
-    public string GetTransactionId(TransactionModel model) => model.Id.ToString();
+public string GetTransactionId(TransactionModel model) => model.Id.ToString();
 
-    protected override void OnInitialized()
+protected override void OnInitialized()
+{
+    AllCategories = categoryService.GetAllCategories();
+}
+
+protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    if (!firstRender)
+        return;
+
+    await RefreshAsync();
+}
+
+private CategoryModel GetCategoryModelForTransaction(TransactionModel transactionModel)
+{
+    return AllCategories.SingleOrDefault(x => x.Id == transactionModel.CategoryId);
+}
+
+public async Task OpenSplitTransactionModalForSingle(TransactionModel transaction) =>
+    await splitTransactionModal.OpenForTransactionsAsync(transaction, GetCategoryModelForTransaction(transaction));
+
+public async Task OpenEditTransactionModal(TransactionModel transactionModel)
+{
+    await upsertTransactionModal.OpenForExistingTransactionAsync(transactionModel, transactionModel.BankAccountId);
+}
+
+public async Task OpenCreateTransactionModalFromSource(TransactionModel transactionModel)
+{
+    await upsertTransactionModal.OpenForNewTransactionFromSourceAsync(transactionModel, transactionModel.BankAccountId);
+}
+
+public async void OpenCreateTransactionModal()
+{
+    await upsertTransactionModal.OpenForNewTransactionAsync(FilterModel.BankAccountId);
+}
+
+private async Task ConfirmDeleteTransaction(TransactionModel transactionModel)
+{
+    await mediator.Send(new DeleteAccountTransactionCommand
     {
-        AllCategories = categoryService.GetAllCategories();
+        TransactionId = transactionModel.Id,
+        UserId = 4
+    });
+
+    table.DeleteRow(transactionModel);
+}
+
+private async Task StartDeleteTransaction(TransactionModel transactionModel)
+{
+    await confirmDeleteTransactionModal.PromptConfirmForModelAsync(
+        title: $"Confirm: Delete transaction",
+        message: $"Are you sure you want to delete transaction: '{transactionModel.Name}'?",
+        model: transactionModel);
+}
+
+public void TransactionsUpserted(TransactionUpsertedEvent eventData)
+{
+    if (eventData.Created)
+    {
+        table.InsertRowData(
+            transaction => transaction.Date == eventData.Transaction.Date,
+            new TransactionModel[] { eventData.Transaction });
+    }
+    else
+    {
+        table.UpdateRowData(eventData.Transaction);
+    }
+}
+
+public async void OpenCategorySelectionModalForSelected()
+{
+    if (table.SelectedRows.Any())
+    {
+        await selectTransactionCategoryModal.OpenForTransactionsAsync(table.SelectedRows);
+    }
+    else
+    {
+        userNotificationService.ShowError("No transactions selected");
+    }
+}
+
+public async Task OpenCategoryModalForSingle(TransactionModel transaction) =>
+    await selectTransactionCategoryModal.OpenForTransactionsAsync(new List<TransactionModel> { transaction });
+
+public void TransactionsSplitted(TransactionsSplittedEvent eventData)
+{
+    table.ReplaceRowData(
+        eventData.OriginalTransaction.Id.ToString(),
+        eventData.NewTransactions);
+
+    userNotificationService.ShowSuccess($"Transaction was split into {eventData.NewTransactions.Count} new transaction(s)");
+}
+
+public void TransactionsUpdated(TransactionsCategoryUpdatedEvent eventModel)
+{
+    foreach (var newTransaction in eventModel.Transactions)
+    {
+        table.UpdateRowData(newTransaction);
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    userNotificationService.ShowSuccess($"Updated {eventModel.Transactions.Count} transaction(s) categories");
+}
+
+public async Task<List<TransactionModel>> LoadMoreTransactionsAsync(int page, int pageSize)
+{
+    try
     {
-        if (!firstRender)
-            return;
+        FilterModel.PageSize = pageSize;
+        FilterModel.Page = page;
 
-        await RefreshAsync();
+        var transactions = await transactionQueries.FindTransactionsAsync(FilterModel);
+        return transactions.Select(x => x.ToTransactionModel()).ToList();
     }
-
-    private CategoryModel GetCategoryModelForTransaction(TransactionModel transactionModel)
+    catch (Exception)
     {
-        return AllCategories.SingleOrDefault(x => x.Id == transactionModel.CategoryId);
+        userNotificationService.ShowError("Exception during transaction retrieval");
+
+        return new List<TransactionModel>();
     }
-
-    public async Task OpenSplitTransactionModalForSingle(TransactionModel transaction) =>
-        await splitTransactionModal.OpenForTransactionsAsync(transaction, GetCategoryModelForTransaction(transaction));
-
-    public async Task OpenEditTransactionModal(TransactionModel transactionModel)
+    finally
     {
-        await upsertTransactionModal.OpenForExistingTransactionAsync(transactionModel, transactionModel.BankAccountId);
+        StateHasChanged();
     }
-
-    public async Task OpenCreateTransactionModalFromSource(TransactionModel transactionModel)
-    {
-        await upsertTransactionModal.OpenForNewTransactionFromSourceAsync(transactionModel, transactionModel.BankAccountId);
-    }
-
-    public async void OpenCreateTransactionModal()
-    {
-        await upsertTransactionModal.OpenForNewTransactionAsync(FilterModel.BankAccountId);
-    }
-
-    private async Task ConfirmDeleteTransaction(TransactionModel transactionModel)
-    {
-        await mediator.Send(new DeleteAccountTransactionCommand
-        {
-            TransactionId = transactionModel.Id,
-            UserId = 4
-        });
-
-        table.DeleteRow(transactionModel);
-    }
-
-    private async Task StartDeleteTransaction(TransactionModel transactionModel)
-    {
-        await confirmDeleteTransactionModal.PromptConfirmForModelAsync(
-            title: $"Confirm: Delete transaction",
-            message: $"Are you sure you want to delete transaction: '{transactionModel.Name}'?",
-            model: transactionModel);
-    }
-
-    public void TransactionsUpserted(TransactionUpsertedEvent eventData)
-    {
-        if (eventData.Created)
-        {
-            table.InsertRowData(
-                transaction => transaction.Date == eventData.Transaction.Date,
-                new TransactionModel[] { eventData.Transaction });
-        }
-        else
-        {
-            table.UpdateRowData(eventData.Transaction);
-        }
-    }
-
-    public async void OpenCategorySelectionModalForSelected()
-    {
-        if (table.SelectedRows.Any())
-        {
-            await selectTransactionCategoryModal.OpenForTransactionsAsync(table.SelectedRows);
-        }
-        else
-        {
-            userNotificationService.ShowError("No transactions selected");
-        }
-    }
-
-    public async Task OpenCategoryModalForSingle(TransactionModel transaction) =>
-        await selectTransactionCategoryModal.OpenForTransactionsAsync(new List<TransactionModel> { transaction });
-
-    public void TransactionsSplitted(TransactionsSplittedEvent eventData)
-    {
-        table.ReplaceRowData(
-            eventData.OriginalTransaction.Id.ToString(),
-            eventData.NewTransactions);
-
-        userNotificationService.ShowSuccess($"Transaction was split into {eventData.NewTransactions.Count} new transaction(s)");
-    }
-
-    public void TransactionsUpdated(TransactionsCategoryUpdatedEvent eventModel)
-    {
-        foreach (var newTransaction in eventModel.Transactions)
-        {
-            table.UpdateRowData(newTransaction);
-        }
-
-        userNotificationService.ShowSuccess($"Updated {eventModel.Transactions.Count} transaction(s) categories");
-    }
-
-    public async Task<List<TransactionModel>> LoadMoreTransactionsAsync(int page, int pageSize)
-    {
-        try
-        {
-            FilterModel.PageSize = pageSize;
-            FilterModel.Page = page;
-
-            var transactions = await transactionQueries.FindTransactionsAsync(FilterModel);
-            return transactions.Select(x => x.ToTransactionModel()).ToList();
-        }
-        catch (Exception)
-        {
-            userNotificationService.ShowError("Exception during transaction retrieval");
-
-            return new List<TransactionModel>();
-        }
-        finally
-        {
-            StateHasChanged();
-        }
-    }
+}
 }

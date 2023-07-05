@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Sinance.BlazorApp.Business.Services
+namespace Sinance.BlazorApp.Business.Services;
+
+public interface IReportingService
 {
-    public interface IReportingService
-    {
-        Dictionary<DateTime, decimal> GetTotalPerMonthForCategory(int? categoryId, int yearStart, int yearEnd);
-    }
+    Dictionary<DateTime, decimal> GetTotalPerMonthForCategory(int? categoryId, int yearStart, int yearEnd);
 }

@@ -1,7 +1,6 @@
-﻿namespace Sinance.BlazorApp.Business.Model.Category
+﻿namespace Sinance.BlazorApp.Business.Model.Category;
+
+public class DeleteCategoryModel
 {
-    public class DeleteCategoryModel
-    {
-        public int CategoryId { get; set; }
-    }
+    public int CategoryId { get; set; }
 }

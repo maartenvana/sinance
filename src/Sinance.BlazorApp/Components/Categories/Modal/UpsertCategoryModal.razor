@@ -7,12 +7,12 @@
     <Header>@ModalHeader</Header>
     <Content>
         @if (upsertModel != null)
-        {
-            <UpsertCategoryForm 
+    {
+        <UpsertCategoryForm 
                 FormId="UpsertCategoryForm" 
                 Model="upsertModel"
                 OnValidSubmit="async(model) => await UpsertAsync(model)" />
-        }
+    }
     </Content>
     <Footer Context="modal">
         <button class="btn btn-default" Color="BSColor.Secondary" @onclick="CancelAsync" type="button">Close</button>
@@ -21,47 +21,47 @@
 </BSModal>
 
 @code {
-    private UpsertCategoryModel upsertModel;
+private UpsertCategoryModel upsertModel;
 
-    [Parameter]
-    public EventCallback<CategoryUpsertedEvent> OnUpserted { get; set; }
+[Parameter]
+public EventCallback<CategoryUpsertedEvent> OnUpserted { get; set; }
 
-    private BSModal modal { get; set; }
+private BSModal modal { get; set; }
 
-    private string ModalHeader => upsertModel?.IsNew == true ? "Create category" : "Update category";
+private string ModalHeader => upsertModel?.IsNew == true ? "Create category" : "Update category";
 
-    public async Task OpenForNewAsync()
-    {
-        upsertModel = new();
+public async Task OpenForNewAsync()
+{
+    upsertModel = new();
 
-        await modal.ShowAsync();
-    }
+    await modal.ShowAsync();
+}
 
-    public async Task CancelAsync()
-    {
-        upsertModel = null;
+public async Task CancelAsync()
+{
+    upsertModel = null;
 
-        await modal.HideAsync();
-    }
+    await modal.HideAsync();
+}
 
-    public async Task OpenForExistingAsync(CategoryModel model)
-    {
-        upsertModel = model.ToUpsertModel();
+public async Task OpenForExistingAsync(CategoryModel model)
+{
+    upsertModel = model.ToUpsertModel();
 
-        await modal.ShowAsync();
-    }
+    await modal.ShowAsync();
+}
 
-    public async Task UpsertAsync(UpsertCategoryModel validForm)
-    {
-        var upsertedModel = await categoryService.UpsertCategoryAsync(validForm);
+public async Task UpsertAsync(UpsertCategoryModel validForm)
+{
+    var upsertedModel = await categoryService.UpsertCategoryAsync(validForm);
 
-        await OnUpserted.InvokeAsync(new CategoryUpsertedEvent
-            {
-                Created = validForm.IsNew,
-                Model = upsertedModel
-            });
+    await OnUpserted.InvokeAsync(new CategoryUpsertedEvent
+        {
+            Created = validForm.IsNew,
+            Model = upsertedModel
+        });
 
-        await modal.HideAsync();
-    }
+    await modal.HideAsync();
+}
 
 }

@@ -14,11 +14,11 @@
     </thead>
     <tbody>
         @if (Model != null)
+    {
+        foreach (var transaction in Model)
         {
-            foreach (var transaction in Model)
-            {
-                @await Html.PartialAsync("TransactionSimpleRow", transaction)
-            }
+            @await Html.PartialAsync("TransactionSimpleRow", transaction)
         }
+    }
     </tbody>
 </table>

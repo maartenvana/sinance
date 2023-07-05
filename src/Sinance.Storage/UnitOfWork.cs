@@ -4,74 +4,73 @@ using Sinance.Storage.Entities;
 using System;
 using System.Threading.Tasks;
 
-namespace Sinance.Storage
+namespace Sinance.Storage;
+
+public class UnitOfWork : IUnitOfWork
 {
-    public class UnitOfWork : IUnitOfWork
+    private bool _disposedValue = false;
+
+    public IGenericRepository<BankAccountEntity> BankAccountRepository { get; }
+
+    public IGenericRepository<CategoryMappingEntity> CategoryMappingRepository { get; }
+
+    public IGenericRepository<CategoryEntity> CategoryRepository { get; }
+
+    public SinanceContext Context { get; }
+
+    public IGenericRepository<CustomReportCategoryEntity> CustomReportCategoryRepository { get; }
+
+    public IGenericRepository<CustomReportEntity> CustomReportRepository { get; }
+
+    public IGenericRepository<ImportTransactionEntity> ImportTransactionsRepository { get; }
+
+    public IGenericRepository<TransactionEntity> TransactionRepository { get; }
+
+    public IGenericRepository<SinanceUserEntity> UserRepository { get; }
+
+    public UnitOfWork(
+        SinanceContext context,
+        IGenericRepository<SinanceUserEntity> userRepository,
+        IGenericRepository<BankAccountEntity> bankAccountRepository,
+        IGenericRepository<CategoryEntity> categorieRepository,
+        IGenericRepository<CategoryMappingEntity> categoryMappingRepository,
+        IGenericRepository<CustomReportCategoryEntity> customReportCategorieRepository,
+        IGenericRepository<CustomReportEntity> customReportRepository,
+        IGenericRepository<TransactionEntity> transactionRepository,
+        IGenericRepository<ImportTransactionEntity> importTransactionRepository)
     {
-        private bool _disposedValue = false;
+        Context = context;
+        UserRepository = userRepository;
+        BankAccountRepository = bankAccountRepository;
+        CategoryRepository = categorieRepository;
+        CategoryMappingRepository = categoryMappingRepository;
+        CustomReportCategoryRepository = customReportCategorieRepository;
+        CustomReportRepository = customReportRepository;
+        TransactionRepository = transactionRepository;
+        ImportTransactionsRepository = importTransactionRepository;
+    }
 
-        public IGenericRepository<BankAccountEntity> BankAccountRepository { get; }
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 
-        public IGenericRepository<CategoryMappingEntity> CategoryMappingRepository { get; }
+    public async Task<int> SaveAsync()
+    {
+        return await Context.SaveChangesAsync();
+    }
 
-        public IGenericRepository<CategoryEntity> CategoryRepository { get; }
-
-        public SinanceContext Context { get; }
-
-        public IGenericRepository<CustomReportCategoryEntity> CustomReportCategoryRepository { get; }
-
-        public IGenericRepository<CustomReportEntity> CustomReportRepository { get; }
-
-        public IGenericRepository<ImportTransactionEntity> ImportTransactionsRepository { get; }
-
-        public IGenericRepository<TransactionEntity> TransactionRepository { get; }
-
-        public IGenericRepository<SinanceUserEntity> UserRepository { get; }
-
-        public UnitOfWork(
-            SinanceContext context,
-            IGenericRepository<SinanceUserEntity> userRepository,
-            IGenericRepository<BankAccountEntity> bankAccountRepository,
-            IGenericRepository<CategoryEntity> categorieRepository,
-            IGenericRepository<CategoryMappingEntity> categoryMappingRepository,
-            IGenericRepository<CustomReportCategoryEntity> customReportCategorieRepository,
-            IGenericRepository<CustomReportEntity> customReportRepository,
-            IGenericRepository<TransactionEntity> transactionRepository,
-            IGenericRepository<ImportTransactionEntity> importTransactionRepository)
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposedValue)
         {
-            Context = context;
-            UserRepository = userRepository;
-            BankAccountRepository = bankAccountRepository;
-            CategoryRepository = categorieRepository;
-            CategoryMappingRepository = categoryMappingRepository;
-            CustomReportCategoryRepository = customReportCategorieRepository;
-            CustomReportRepository = customReportRepository;
-            TransactionRepository = transactionRepository;
-            ImportTransactionsRepository = importTransactionRepository;
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        public async Task<int> SaveAsync()
-        {
-            return await Context.SaveChangesAsync();
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposedValue)
+            if (disposing)
             {
-                if (disposing)
-                {
-                    Context.Dispose();
-                }
-
-                _disposedValue = true;
+                Context.Dispose();
             }
+
+            _disposedValue = true;
         }
     }
 }

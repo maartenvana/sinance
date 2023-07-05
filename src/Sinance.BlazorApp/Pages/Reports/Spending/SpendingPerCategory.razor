@@ -17,75 +17,75 @@
 </BodyContent>
 
 @code {
-    private int? selectedCategoryId;
+private int? selectedCategoryId;
 
-    private EditContext editContext;
+private EditContext editContext;
 
-    private BarConfig chartConfig;
+private BarConfig chartConfig;
 
-    private Chart chart;
+private Chart chart;
 
-    private List<CategoryModel> categories;
+private List<CategoryModel> categories;
 
-    protected override void OnInitialized()
+protected override void OnInitialized()
+{
+    editContext = new EditContext(new
     {
-        editContext = new EditContext(new
-        {
-            selectedCategoryId
-        });
-        editContext.OnFieldChanged += OnFieldChanged;
+        selectedCategoryId
+    });
+    editContext.OnFieldChanged += OnFieldChanged;
 
-        categories = categoryService.GetAllCategories();
+    categories = categoryService.GetAllCategories();
 
-        chartConfig = new BarConfig(horizontal: true)
+    chartConfig = new BarConfig(horizontal: true)
+    {
+        Options = new BarOptions
         {
-            Options = new BarOptions
+            Responsive = true,
+            Legend = new Legend
             {
-                Responsive = true,
-                Legend = new Legend
-                {
-                    Display = false
-                },
-                Title = new OptionsTitle
-                {
-                    Display = false
-                }
+                Display = false
+            },
+            Title = new OptionsTitle
+            {
+                Display = false
             }
+        }
+    };
+
+    base.OnInitialized();
+}
+
+private void OnFieldChanged(object sender, FieldChangedEventArgs args)
+{
+    if (selectedCategoryId.HasValue)
+    {
+        var category = categories.Single(x => x.Id == selectedCategoryId.Value);
+
+        var totalsPerMonth = reportingService.GetTotalPerMonthForCategory(selectedCategoryId.Value, 2018, 2022);
+
+        var labels = totalsPerMonth.Select(x => x.ToString());
+
+        var dataSet = new BarDataset<decimal>(totalsPerMonth.Select(x => x.Value * -1), horizontal: true)
+        {
+            Label = category.Name,
+            BackgroundColor = category.ColorCode
         };
 
-        base.OnInitialized();
-    }
+        var aspectRatio = 12.0 / totalsPerMonth.Count;
 
-    private void OnFieldChanged(object sender, FieldChangedEventArgs args)
-    {
-        if (selectedCategoryId.HasValue)
+        chartConfig.Options.AspectRatio = aspectRatio > 1 ? 1 : aspectRatio;
+
+        chartConfig.Data.Labels.Clear();
+        foreach(var month in totalsPerMonth.Keys)
         {
-            var category = categories.Single(x => x.Id == selectedCategoryId.Value);
-
-            var totalsPerMonth = reportingService.GetTotalPerMonthForCategory(selectedCategoryId.Value, 2018, 2022);
-
-            var labels = totalsPerMonth.Select(x => x.ToString());
-
-            var dataSet = new BarDataset<decimal>(totalsPerMonth.Select(x => x.Value * -1), horizontal: true)
-            {
-                Label = category.Name,
-                BackgroundColor = category.ColorCode
-            };
-
-            var aspectRatio = 12.0 / totalsPerMonth.Count;
-
-            chartConfig.Options.AspectRatio = aspectRatio > 1 ? 1 : aspectRatio;
-
-            chartConfig.Data.Labels.Clear();
-            foreach(var month in totalsPerMonth.Keys)
-            {
-                chartConfig.Data.Labels.Add(month.ToString("MMMM yy"));
-            }
-
-            chartConfig.Data.Datasets.Clear();
-            chartConfig.Data.Datasets.Add(dataSet);
-
-            chart.Update();
+            chartConfig.Data.Labels.Add(month.ToString("MMMM yy"));
         }
+
+        chartConfig.Data.Datasets.Clear();
+        chartConfig.Data.Datasets.Add(dataSet);
+
+        chart.Update();
     }
+}
 }

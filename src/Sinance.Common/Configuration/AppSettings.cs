@@ -1,11 +1,10 @@
-﻿namespace Sinance.Common.Configuration
+﻿namespace Sinance.Common.Configuration;
+
+public class AppSettings
 {
-    public class AppSettings
-    {
-        public ConnectionStrings ConnectionStrings { get; set; }
+    public ConnectionStrings ConnectionStrings { get; set; }
 
-        public Database Database { get; set; }
+    public Database Database { get; set; }
 
-        public string SinanceVersion { get; set; }
-    }
+    public string SinanceVersion { get; set; }
 }

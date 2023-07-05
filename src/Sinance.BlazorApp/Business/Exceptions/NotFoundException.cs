@@ -1,18 +1,17 @@
 ﻿using System;
 using System.Runtime.Serialization;
 
-namespace Sinance.BlazorApp.Business.Exceptions
-{
-    [Serializable]
-    public sealed class NotFoundException : Exception
-    {
-        public NotFoundException(string message) : base(message)
-        {
-        }
+namespace Sinance.BlazorApp.Business.Exceptions;
 
-        private NotFoundException(SerializationInfo serializationInfo, StreamingContext streamingContext)
-        {
-            throw new NotImplementedException();
-        }
+[Serializable]
+public sealed class NotFoundException : Exception
+{
+    public NotFoundException(string message) : base(message)
+    {
+    }
+
+    private NotFoundException(SerializationInfo serializationInfo, StreamingContext streamingContext)
+    {
+        throw new NotImplementedException();
     }
 }

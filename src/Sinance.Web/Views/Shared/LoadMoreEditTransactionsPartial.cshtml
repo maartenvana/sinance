@@ -4,10 +4,10 @@
 
 @if (Model != null && Model.Any())
 {
-    foreach (var transaction in Model)
-    {
-        @await Html.PartialAsync("TransactionEditRow", transaction)
-    }
+foreach (var transaction in Model)
+{
+    @await Html.PartialAsync("TransactionEditRow", transaction)
+}
 }
 else
 {

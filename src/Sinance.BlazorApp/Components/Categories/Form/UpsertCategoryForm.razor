@@ -25,26 +25,26 @@
 </EditForm>
 
 @code {
-    [Parameter]
-    public string FormId { get; set; }
+[Parameter]
+public string FormId { get; set; }
 
-    [Parameter]
-    public UpsertCategoryModel Model { get; set; }
+[Parameter]
+public UpsertCategoryModel Model { get; set; }
 
-    private EditContext EditContext { get; set; }
-    
-    [Parameter]
-    public EventCallback<UpsertCategoryModel> OnValidSubmit { get; set; }
+private EditContext EditContext { get; set; }
 
-    protected override void OnInitialized()
-    {
-        EditContext = new EditContext(Model);
+[Parameter]
+public EventCallback<UpsertCategoryModel> OnValidSubmit { get; set; }
 
-        base.OnInitialized();
-    }
+protected override void OnInitialized()
+{
+    EditContext = new EditContext(Model);
 
-    public async void SubmitAsync()
-    {
-        await OnValidSubmit.InvokeAsync(Model);
-    }
+    base.OnInitialized();
+}
+
+public async void SubmitAsync()
+{
+    await OnValidSubmit.InvokeAsync(Model);
+}
 }

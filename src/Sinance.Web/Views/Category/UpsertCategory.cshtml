@@ -80,13 +80,13 @@
             <div class="panel panel-default">
                 <div class="panel-heading">
                     @if (Model.CategoryModel.Id > 0)
-                    {
-                        <span id="actionTitle">Categorie aanpassen</span>
-                    }
-                    else
-                    {
-                        <span id="actionTitle">Categorie toevoegen</span>
-                    }
+                {
+                    <span id="actionTitle">Categorie aanpassen</span>
+                }
+                else
+                {
+                    <span id="actionTitle">Categorie toevoegen</span>
+                }
                 </div>
                 <div class="panel-body">
                     @Html.ValidationSummary(true)
@@ -114,33 +114,33 @@
                                 <th scope="row">@Html.LabelFor(item => item.CategoryModel.ParentId)</th>
                                 <td>
                                     @if (Model.CategoryModel.HasChildren)
-                                    {
-                                        <span>Categorie is al zelf een hoofdcategorie</span>
-                                    }
-                                    else
-                                    {
-                                        @Html.DropDownListFor(item => item.CategoryModel.ParentId, Model.AvailableParentCategories)
-                                        @Html.ValidationMessageFor(item => item.CategoryModel.ParentId)
-                                    }
+                                {
+                                    <span>Categorie is al zelf een hoofdcategorie</span>
+                                }
+                                else
+                                {
+                                    @Html.DropDownListFor(item => item.CategoryModel.ParentId, Model.AvailableParentCategories)
+                                    @Html.ValidationMessageFor(item => item.CategoryModel.ParentId)
+                                }
                                 </td>
                             </tr>
                             <tr>
                                 <th scope="row">@Html.LabelFor(item => item.CategoryModel.IsRegular)</th>
                                 <td>
                                     @if (Model.CategoryModel.ParentCategoryIsRegular)
-                                    {
-                                        @Html.CheckBoxFor(item => item.CategoryModel.ParentCategoryIsRegular, new { @class = "form-control", @disabled = "disabled" })
-                                    }
-                                    else
-                                    {
-                                        @Html.CheckBoxFor(item => item.CategoryModel.IsRegular, new { @class = "form-control" })
-                                        @Html.ValidationMessageFor(item => item.CategoryModel.IsRegular)
-                                    }
+                                {
+                                    @Html.CheckBoxFor(item => item.CategoryModel.ParentCategoryIsRegular, new { @class = "form-control", @disabled = "disabled" })
+                                }
+                                else
+                                {
+                                    @Html.CheckBoxFor(item => item.CategoryModel.IsRegular, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(item => item.CategoryModel.IsRegular)
+                                }
                                 </td>
                             </tr>
                             @if (Model.CategoryModel.Id > 0)
-                            {
-                                <tr>
+                        {
+                            <tr>
                                     <th scope="row">
                                         Mappings
                                     </th>
@@ -158,8 +158,8 @@
                                             </thead>
                                             <tbody>
                                                 @foreach (var mapping in Model.CategoryModel.Mappings)
-                                                {
-                                                    <tr>
+                                            {
+                                                <tr>
                                                         <td>
                                                             @Html.DisplayFor(model => mapping.ColumnTypeId)
                                                         </td>
@@ -171,13 +171,13 @@
                                                             <button type="button" class="btn btn-danger" onclick="RemoveCategoryMapping(@mapping.Id, '@mapping.MatchValue', @Model.CategoryModel.Id)">Verwijderen</button>
                                                         </td>
                                                     </tr>
-                                                }
+                                            }
                                             </tbody>
                                         </table>
                                         <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#mappingModal" onclick="selectedMapping = null">Toevoegen</button>
                                     </td>
                                 </tr>
-                            }
+                        }
                         </tbody>
                     </table>
                 </div>

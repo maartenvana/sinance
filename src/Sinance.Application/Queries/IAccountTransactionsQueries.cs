@@ -1,10 +1,9 @@
 ﻿using Sinance.Contracts.Transaction;
 using Sinance.Domain.Model;
 
-namespace Sinance.Application.Queries
+namespace Sinance.Application.Queries;
+
+public interface IAccountTransactionQueries
 {
-    public interface IAccountTransactionQueries
-    {
-        Task<List<AccountTransaction>> FindTransactionsAsync(FindAccountTransactionsFilter filter);
-    }
+    Task<List<AccountTransaction>> FindTransactionsAsync(FindAccountTransactionsFilter filter);
 }

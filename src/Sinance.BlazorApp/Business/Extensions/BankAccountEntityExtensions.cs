@@ -1,23 +1,22 @@
 ﻿using Sinance.BlazorApp.Business.Model.BankAccount;
 using Sinance.Storage.Entities;
 
-namespace Sinance.BlazorApp.Business.Extensions
-{
-    public static class BankAccountEntityExtensions
-    {
-        public static IEnumerable<BankAccountModel> ToDto(this IEnumerable<BankAccountEntity> entities)
-            => entities.Select(x => x.ToDto());
+namespace Sinance.BlazorApp.Business.Extensions;
 
-        public static BankAccountModel ToDto(this BankAccountEntity entity)
+public static class BankAccountEntityExtensions
+{
+    public static IEnumerable<BankAccountModel> ToDto(this IEnumerable<BankAccountEntity> entities)
+        => entities.Select(x => x.ToDto());
+
+    public static BankAccountModel ToDto(this BankAccountEntity entity)
+    {
+        return new BankAccountModel
         {
-            return new BankAccountModel
-            {
-                Id = entity.Id,
-                Name = entity.Name,
-                CurrentBalance = entity.CurrentBalance.GetValueOrDefault(),
-                Type = entity.AccountType,
-                Disabled = entity.Disabled
-            };
-        }
+            Id = entity.Id,
+            Name = entity.Name,
+            CurrentBalance = entity.CurrentBalance.GetValueOrDefault(),
+            Type = entity.AccountType,
+            Disabled = entity.Disabled
+        };
     }
 }

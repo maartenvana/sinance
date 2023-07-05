@@ -16,35 +16,35 @@
 </BSModal>
 
 @code {
-    [Parameter]
-    public EventCallback<TModel> OnConfirm { get; set; }
+[Parameter]
+public EventCallback<TModel> OnConfirm { get; set; }
 
-    private BSModal modal { get; set; }
+private BSModal modal { get; set; }
 
-    private string title;
+private string title;
 
-    private string message;
+private string message;
 
-    private TModel model;
+private TModel model;
 
-    public async Task PromptConfirmForModelAsync(string title, string message, TModel model)
-    {
-        this.title = title;
-        this.message = message;
-        this.model = model;
+public async Task PromptConfirmForModelAsync(string title, string message, TModel model)
+{
+    this.title = title;
+    this.message = message;
+    this.model = model;
 
-        await modal.ShowAsync();
-    }
+    await modal.ShowAsync();
+}
 
-    private async Task CancelAsync()
-    {
-        await modal.HideAsync();
-    }
+private async Task CancelAsync()
+{
+    await modal.HideAsync();
+}
 
-    private async Task ConfirmAsync()
-    {
-        await OnConfirm.InvokeAsync(model);
+private async Task ConfirmAsync()
+{
+    await OnConfirm.InvokeAsync(model);
 
-        await modal.HideAsync();
-    }
+    await modal.HideAsync();
+}
 }

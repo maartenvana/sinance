@@ -1,13 +1,12 @@
 ﻿using FluentValidation;
 using Sinance.Application.Command.Transaction;
 
-namespace Sinance.Application.Command.Validators
+namespace Sinance.Application.Command.Validators;
+
+public class CreateAccountTransactionCommandValidator : AbstractValidator<CreateAccountTransactionCommand>
 {
-    public class CreateAccountTransactionCommandValidator : AbstractValidator<CreateAccountTransactionCommand>
+    public CreateAccountTransactionCommandValidator()
     {
-        public CreateAccountTransactionCommandValidator()
-        {
-            RuleFor(c => c.UserId).NotEmpty();
-        }
+        RuleFor(c => c.UserId).NotEmpty();
     }
 }

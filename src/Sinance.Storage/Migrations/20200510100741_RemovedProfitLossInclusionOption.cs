@@ -1,24 +1,23 @@
 ﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace Sinance.Storage.Migrations
-{
-    public partial class RemovedProfitLossInclusionOption : Migration
-    {
-        protected override void Up(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.DropColumn(
-                name: "IncludeInProfitLossGraph",
-                table: "BankAccount");
-        }
+namespace Sinance.Storage.Migrations;
 
-        protected override void Down(MigrationBuilder migrationBuilder)
-        {
-            migrationBuilder.AddColumn<bool>(
-                name: "IncludeInProfitLossGraph",
-                table: "BankAccount",
-                type: "bit",
-                nullable: false,
-                defaultValue: false);
-        }
+public partial class RemovedProfitLossInclusionOption : Migration
+{
+    protected override void Up(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.DropColumn(
+            name: "IncludeInProfitLossGraph",
+            table: "BankAccount");
+    }
+
+    protected override void Down(MigrationBuilder migrationBuilder)
+    {
+        migrationBuilder.AddColumn<bool>(
+            name: "IncludeInProfitLossGraph",
+            table: "BankAccount",
+            type: "bit",
+            nullable: false,
+            defaultValue: false);
     }
 }

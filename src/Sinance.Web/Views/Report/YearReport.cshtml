@@ -4,17 +4,17 @@
 @model YearlyOverviewModel
 @{
     ViewBag.Title = "Jaaroverzicht";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+Layout = "~/Views/Shared/_Layout.cshtml";
 }
 @{
     var BankAccountTypeEndPieChartData = Model.BalancePerBankAccountType.ToList().Select(x => new
-    {
-        name = x.Key.ToString(),
-        y = x.Value.End.Percentage
-    });
-    
-    var expensesStartDate = new DateTime(Model.Year, 1, 1);
-    var expensesEndDate = new DateTime(Model.Year, 12, 31);
+{
+    name = x.Key.ToString(),
+    y = x.Value.End.Percentage
+});
+
+var expensesStartDate = new DateTime(Model.Year, 1, 1);
+var expensesEndDate = new DateTime(Model.Year, 12, 31);
 }
 @section scripts
 {
@@ -112,14 +112,14 @@
                             </thead>
                             <tbody>
                                 @foreach (var bankAccountBalance in Model.BalancePerBankAccount)
-                                {
-                                    <tr class="@(bankAccountBalance.Value.Difference >= 0 ? "success" : "danger")">
+                            {
+                                <tr class="@(bankAccountBalance.Value.Difference >= 0 ? "success" : "danger")">
                                         <td>@bankAccountBalance.Key.Name</td>
                                         <td>@bankAccountBalance.Value.Start.ToString("C2")</td>
                                         <td>@bankAccountBalance.Value.Difference.ToString("C2")</td>
                                         <td>@bankAccountBalance.Value.End.ToString("C2")</td>
                                     </tr>
-                                }
+                            }
                             </tbody>
                         </table>
                     </div>
@@ -156,14 +156,14 @@
                             </thead>
                             <tbody>
                                 @foreach (var transaction in Model.BiggestExpenses)
-                                {
-                                    <tr>
+                            {
+                                <tr>
                                         <td style="text-wrap:none;white-space:nowrap;">@transaction.Date.ToString("dd-MM-yyyy")</td>
                                         <td style="text-wrap:none;white-space:nowrap;">@transaction.Name</td>
                                         <td style="text-wrap:none;white-space:nowrap;">@transaction.Amount.ToString("C2")</td>
                                         <td style="word-wrap:break-word;">@(transaction.Description != null && transaction.Description.Length > 40 ? transaction.Description.Substring(0, 40) : transaction.Description)</td>
                                     </tr>
-                                }
+                            }
                             </tbody>
                         </table>
                     </div>

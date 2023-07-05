@@ -1,8 +1,7 @@
-﻿namespace Sinance.BlazorApp.Services
+﻿namespace Sinance.BlazorApp.Services;
+
+public interface IUserNotificationService
 {
-    public interface IUserNotificationService
-    {
-        void ShowError(string error);
-        void ShowSuccess(string message);
-    }
+    void ShowError(string error);
+    void ShowSuccess(string message);
 }

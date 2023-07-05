@@ -24,16 +24,16 @@
             </div>
 
             @if (UpdateModel.CreateAutoMapping && UpdateModel.CategoryId.HasValue)
-            {
-                <div class="mb-3">
+        {
+            <div class="mb-3">
                     <label for="automappingcolumntype">Column type</label>
                     <CategoryMappingColumnTypeDropdown id="automappingcolumntype" @bind-Value="UpdateModel.AutoMappingColumnType" />
                 </div>
-                <div class="mb-3">
+            <div class="mb-3">
                     <label for="automappingcolumnvalue">Column value</label>
                     <InputTextArea class="form-control" id="automappingcolumnvalue" @bind-Value="UpdateModel.AutoMappingColumnValue" />
                 </div>
-            }
+        }
         </Content>
         <Footer Context="modal">
             <button class="btn btn-default" Color="BSColor.Secondary" @onclick="modal.HideAsync" type="button">Close</button>
@@ -43,95 +43,95 @@
 </EditForm>
 
 @code {
-    private List<TransactionModel> transactions;
+private List<TransactionModel> transactions;
 
-    private UpdateFormModel UpdateModel { get; set; } = new();
+private UpdateFormModel UpdateModel { get; set; } = new();
 
-    private EditContext EditContext { get; set; }
+private EditContext EditContext { get; set; }
 
-    [Parameter]
-    public EventCallback<TransactionsCategoryUpdatedEvent> OnTransactionsUpdated { get; set; }
+[Parameter]
+public EventCallback<TransactionsCategoryUpdatedEvent> OnTransactionsUpdated { get; set; }
 
-    private BSModal modal { get; set; }
+private BSModal modal { get; set; }
 
-    protected override void OnInitialized()
+protected override void OnInitialized()
+{
+    EditContext = new EditContext(UpdateModel);
+    EditContext.OnFieldChanged += OnFieldChanged;
+}
+
+private void OnFieldChanged(object sender, FieldChangedEventArgs e)
+{
+    if (e.FieldIdentifier.FieldName == nameof(UpdateModel.AutoMappingColumnType))
     {
-        EditContext = new EditContext(UpdateModel);
-        EditContext.OnFieldChanged += OnFieldChanged;
-    }
-
-    private void OnFieldChanged(object sender, FieldChangedEventArgs e)
-    {
-        if (e.FieldIdentifier.FieldName == nameof(UpdateModel.AutoMappingColumnType))
+        switch (UpdateModel.AutoMappingColumnType)
         {
-            switch (UpdateModel.AutoMappingColumnType)
-            {
-                case ColumnType.Amount:
-                    UpdateModel.AutoMappingColumnValue = transactions.First().Amount.ToString();
-                    break;
-                case ColumnType.BankAccountFrom:
-                    UpdateModel.AutoMappingColumnValue = transactions.First().SourceAccountNumber.ToString();
-                    break;
-                case ColumnType.Date:
-                    UpdateModel.AutoMappingColumnValue = transactions.First().Date.ToString();
-                    break;
-                case ColumnType.Description:
-                    UpdateModel.AutoMappingColumnValue = transactions.First().Description.ToString();
-                    break;
-                case ColumnType.DestinationAccount:
-                    UpdateModel.AutoMappingColumnValue = transactions.First().DestinationAccountNumber.ToString();
-                    break;
-                case ColumnType.Name:
-                    UpdateModel.AutoMappingColumnValue = transactions.First().Name.ToString();
-                    break;
-            }
+            case ColumnType.Amount:
+                UpdateModel.AutoMappingColumnValue = transactions.First().Amount.ToString();
+                break;
+            case ColumnType.BankAccountFrom:
+                UpdateModel.AutoMappingColumnValue = transactions.First().SourceAccountNumber.ToString();
+                break;
+            case ColumnType.Date:
+                UpdateModel.AutoMappingColumnValue = transactions.First().Date.ToString();
+                break;
+            case ColumnType.Description:
+                UpdateModel.AutoMappingColumnValue = transactions.First().Description.ToString();
+                break;
+            case ColumnType.DestinationAccount:
+                UpdateModel.AutoMappingColumnValue = transactions.First().DestinationAccountNumber.ToString();
+                break;
+            case ColumnType.Name:
+                UpdateModel.AutoMappingColumnValue = transactions.First().Name.ToString();
+                break;
         }
-
-        EditContext.MarkAsUnmodified();
     }
 
-    public async Task OpenForTransactionsAsync(List<TransactionModel> transactions)
-    {
-        UpdateModel = new UpdateFormModel
-            {
-                CategoryId = transactions.First().CategoryId
-            };
-        this.transactions = transactions;
+    EditContext.MarkAsUnmodified();
+}
 
-        await modal.ShowAsync();
-    }
+public async Task OpenForTransactionsAsync(List<TransactionModel> transactions)
+{
+    UpdateModel = new UpdateFormModel
+        {
+            CategoryId = transactions.First().CategoryId
+        };
+    this.transactions = transactions;
 
-    public async Task AssignCategoryAsync()
-    {
-        var newTransactions = await categoryService.AssignCategoryToTransactionsAsync(UpdateModel.CategoryId, transactions);
+    await modal.ShowAsync();
+}
 
-        if (UpdateModel.CreateAutoMapping)
-            await categoryService.CreateAutoCategoryMappingAsync(UpdateModel.CategoryId.Value, UpdateModel.AutoMappingColumnType, UpdateModel.AutoMappingColumnValue);
+public async Task AssignCategoryAsync()
+{
+    var newTransactions = await categoryService.AssignCategoryToTransactionsAsync(UpdateModel.CategoryId, transactions);
 
-        await OnTransactionsUpdated.InvokeAsync(new TransactionsCategoryUpdatedEvent
-            {
-                Transactions = newTransactions
-            });
+    if (UpdateModel.CreateAutoMapping)
+        await categoryService.CreateAutoCategoryMappingAsync(UpdateModel.CategoryId.Value, UpdateModel.AutoMappingColumnType, UpdateModel.AutoMappingColumnValue);
 
-        await modal.HideAsync();
-    }
+    await OnTransactionsUpdated.InvokeAsync(new TransactionsCategoryUpdatedEvent
+        {
+            Transactions = newTransactions
+        });
 
-    protected class UpdateFormModel
-    {
-        public int? CategoryId { get; set; }
+    await modal.HideAsync();
+}
 
-        public bool CreateAutoMapping { get; set; }
+protected class UpdateFormModel
+{
+    public int? CategoryId { get; set; }
 
-        [RequiredIf(nameof(CreateAutoMapping), true)]
-        public ColumnType AutoMappingColumnType { get; set; }
+    public bool CreateAutoMapping { get; set; }
 
-        [RequiredIf(nameof(CreateAutoMapping), true)]
-        public string AutoMappingColumnValue { get; set; }
-    }
+    [RequiredIf(nameof(CreateAutoMapping), true)]
+    public ColumnType AutoMappingColumnType { get; set; }
 
-    
-    public class TransactionsCategoryUpdatedEvent
-    {
-        public List<TransactionModel> Transactions { get; set; } = new List<TransactionModel>();
-    }
+    [RequiredIf(nameof(CreateAutoMapping), true)]
+    public string AutoMappingColumnValue { get; set; }
+}
+
+
+public class TransactionsCategoryUpdatedEvent
+{
+    public List<TransactionModel> Transactions { get; set; } = new List<TransactionModel>();
+}
 }

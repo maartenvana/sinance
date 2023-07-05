@@ -3,7 +3,7 @@
 @model IEnumerable<BankAccountModel>
 @{
     ViewBag.Title = "Index";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 @section scripts {
@@ -46,10 +46,10 @@
                     </thead>
                     <tbody>
                         @if (Model.Any())
+                    {
+                        for (int i = 0; i < Model.Count(); i++)
                         {
-                            for (int i = 0; i < Model.Count(); i++)
-                            {
-                                <tr>
+                            <tr>
                                     <td>
                                         @Html.DisplayFor(item => item.ElementAt(i).Name)
                                     </td>
@@ -67,14 +67,14 @@
                                         <a class="btn btn-danger" href="#" onclick="RemoveBankAccount(@Model.ElementAt(i).Id, '@Model.ElementAt(i).Name');">Verwijderen</a>
                                     </td>
                                 </tr>
-                            }
                         }
-                        else
-                        {
-                            <tr>
+                    }
+                    else
+                    {
+                        <tr>
                                 <td>Geen Bankrekeningen gevonden</td>
                             </tr>
-                        }
+                    }
                     </tbody>
                 </table>
             </div>

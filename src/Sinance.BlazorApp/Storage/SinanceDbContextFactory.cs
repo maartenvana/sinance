@@ -2,27 +2,26 @@
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
-namespace Sinance.BlazorApp.Storage
+namespace Sinance.BlazorApp.Storage;
+
+public class SinanceDbContextFactory<TContext>
+       : ISinanceDbContextFactory<TContext> where TContext : DbContext
 {
-    public class SinanceDbContextFactory<TContext>
-           : ISinanceDbContextFactory<TContext> where TContext : DbContext
+    private readonly IServiceProvider provider;
+
+    public SinanceDbContextFactory(IServiceProvider provider)
     {
-        private readonly IServiceProvider provider;
+        this.provider = provider;
+    }
 
-        public SinanceDbContextFactory(IServiceProvider provider)
+    public TContext CreateDbContext()
+    {
+        if (provider == null)
         {
-            this.provider = provider;
+            throw new InvalidOperationException(
+                $"You must configure an instance of IServiceProvider");
         }
 
-        public TContext CreateDbContext()
-        {
-            if (provider == null)
-            {
-                throw new InvalidOperationException(
-                    $"You must configure an instance of IServiceProvider");
-            }
-
-            return ActivatorUtilities.CreateInstance<TContext>(provider);
-        }
+        return ActivatorUtilities.CreateInstance<TContext>(provider);
     }
 }

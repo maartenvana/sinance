@@ -12,42 +12,42 @@
     </thead>
     <tbody>
         @foreach (BimonthlyIncome income in Model.Incomes)
+    {
+        string rowClass;
+
+        if (income.AmountNow < 0)
         {
-            string rowClass;
+            rowClass = income.AmountPrevious > income.AmountNow ? "danger" : "";
+        }
+        else
+        {
+            rowClass = income.AmountNow < income.AmountPrevious ? "danger" : "";
+        }
 
-            if (income.AmountNow < 0)
-            {
-                rowClass = income.AmountPrevious > income.AmountNow ? "danger" : "";
-            }
-            else
-            {
-                rowClass = income.AmountNow < income.AmountPrevious ? "danger" : "";
-            }
-
-            <tr class="@rowClass">
+        <tr class="@rowClass">
                 <td colspan="2">@income.Name</td>
                 <td class="text-right">@Html.DisplayFor(item => income.AmountPrevious)</td>
                 <td class="text-right">@Html.DisplayFor(item => income.AmountNow)</td>
             </tr>
-            foreach (BimonthlyIncome childincome in income.ChildBimonthlyIncomes)
+        foreach (BimonthlyIncome childincome in income.ChildBimonthlyIncomes)
+        {
+            if (childincome.AmountPrevious < 0)
             {
-                if (childincome.AmountPrevious < 0)
-                {
-                    rowClass = childincome.AmountPrevious > childincome.AmountNow ? "danger" : "";
-                }
-                else
-                {
-                    rowClass = childincome.AmountNow < childincome.AmountPrevious ? "danger" : "";
-                }
+                rowClass = childincome.AmountPrevious > childincome.AmountNow ? "danger" : "";
+            }
+            else
+            {
+                rowClass = childincome.AmountNow < childincome.AmountPrevious ? "danger" : "";
+            }
 
-                <tr class="@rowClass">
+            <tr class="@rowClass">
                     <td>-</td>
                     <td>@childincome.Name</td>
                     <td class="text-right">@Html.DisplayFor(item => childincome.AmountPrevious)</td>
                     <td class="text-right">@Html.DisplayFor(item => childincome.AmountNow)</td>
                 </tr>
-            }
         }
+    }
         <tr class="active">
             <td colspan="2">Totaal</td>
             <td class="text-right">@Html.DisplayFor(item => item.PreviousMonthTotal)</td>

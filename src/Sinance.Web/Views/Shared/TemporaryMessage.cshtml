@@ -3,29 +3,29 @@
 
 @{
     MessageState state = TempDataHelper.RetrieveTemporaryMessageState(TempData);
-    string message = TempDataHelper.RetrieveTemporaryMessage(TempData);
-    string cssClass = string.Empty;
+string message = TempDataHelper.RetrieveTemporaryMessage(TempData);
+string cssClass = string.Empty;
 
-    if (state != MessageState.None)
+if (state != MessageState.None)
+{
+    switch (state)
     {
-        switch (state)
-        {
-            case MessageState.Success:
-                cssClass = "alert-success";
-                break;
-            case MessageState.Info:
-                cssClass = "alert-info";
-                break;
-            case MessageState.Warning:
-                cssClass = "alert-warning";
-                break;
-            case MessageState.Error:
-                cssClass = "alert-danger";
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
+        case MessageState.Success:
+            cssClass = "alert-success";
+            break;
+        case MessageState.Info:
+            cssClass = "alert-info";
+            break;
+        case MessageState.Warning:
+            cssClass = "alert-warning";
+            break;
+        case MessageState.Error:
+            cssClass = "alert-danger";
+            break;
+        default:
+            throw new ArgumentOutOfRangeException();
     }
+}
 }
 
 @if (state != MessageState.None)

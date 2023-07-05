@@ -1,19 +1,18 @@
 ﻿using Sinance.Storage;
 
-namespace Sinance.Business.DataSeeding
+namespace Sinance.Business.DataSeeding;
+
+public class SeedUserIdProvider : IUserIdProvider
 {
-    public class SeedUserIdProvider : IUserIdProvider
+    public int CurrentUserId { get; set; }
+
+    public SeedUserIdProvider(int currentUserId)
     {
-        public int CurrentUserId { get; set; }
+        CurrentUserId = currentUserId;
+    }
 
-        public SeedUserIdProvider(int currentUserId)
-        {
-            CurrentUserId = currentUserId;
-        }
-
-        public int GetCurrentUserId()
-        {
-            return CurrentUserId;
-        }
+    public int GetCurrentUserId()
+    {
+        return CurrentUserId;
     }
 }

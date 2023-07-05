@@ -1,19 +1,19 @@
 ﻿@model UpsertCustomReportModel
 @{
     ViewBag.Title = "AddCustomReport";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="row">
     <div class="col-lg-12">
         @if (Model.CustomReport.Id > 0)
-        {
-            <h1 class="page-header">Grafiek rapportage aanpassen</h1>
-        }
-        else
-        {
-            <h1 class="page-header">Nieuwe grafiek rapportage aanmaken</h1>
-        }
+    {
+        <h1 class="page-header">Grafiek rapportage aanpassen</h1>
+    }
+    else
+    {
+        <h1 class="page-header">Nieuwe grafiek rapportage aanmaken</h1>
+    }
     </div>
 </div>
 
@@ -41,13 +41,13 @@
                 </div>
                 <div class="panel-body">
                     @for (var i = 0; i < Model.AvailableCategories.Count; i++)
-                    {
-                        @Html.HiddenFor(item => item.AvailableCategories[i].Id)
+                {
+                    @Html.HiddenFor(item => item.AvailableCategories[i].Id)
 
-                        @Html.CheckBoxFor(item => item.AvailableCategories[i].Checked)
-                        @Html.DisplayFor(item => item.AvailableCategories[i].Name)
-                        <br />
-                    }
+                    @Html.CheckBoxFor(item => item.AvailableCategories[i].Checked)
+                    @Html.DisplayFor(item => item.AvailableCategories[i].Name)
+                    <br />
+                }
                 </div>
             </div>
         </div>

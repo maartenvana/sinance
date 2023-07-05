@@ -1,7 +1,6 @@
-﻿namespace Sinance.BlazorApp.Business.Model.Transaction
+﻿namespace Sinance.BlazorApp.Business.Model.Transaction;
+
+public class DeleteTransactionModel
 {
-    public class DeleteTransactionModel
-    {
-        public int TransactionId { get; set; }
-    }
+    public int TransactionId { get; set; }
 }

@@ -1,9 +1,8 @@
-﻿namespace Sinance.Web.Model
-{
-    public class GraphDataEntry
-    {
-        public string Name { get; set; }
+﻿namespace Sinance.Web.Model;
 
-        public decimal Y { get; set; }
-    }
+public class GraphDataEntry
+{
+    public string Name { get; set; }
+
+    public decimal Y { get; set; }
 }

@@ -49,83 +49,83 @@
 </div>
 
 @code {
-    private UpsertCategoryModal upsertModal;
+private UpsertCategoryModal upsertModal;
 
-    private ConfirmModal<CategoryModel> confirmDeleteModal;
+private ConfirmModal<CategoryModel> confirmDeleteModal;
 
-    private SelectablePagingTable<CategoryModel> table;
+private SelectablePagingTable<CategoryModel> table;
 
-    public async Task RefreshAsync() => await table.RefreshAsync();
+public async Task RefreshAsync() => await table.RefreshAsync();
 
-    public string GetIdForModel(CategoryModel model) => model.Id.ToString();
+public string GetIdForModel(CategoryModel model) => model.Id.ToString();
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    if (!firstRender)
+        return;
+
+    await RefreshAsync();
+}
+
+public async Task OpenEditModal(CategoryModel CategoryModel)
+{
+    await upsertModal.OpenForExistingAsync(CategoryModel);
+}
+
+public async void OpenCreateModal()
+{
+    await upsertModal.OpenForNewAsync();
+}
+
+private async Task StartDelete(CategoryModel model)
+{
+    await confirmDeleteModal.PromptConfirmForModelAsync(
+        title: $"Confirm: Delete category",
+        message: $"Are you sure you want to delete category: '{model.Name}'?",
+        model: model);
+}
+
+public void OnUpserted(CategoryUpsertedEvent eventData)
+{
+    if (eventData.Created)
     {
-        if (!firstRender)
-            return;
+        var comparer = StringComparer.Create(CultureInfo.CurrentCulture, ignoreCase: true);
 
-        await RefreshAsync();
+        table.InsertRowData(
+            model => comparer.Compare(model.Name, eventData.Model.Name) > 1,
+            new[] { eventData.Model });
     }
-
-    public async Task OpenEditModal(CategoryModel CategoryModel)
+    else
     {
-        await upsertModal.OpenForExistingAsync(CategoryModel);
+        table.UpdateRowData(eventData.Model);
     }
+}
 
-    public async void OpenCreateModal()
-    {
-        await upsertModal.OpenForNewAsync();
-    }
-
-    private async Task StartDelete(CategoryModel model)
-    {
-        await confirmDeleteModal.PromptConfirmForModelAsync(
-            title: $"Confirm: Delete category",
-            message: $"Are you sure you want to delete category: '{model.Name}'?",
-            model: model);
-    }
-
-    public void OnUpserted(CategoryUpsertedEvent eventData)
-    {
-        if (eventData.Created)
+private async Task OnConfirmDelete(CategoryModel categoryModel)
+{
+    await categoryService.DeleteCategoryAsync(new DeleteCategoryModel
         {
-            var comparer = StringComparer.Create(CultureInfo.CurrentCulture, ignoreCase: true);
+            CategoryId = categoryModel.Id
+        });
 
-            table.InsertRowData(
-                model => comparer.Compare(model.Name, eventData.Model.Name) > 1,
-                new[] { eventData.Model });
-        }
-        else
-        {
-            table.UpdateRowData(eventData.Model);
-        }
-    }
+    table.DeleteRow(categoryModel);
+}
 
-    private async Task OnConfirmDelete(CategoryModel categoryModel)
+public Task<List<CategoryModel>> LoadMoreAsync(int page, int pageSize)
+{
+    try
     {
-        await categoryService.DeleteCategoryAsync(new DeleteCategoryModel
-            {
-                CategoryId = categoryModel.Id
-            });
-
-        table.DeleteRow(categoryModel);
+        return Task.FromResult(categoryService.GetAllCategories());
     }
-
-    public Task<List<CategoryModel>> LoadMoreAsync(int page, int pageSize)
+    catch (Exception)
     {
-        try
-        {
-            return Task.FromResult(categoryService.GetAllCategories());
-        }
-        catch (Exception)
-        {
-            userNotificationService.ShowError("Exception during load more");
+        userNotificationService.ShowError("Exception during load more");
 
-            return Task.FromResult(new List<CategoryModel>());
-        }
-        finally
-        {
-            StateHasChanged();
-        }
+        return Task.FromResult(new List<CategoryModel>());
     }
+    finally
+    {
+        StateHasChanged();
+    }
+}
 }

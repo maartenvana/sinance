@@ -1,17 +1,16 @@
 ﻿using Sinance.Communication.Model.User;
 using Sinance.Storage.Entities;
 
-namespace Sinance.Business.Extensions
+namespace Sinance.Business.Extensions;
+
+public static class SinanceUserExtensions
 {
-    public static class SinanceUserExtensions
+    public static SinanceUserModel ToDto(this SinanceUserEntity entity)
     {
-        public static SinanceUserModel ToDto(this SinanceUserEntity entity)
+        return new SinanceUserModel
         {
-            return new SinanceUserModel
-            {
-                Id = entity.Id,
-                Username = entity.Username
-            };
-        }
+            Id = entity.Id,
+            Username = entity.Username
+        };
     }
 }

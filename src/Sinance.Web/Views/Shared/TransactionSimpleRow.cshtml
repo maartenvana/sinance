@@ -13,10 +13,10 @@
     <td class="categoryColumn">
         <a class="transactionCategoryBox">
            @{
-                string style = Model.Category != null ?
-                    $"width:50px;background-color:{Model.Category.ColorCode};" :
-                    "width:50px;";
-            }
+            string style = Model.Category != null ?
+                $"width:50px;background-color:{Model.Category.ColorCode};" :
+                "width:50px;";
+        }
             <div class="transactionCategoryFillBox" style="@style"></div>
         </a>
     </td>

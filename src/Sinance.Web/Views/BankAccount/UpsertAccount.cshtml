@@ -3,7 +3,7 @@
 @model BankAccountModel
 @{
     ViewBag.Title = "AddAccount";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 @section scripts
@@ -23,8 +23,8 @@
 <div class="row">
     <div class="col-lg-3">
         @using (Html.BeginForm("UpsertAccount", "BankAccount", FormMethod.Post))
-        {
-            <div class="panel panel-default">
+    {
+        <div class="panel panel-default">
                 <div class="panel-heading">
                     Bankrekening informatie
                 </div>
@@ -55,6 +55,6 @@
                     <button type="submit" class="btn btn-success" value="Save">Opslaan</button>
                 </div>
             </div>
-        }
+    }
     </div>
 </div>

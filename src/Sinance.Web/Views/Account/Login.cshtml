@@ -2,7 +2,7 @@
 
 @{
     ViewBag.Title = "Log in";
-    Layout = null;
+Layout = null;
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -40,10 +40,10 @@
                     </div>
                     <div class="panel-body">
                         @using (Html.BeginForm("Login", "Account", new { ReturnUrl = ViewBag.ReturnUrl }, FormMethod.Post, true, new { role = "form" }))
-                        {
-                            @Html.AntiForgeryToken()
-                            @Html.ValidationSummary(true)
-                            <fieldset>
+                    {
+                        @Html.AntiForgeryToken()
+                        @Html.ValidationSummary(true)
+                        <fieldset>
                                 <div class="form-group">
                                     @Html.TextBoxFor(m => m.UserName, new { @class = "form-control", @autofocus = "", placeholder = "Gebruikersnaam" })
                                     @Html.ValidationMessageFor(m => m.UserName)
@@ -59,7 +59,7 @@
                                 </div>
                                 <input type="submit" value="Inloggen" class="btn btn-lg btn-success btn-block" />
                             </fieldset>
-                        }
+                    }
                     </div>
                 </div>
 

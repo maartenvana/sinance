@@ -9,28 +9,28 @@
 </BodyContent>
 
 @code {
-    [Parameter]
-    public int Id { get; set; }
+[Parameter]
+public int Id { get; set; }
 
-    public FindAccountTransactionsFilter FilterModel;
+public FindAccountTransactionsFilter FilterModel;
 
-    private TransactionsPanel transactionsPanel;
+private TransactionsPanel transactionsPanel;
 
-    private BankAccountModel bankAccount;
+private BankAccountModel bankAccount;
 
-    protected override void OnParametersSet()
+protected override void OnParametersSet()
+{
+    bankAccount = bankAccountService.GetBankAccount(Id);
+
+    FilterModel = new FindAccountTransactionsFilter
     {
-        bankAccount = bankAccountService.GetBankAccount(Id);
+        BankAccountId = Id,
+        PageSize = 25
+    };
+}
 
-        FilterModel = new FindAccountTransactionsFilter
-        {
-            BankAccountId = Id,
-            PageSize = 25
-        };
-    }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        await transactionsPanel.RefreshAsync();
-    }
+protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    await transactionsPanel.RefreshAsync();
+}
 }

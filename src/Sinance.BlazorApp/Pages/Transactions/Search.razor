@@ -51,15 +51,15 @@
 </BodyContent>
 
 @code {
-    private TransactionsPanel transactionsPanel;
+private TransactionsPanel transactionsPanel;
 
-    public FindAccountTransactionsFilter FilterModel = new FindAccountTransactionsFilter
-        {
-            PageSize = 25
-        };
-
-    public async Task SearchAsync()
+public FindAccountTransactionsFilter FilterModel = new FindAccountTransactionsFilter
     {
-        await transactionsPanel.RefreshAsync();
-    }
+        PageSize = 25
+    };
+
+public async Task SearchAsync()
+{
+    await transactionsPanel.RefreshAsync();
+}
 }

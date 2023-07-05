@@ -1,24 +1,23 @@
 ﻿using Blazored.Toast.Services;
 
-namespace Sinance.BlazorApp.Services
+namespace Sinance.BlazorApp.Services;
+
+public class UserNotificationService : IUserNotificationService
 {
-    public class UserNotificationService : IUserNotificationService
+    private readonly IToastService toastService;
+
+    public UserNotificationService(IToastService toastService)
     {
-        private readonly IToastService toastService;
+        this.toastService = toastService;
+    }
 
-        public UserNotificationService(IToastService toastService)
-        {
-            this.toastService = toastService;
-        }
+    public void ShowSuccess(string message)
+    {
+        toastService.ShowSuccess(message);
+    }
 
-        public void ShowSuccess(string message)
-        {
-            toastService.ShowSuccess(message);
-        }
-
-        public void ShowError(string message)
-        {
-            toastService.ShowError(message);
-        }
+    public void ShowError(string message)
+    {
+        toastService.ShowError(message);
     }
 }

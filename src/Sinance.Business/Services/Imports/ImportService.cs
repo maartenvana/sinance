@@ -69,8 +69,8 @@ public class ImportService : IImportService
             userId: userId,
             importRows: model.ImportRows);
 
-        // Update the current balance of bank account and refresh them
         await BankAccountCalculations.UpdateCurrentBalanceForBankAccount(context, model.BankAccountId);
+
         await context.SaveChangesAsync();
 
         return (skippedTransactions, savedTransactions);

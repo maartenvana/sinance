@@ -11,11 +11,13 @@ public static class StorageModule
     public static IServiceCollection AddStorageModule(this IServiceCollection services, AppSettings appSettings)
     {
         services.AddDbContextFactory<SinanceContext>(opt => opt
-            .UseMySql(appSettings.ConnectionStrings.Sql, new MySqlServerVersion(new Version(5,7,42)))
+            .UseMySql(appSettings.ConnectionStrings.Sql, new MySqlServerVersion(new Version(5, 7)))
+            .EnableDetailedErrors()
             .EnableSensitiveDataLogging());
 
         services.AddDbContext<SinanceContext>(opt => opt
-            .UseMySql(appSettings.ConnectionStrings.Sql, new MySqlServerVersion(new Version(5,7,42)))
+            .UseMySql(appSettings.ConnectionStrings.Sql, new MySqlServerVersion(new Version(5,7)))
+            .EnableDetailedErrors()
             .EnableSensitiveDataLogging());
 
         return services;

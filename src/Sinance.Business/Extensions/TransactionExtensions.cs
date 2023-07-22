@@ -24,6 +24,19 @@ public static class TransactionExtensions
         };
     }
 
+    public static ImportTransactionEntity ToNewImportEntity(this TransactionModel transactionModel, int userId) =>
+        new()
+        {
+            Name = transactionModel.Name,
+            Description = transactionModel.Description,
+            DestinationAccount = transactionModel.DestinationAccount,
+            Amount = transactionModel.Amount,
+            Date = transactionModel.Date,
+            BankAccountId = transactionModel.BankAccountId,
+            AccountNumber = transactionModel.FromAccount,
+            UserId = userId
+        };
+
     public static TransactionEntity ToNewEntity(this TransactionModel transactionModel, int userId)
     {
         var entity = new TransactionEntity

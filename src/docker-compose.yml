@@ -1,13 +1,13 @@
 version: '3.4'
 
 services:
-  #sinance.blazorapp:
-  #  image: ${DOCKER_REGISTRY-}sinanceblazorapp
-  #  build:
-  #    context: .
-  #    dockerfile: BlazorServer/Sinance.BlazorApp/Dockerfile
-  #  environment:
-  #    - ConnectionStrings__SQL=server=192.168.1.7;port=3307;database=Finance_Core_dev;user=root;password=my-secret-pw;
+  sinance.blazorapp:
+    image: ${DOCKER_REGISTRY-}sinanceblazorapp
+    build:
+      context: .
+      dockerfile: BlazorServer/Sinance.BlazorApp/Dockerfile
+    environment:
+      - ConnectionStrings__SQL=server=mysql;port=3306;database=Finance_Core_dev;user=root;password=my-secret-pw;
 
   sinance.web:
     image: ${DOCKER_REGISTRY-}sinanceweb
@@ -17,7 +17,7 @@ services:
     environment:
       - Database__SeedDemoData=false
       - Database__OverrideSeedDemoData=false
-      - ConnectionStrings__SQL=server=192.168.1.7;port=3307;database=Finance_Core_dev;user=root;password=my-secret-pw;
+      - ConnectionStrings__SQL=server=mysql;port=3306;database=Finance_Core_dev;user=root;password=my-secret-pw;
 
   mysql:
     image: mysql:5.7.42

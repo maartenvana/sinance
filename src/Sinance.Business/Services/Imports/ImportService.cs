@@ -29,12 +29,9 @@ public class ImportService : IImportService
         _bankFileImportHandler = bankFileImportHandler;
     }
 
-    public async Task<ImportModel> CreateImportPreview(Stream fileStream, ImportModel model)
+    public async Task<(int skippedTransactions, int savedTransactions)> ImportTransactions(Stream fileStream, ImportModel model)
     {
         using var context = _dbContextFactory.CreateDbContext();
-
-        var importCacheKey = CreateImportCacheKey(_userIdProvider.GetCurrentUserId());
-        SinanceCacheHandler.ClearCache(importCacheKey);
 
         var bankAccount = await context.BankAccounts.SingleOrDefaultAsync(x => x.Id == model.BankAccountId);
         if (bankAccount == null)
@@ -49,13 +46,9 @@ public class ImportService : IImportService
                 fileImporterId: model.BankFileImporterId,
                 bankAccountId: bankAccount.Id);
 
-            // Place the import model in the cache for easy acces later
-            SinanceCacheHandler.Cache(key: importCacheKey,
-                contentAction: () => model,
-                slidingExpiration: false,
-                expirationTimeSpan: new TimeSpan(0, 0, 15, 0));
+            var importResult = await SaveImport(model);
 
-            return model;
+            return importResult;
         }
         catch (Exception exc)
         {
@@ -67,12 +60,6 @@ public class ImportService : IImportService
     {
         using var context = _dbContextFactory.CreateDbContext();
         var userId = _userIdProvider.GetCurrentUserId();
-        var importCacheKey = CreateImportCacheKey(userId);
-        var cachedModel = SinanceCacheHandler.RetrieveCache<ImportModel>(importCacheKey);
-        if (cachedModel == null)
-        {
-            throw new NotFoundException(nameof(ImportModel));
-        }
 
         var bankAccount = await VerifyBankAccount(model, context);
 
@@ -80,15 +67,11 @@ public class ImportService : IImportService
         var savedTransactions = await BankFileImportHandler.SaveImportResultToDatabase(context,
             bankAccountId: bankAccount.Id,
             userId: userId,
-            importRows: model.ImportRows,
-            cachedImportRows: cachedModel.ImportRows);
+            importRows: model.ImportRows);
 
-        // Update the current balance of bank account and refresh them
         await BankAccountCalculations.UpdateCurrentBalanceForBankAccount(context, model.BankAccountId);
-        await context.SaveChangesAsync();
 
-        // Clear the cache entry
-        SinanceCacheHandler.ClearCache(importCacheKey);
+        await context.SaveChangesAsync();
 
         return (skippedTransactions, savedTransactions);
     }

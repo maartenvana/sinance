@@ -36,7 +36,6 @@ public class Program
             var host = CreateHostBuilder(args).Build();
 
             CreateOrMigrateDatabase(host);
-            SeedData(host);
 
             Log.Information("Starting web host");
             host.Run();
@@ -50,37 +49,6 @@ public class Program
         finally
         {
             Log.CloseAndFlush();
-        }
-    }
-
-    private static void SeedData(IHost host)
-    {
-        using var scope = host.Services.CreateScope();
-
-        var services = scope.ServiceProvider;
-
-        try
-        {
-            var contextFactory = services.GetRequiredService<IDbContextFactory<SinanceContext>>();
-            using var context = contextFactory.CreateDbContext();
-
-            Log.Information("Seeding data");
-
-            var allTransactions = context.Transactions
-                .Include(x => x.TransactionCategories)
-                .Where(x => x.TransactionCategories.Any()).ToList();
-            foreach (var transaction in allTransactions)
-            {
-                transaction.CategoryId = transaction.TransactionCategories.First().CategoryId;
-            }
-
-            context.SaveChanges();
-
-            Log.Information("Seeding data completed");
-        }
-        catch (Exception exc)
-        {
-            Log.Error(exc, "An error seeding the DB.");
         }
     }
 

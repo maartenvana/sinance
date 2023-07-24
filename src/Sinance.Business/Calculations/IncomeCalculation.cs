@@ -27,7 +27,7 @@ public class IncomeCalculation : IIncomeCalculation
         using var context = _dbContextFactory.CreateDbContext();
 
         var transactions = await context.Transactions
-            .Include(x => x.TransactionCategories)
+            .Include(x => x.Category)
             .Where(item =>
                 item.Date >= startMonth &&
                 item.Date <= nextMonthEnd &&
@@ -54,7 +54,7 @@ public class IncomeCalculation : IIncomeCalculation
         }
 
         var uncategorizedTransactions = transactions.Where(item =>
-            item.TransactionCategories.Count == 0 &&
+            item.CategoryId == null &&
             item.Date >= startMonth &&
             item.Date <= nextMonthEnd).ToList().ToDto();
 
@@ -74,8 +74,8 @@ public class IncomeCalculation : IIncomeCalculation
         var bimonthlyParentIncome = new BimonthlyIncome
         {
             Name = category.Name,
-            AmountPrevious = CalculateSumCategoryTransactions(category, lastMonthParentTransactions),
-            AmountNow = CalculateSumCategoryTransactions(category, thisMonthParentTransactions)
+            AmountPrevious = lastMonthParentTransactions.Sum(x => x.Amount),
+            AmountNow = thisMonthParentTransactions.Sum(x => x.Amount)
         };
 
         bimonthlyExpenseReport.ThisMonthTotal += bimonthlyParentIncome.AmountNow;
@@ -93,8 +93,8 @@ public class IncomeCalculation : IIncomeCalculation
                 var bimonthlyChildIncome = new BimonthlyIncome
                 {
                     Name = childCategory.Name,
-                    AmountPrevious = CalculateSumCategoryTransactions(childCategory, lastMonthChildTransactions),
-                    AmountNow = CalculateSumCategoryTransactions(childCategory, thisMonthChildTransactions),
+                    AmountPrevious = lastMonthChildTransactions.Sum(x => x.Amount),
+                    AmountNow = thisMonthChildTransactions.Sum(x => x.Amount)
                 };
 
                 bimonthlyExpenseReport.ThisMonthTotal += bimonthlyChildIncome.AmountNow;
@@ -106,23 +106,6 @@ public class IncomeCalculation : IIncomeCalculation
                 bimonthlyParentIncome.ChildBimonthlyIncomes.Add(bimonthlyChildIncome);
             }
         }
-    }
-
-    /// <summary>
-    /// Calculates the sum for each transactions for the given category
-    ///
-    /// if the transactions is split up in different categories then take the amount of the split
-    /// if the transactions is not split up take the full amount
-    /// </summary>
-    /// <param name="category">Category to look for</param>
-    /// <param name="transactions">Transactions to use</param>
-    /// <returns></returns>
-    private static decimal CalculateSumCategoryTransactions(CategoryEntity category, IList<TransactionEntity> transactions)
-    {
-        return transactions.Sum(item => item.TransactionCategories.Any(transCategory => transCategory.Amount == null) ?
-                                    item.Amount :
-                                    item.TransactionCategories.Where(transCategory => transCategory.CategoryId == category.Id)
-                                        .Sum(transCategory => transCategory.Amount.GetValueOrDefault()));
     }
 
     /// <summary>
@@ -139,8 +122,8 @@ public class IncomeCalculation : IIncomeCalculation
                 item =>
                     item.Date.Year == year &&
                     item.Date.Month == month &&
-                    item.TransactionCategories.Any(transactionCategory =>
-                        transactionCategory.CategoryId == category.Id)).ToList();
+                    item.CategoryId == category.Id).ToList();
+
         return lastMonthParentTransactions;
     }
 }

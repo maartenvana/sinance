@@ -9,5 +9,5 @@ public interface IExpenseCalculation
 {
     Task<BiMonthlyExpenseReportModel> BiMonthlyExpensePerCategoryReport(DateTime startMonth);
 
-    Task<Dictionary<string, Dictionary<int, decimal>>> ExpensePerCategoryIdPerMonthForYear(int year, IEnumerable<int> categoryIds);
+    Task<Dictionary<string, Dictionary<int, decimal>>> ExpensePerCategoryIdPerMonthForYear(int year, int?[] categoryIds);
 }

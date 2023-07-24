@@ -26,20 +26,9 @@
                     @transaction.Key.Name
                 </td>
                 <td class="categoryColumn">
-                    @if (transaction.Key.Categories.Count() == 1)
+                    @if (transaction.Key.Category != null)
                     {
-                        <div style="width:52px;height:22px;border:solid 1px gray;background-color:@transaction.Key.Categories.ElementAt(0).ColorCode;"></div>
-                    }
-                    else if (transaction.Key.Categories.Count() > 1)
-                    {
-                        <div style="width:52px;height:22px;border:solid 1px gray; overflow:hidden;">
-                            @foreach (var transactionCategory in transaction.Key.Categories)
-                            {
-                                int width = (int)(50 * (transactionCategory.Amount ?? 1) / transaction.Key.Amount);
-                                string style = string.Format(CultureInfo.InvariantCulture, "width:{0}px;height:20px;background-color:{1};float:left;", width, transactionCategory.ColorCode);
-                                <div style="@style"></div>
-                            }
-                        </div>
+                        <div style="width:52px;height:22px;border:solid 1px gray;background-color:@transaction.Key.Category.ColorCode;"></div>
                     }
                 </td>
                 <td class="amountColumn ">

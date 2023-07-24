@@ -1,12 +1,13 @@
-﻿namespace Sinance.Storage.Entities;
-
-/// <summary>
-/// Base class for entities
-/// </summary>
-public abstract class EntityBase
+﻿namespace Sinance.Storage.Entities
 {
     /// <summary>
-    /// Id
+    /// Base class for entities
     /// </summary>
-    public int Id { get; set; }
+    public abstract class EntityBase
+    {
+        /// <summary>
+        /// Id
+        /// </summary>
+        public int Id { get; set; }
+    }
 }

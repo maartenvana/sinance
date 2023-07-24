@@ -24,7 +24,7 @@ public class ExpensePercentageCalculation : IExpensePercentageCalculation
 
         // No need to sort this list, we loop through it by month numbers
         var transactions = await context.Transactions
-            .Include(x => x.TransactionCategories)
+            .Include(x => x.Category)
             .Where(item => item.Date >= startDate && item.Date <= endDate && item.Amount < 0)
             .ToListAsync();
 
@@ -41,19 +41,16 @@ public class ExpensePercentageCalculation : IExpensePercentageCalculation
 
         foreach (var transaction in transactions)
         {
-            if (transaction.TransactionCategories.Any())
+            if (transaction.CategoryId != null)
             {
-                foreach (var transactionCategory in transaction.TransactionCategories.Where(item => item.CategoryId != internalCashFlowCategory.Id))
+                var transactionCategoryId = transaction.CategoryId.Value;
+
+                if (!amountPerCategory.ContainsKey(transactionCategoryId))
                 {
-                    var categoryId = transactionCategory.CategoryId;
-
-                    if (!amountPerCategory.ContainsKey(categoryId))
-                    {
-                        amountPerCategory.Add(categoryId, 0M);
-                    }
-
-                    amountPerCategory[categoryId] += (transactionCategory.Amount ?? transaction.Amount) * -1;
+                    amountPerCategory.Add(transactionCategoryId, 0M);
                 }
+
+                amountPerCategory[transactionCategoryId] += transaction.Amount * -1;
             }
             else
             {

@@ -30,12 +30,12 @@ public class ExpenseCalculation : IExpenseCalculation
                        item.Date >= startMonth &&
                                       item.Date <= nextMonthEnd &&
                                                      item.Amount < 0)
-            .Include(nameof(TransactionEntity.TransactionCategories))
+            .Include(x => x.Category)
             .ToListAsync();
 
         var allCategories = await context.Categories
-            .Include(nameof(CategoryEntity.ParentCategory))
-            .Include(nameof(CategoryEntity.ChildCategories))
+            .Include(x => x.ParentCategory)
+            .Include(x => x.ChildCategories)
             .ToListAsync();
 
         var regularBimonthlyExpenseReport = new BimonthlyExpenseReportItem
@@ -70,7 +70,7 @@ public class ExpenseCalculation : IExpenseCalculation
         }
 
         var uncategorizedTransactions = transactions.Where(item =>
-            item.TransactionCategories.Count == 0 &&
+            item.CategoryId == null &&
             item.Date >= startMonth &&
             item.Date <= nextMonthEnd).ToList().ToDto();
 
@@ -82,7 +82,7 @@ public class ExpenseCalculation : IExpenseCalculation
         };
     }
 
-    public async Task<Dictionary<string, Dictionary<int, decimal>>> ExpensePerCategoryIdPerMonthForYear(int year, IEnumerable<int> categoryIds)
+    public async Task<Dictionary<string, Dictionary<int, decimal>>> ExpensePerCategoryIdPerMonthForYear(int year, int?[] categoryIds)
     {
         var dateRangeStart = new DateTime(year, 1, 1);
         var dateRangeEnd = new DateTime(year, 12, 31);
@@ -93,15 +93,13 @@ public class ExpenseCalculation : IExpenseCalculation
             item.Date >= dateRangeStart &&
             item.Date <= dateRangeEnd &&
             item.Amount < 0 &&
-            item.TransactionCategories.Any(transactionCategory =>
-                           categoryIds.Any(reportCategory =>
-                                              reportCategory == transactionCategory.CategoryId)))
-            .Include(nameof(TransactionEntity.TransactionCategories))
+            categoryIds.Contains(item.CategoryId))
+            .Include(x => x.Category)
             .ToListAsync();
 
         var categories = await context.Categories.Where(x => categoryIds.Any(y => y == x.Id))
-            .Include(nameof(CategoryEntity.ParentCategory))
-            .Include(nameof(CategoryEntity.ChildCategories))
+            .Include(x => x.ParentCategory)
+            .Include(x => x.ChildCategories)
             .ToListAsync();
 
         var reportDictionary = categories.ToDictionary(
@@ -110,17 +108,11 @@ public class ExpenseCalculation : IExpenseCalculation
 
         foreach (var transaction in transactions)
         {
-            if (transaction.TransactionCategories?.Any() == true)
+            if (transaction.Category != null)
             {
-                foreach (var transactionCategory in transaction.TransactionCategories.Where(transactionCategory => categoryIds.Any(reportCategory => reportCategory == transactionCategory.CategoryId)))
-                {
-                    var category = categories.Single(x => x.Id == transactionCategory.CategoryId);
+                var amount = GetPositiveAmount(transaction.Amount);
 
-                    var amount = transactionCategory.Amount ?? transaction.Amount;
-                    amount = GetPositiveAmount(amount);
-
-                    reportDictionary[CreateCategoryNameWithOptionalParent(category)][transaction.Date.Month] += amount;
-                }
+                reportDictionary[CreateCategoryNameWithOptionalParent(transaction.Category)][transaction.Date.Month] += amount;
             }
             else
             {
@@ -147,8 +139,8 @@ public class ExpenseCalculation : IExpenseCalculation
         var bimonthlyParentExpense = new BimonthlyExpense
         {
             Name = category.Name,
-            AmountPrevious = CalculateSumCategoryTransactions(category, firstMonthParentTransactions),
-            AmountNow = CalculateSumCategoryTransactions(category, secondMonthParentTransactions)
+            AmountPrevious = firstMonthParentTransactions.Sum(x => x.Amount),
+            AmountNow = secondMonthParentTransactions.Sum(x => x.Amount)
         };
 
         if (bimonthlyParentExpense.AmountNow != bimonthlyParentExpense.AmountPrevious &&
@@ -172,8 +164,8 @@ public class ExpenseCalculation : IExpenseCalculation
                 var bimonthlyChildExpense = new BimonthlyExpense
                 {
                     Name = childCategory.Name,
-                    AmountPrevious = CalculateSumCategoryTransactions(childCategory, lastMonthChildTransactions),
-                    AmountNow = CalculateSumCategoryTransactions(childCategory, thisMonthChildTransactions),
+                    AmountPrevious = lastMonthChildTransactions.Sum(x => x.Amount),
+                    AmountNow = thisMonthChildTransactions.Sum(x => x.Amount),
                 };
 
                 if (bimonthlyChildExpense.AmountNow != bimonthlyChildExpense.AmountPrevious &&
@@ -191,23 +183,6 @@ public class ExpenseCalculation : IExpenseCalculation
                 bimonthlyParentExpense.ChildBimonthlyExpenses.Add(bimonthlyChildExpense);
             }
         }
-    }
-
-    /// <summary>
-    /// Calculates the sum for each transactions for the given category
-    ///
-    /// if the transactions is split up in different categories then take the amount of the split
-    /// if the transactions is not split up take the full amount
-    /// </summary>
-    /// <param name="category">Category to look for</param>
-    /// <param name="transactions">Transactions to use</param>
-    /// <returns></returns>
-    private static decimal CalculateSumCategoryTransactions(CategoryEntity category, IList<TransactionEntity> transactions)
-    {
-        return transactions.Sum(item => item.TransactionCategories.Any(transCategory => transCategory.Amount == null) ?
-                                    item.Amount :
-                                    item.TransactionCategories.Where(transCategory => transCategory.CategoryId == category.Id)
-                                        .Sum(transCategory => transCategory.Amount.GetValueOrDefault()));
     }
 
     private static string CreateCategoryNameWithOptionalParent(CategoryEntity category)
@@ -258,8 +233,7 @@ public class ExpenseCalculation : IExpenseCalculation
                 item =>
                     item.Date.Year == year &&
                     item.Date.Month == month &&
-                    item.TransactionCategories.Any(transactionCategory =>
-                        transactionCategory.CategoryId == category.Id)).ToList();
+                    item.CategoryId == category.Id).ToList();
         return lastMonthParentTransactions;
     }
 }

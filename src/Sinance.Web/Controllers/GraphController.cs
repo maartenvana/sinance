@@ -104,7 +104,8 @@ public class GraphController : Controller
     public async Task<IActionResult> CustomReportMonthlyGraph(int customReportId, int year)
     {
         var report = await _customReportService.GetCustomReportByIdForCurrentUser(customReportId);
-        var reportCategories = report.Categories.Select(x => x.CategoryId);
+
+        var reportCategories = report.Categories.Select(x => (int?) x.CategoryId).ToArray();
 
         var expensesPerMonth = await _expenseCalculation.ExpensePerCategoryIdPerMonthForYear(year, reportCategories);
 

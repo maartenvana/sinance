@@ -29,14 +29,13 @@ public class TransactionService : ITransactionService
         using var context = _dbContextFactory.CreateDbContext();
 
         var transaction = await context.Transactions
-            .Include(x => x.TransactionCategories)
             .SingleOrDefaultAsync(item => item.Id == transactionId);
 
         if (transaction == null)
             throw new NotFoundException(nameof(TransactionEntity));
 
-        // Remove any previous assigned categories
-        context.TransactionCategories.RemoveRange(transaction.TransactionCategories);
+        transaction.CategoryId = null;
+        transaction.Category = null;
 
         await context.SaveChangesAsync();
 
@@ -74,9 +73,6 @@ public class TransactionService : ITransactionService
         if (transaction == null)
             throw new NotFoundException(nameof(TransactionEntity));
 
-        if (transaction.TransactionCategories != null)
-            context.TransactionCategories.RemoveRange(transaction.TransactionCategories);
-
         context.Transactions.Remove(transaction);
         await context.SaveChangesAsync();
 
@@ -85,18 +81,18 @@ public class TransactionService : ITransactionService
         await context.SaveChangesAsync();
     }
 
-    public async Task<List<TransactionModel>> GetBiggestExpensesForYearForCurrentUser(int year, int count, int skip, params int[] excludeCategoryIds)
+    public async Task<List<TransactionModel>> GetBiggestExpensesForYearForCurrentUser(int year, int count, int skip, params int?[] excludeCategoryIds)
     {
         using var context = _dbContextFactory.CreateDbContext();
 
-        excludeCategoryIds ??= new int[] { };
+        excludeCategoryIds ??= System.Array.Empty<int?>();
 
         var transactions = await context.Transactions
-            .Where(x => x.TransactionCategories.All(x => !excludeCategoryIds.Any(y => y == x.CategoryId)) && x.Date.Year == year)
+            .Where(x => !excludeCategoryIds.Contains(x.CategoryId) && x.Date.Year == year)
             .OrderBy(x => x.Amount)
             .Skip(skip)
             .Take(count)
-            .Include(x => x.TransactionCategories).ThenInclude(x => x.Category)
+            .Include(x => x.Category)
             .ToListAsync();
 
         return transactions.ToDto().ToList();
@@ -123,7 +119,7 @@ public class TransactionService : ITransactionService
             .OrderByDescending(x => x.Date)
             .Skip(skip)
             .Take(count)
-            .Include(x => x.TransactionCategories).ThenInclude(x => x.Category)
+            .Include(x => x.Category)
             .ToListAsync();
 
         return transactions.ToDto().ToList();
@@ -135,7 +131,7 @@ public class TransactionService : ITransactionService
 
         var transactions = await context.Transactions
             .Where(x => x.Date.Year == year && x.Date.Month == month)
-            .Include(x => x.TransactionCategories).ThenInclude(x => x.Category)
+            .Include(x => x.Category)
             .ToListAsync();
 
         return transactions.ToDto().ToList();
@@ -154,15 +150,7 @@ public class TransactionService : ITransactionService
         if (category == null)
             throw new NotFoundException(nameof(CategoryEntity));
 
-        // Remove any previous assigned categories
-        context.TransactionCategories.RemoveRange(transaction.TransactionCategories);
-
-        // Insert the new link
-        await context.TransactionCategories.AddAsync(new TransactionCategoryEntity
-        {
-            TransactionId = transaction.Id,
-            CategoryId = category.Id
-        });
+        transaction.CategoryId = category.Id;
 
         await context.SaveChangesAsync();
 
@@ -194,7 +182,7 @@ public class TransactionService : ITransactionService
     {
         return await context.Transactions
             .Include(x => x.BankAccount)
-            .Include(x => x.TransactionCategories).ThenInclude(x => x.Category)
+            .Include(x => x.Category)
             .SingleAsync(item => item.Id == transactionId);
     }
 }

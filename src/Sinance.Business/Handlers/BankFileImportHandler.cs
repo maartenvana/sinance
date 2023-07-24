@@ -57,7 +57,7 @@ public class BankFileImportHandler : IBankFileImportHandler
         return importRows;
     }
 
-    private static void MatchExistingTransactionsWithImportRows(IList<ImportRow> importRows, List<TransactionEntity> existingTransactions)
+    private static void MatchExistingTransactionsWithImportRows(IList<ImportRow> importRows, List<ImportTransactionEntity> existingTransactions)
     {
         foreach (var importRow in importRows)
         {
@@ -68,13 +68,13 @@ public class BankFileImportHandler : IBankFileImportHandler
         }
     }
 
-    private static bool ImportRowHasExistingTransaction(List<TransactionEntity> existingTransactions, ImportRow importRow) =>
-        existingTransactions.Any(transaction =>
+    private static bool ImportRowHasExistingTransaction(List<ImportTransactionEntity> existingTransactions, ImportRow importRow) =>
+        existingTransactions.Exists(transaction =>
             importRow.Transaction.Amount == transaction.Amount &&
             importRow.Transaction.Name.Equals(transaction.Name.Trim(), StringComparison.CurrentCultureIgnoreCase) &&
             importRow.Transaction.Date == transaction.Date);
 
-    private static async Task<List<TransactionEntity>> GetExistingTransactionsForImportRows(
+    private static async Task<List<ImportTransactionEntity>> GetExistingTransactionsForImportRows(
         SinanceContext context,
         int userId,
         int bankAccountId,
@@ -83,9 +83,13 @@ public class BankFileImportHandler : IBankFileImportHandler
         var firstDate = rowsToImport.Min(item => item.Transaction.Date);
         var lastDate = rowsToImport.Max(item => item.Transaction.Date);
 
-        var existingTransactions = await context.Transactions
-            .Where(transaction => transaction.BankAccountId == bankAccountId && transaction.UserId == userId && transaction.Date >= firstDate && transaction.Date <= lastDate)
-            .ToListAsync();
+        var existingTransactions = await context.ImportTransactions
+                .Where(transaction =>
+                    transaction.BankAccountId == bankAccountId &&
+                    transaction.UserId == userId &&
+                    transaction.Date >= firstDate &&
+                    transaction.Date <= lastDate)
+                .ToListAsync();
 
         return existingTransactions;
     }
@@ -107,21 +111,30 @@ public class BankFileImportHandler : IBankFileImportHandler
         return importer.CreateImport(reader.BaseStream);
     }
 
-    public static async Task<int> SaveImportResultToDatabase(SinanceContext context, int bankAccountId, int userId,
-        IList<ImportRow> importRows, IList<ImportRow> cachedImportRows)
+    public static async Task<int> SaveImportResultToDatabase(SinanceContext context, int bankAccountId, int userId, IList<ImportRow> importRows)
     {
         var savedTransactions = 0;
 
-        // Select all cached import rows that have to be imported
-        foreach (var cachedTransaction in importRows.Where(item => !item.ExistsInDatabase && item.Import)
-            .Select(importRow => cachedImportRows.SingleOrDefault(item => item.ImportRowId == importRow.ImportRowId))
+        var importTransactions = importRows
+            .Where(item => !item.ExistsInDatabase && item.Import)
+            .Select(importRow => importRows.SingleOrDefault(item => item.ImportRowId == importRow.ImportRowId))
             .Where(cachedImportRow => cachedImportRow != null)
-            .Select(x => x.Transaction))
+            .Select(x => x.Transaction);
+
+        // Select all cached import rows that have to be imported
+        foreach (var importTransaction in importTransactions)
         {
             // Set the application user id and bank account id
-            cachedTransaction.BankAccountId = bankAccountId;
+            importTransaction.BankAccountId = bankAccountId;
 
-            await context.Transactions.AddAsync(cachedTransaction.ToNewEntity(userId));
+            // Import into both tables, the import is only for registration and double prevention
+            var importTransactionEntity = importTransaction.ToNewImportEntity(userId);
+            var transactionEntity = importTransaction.ToNewEntity(userId);
+
+            transactionEntity.ImportTransaction = importTransactionEntity;
+
+            context.ImportTransactions.Add(importTransactionEntity);
+            context.Transactions.Add(transactionEntity);
 
             // Count how many we inserted
             savedTransactions++;

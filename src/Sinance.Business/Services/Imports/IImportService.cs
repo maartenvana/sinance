@@ -6,7 +6,5 @@ namespace Sinance.Business.Services.Imports;
 
 public interface IImportService
 {
-    Task<ImportModel> CreateImportPreview(Stream fileStream, ImportModel model);
-
-    Task<(int skippedTransactions, int savedTransactions)> SaveImport(ImportModel model);
+    Task<(int skippedTransactions, int savedTransactions)> ImportTransactions(Stream fileStream, ImportModel model);
 }

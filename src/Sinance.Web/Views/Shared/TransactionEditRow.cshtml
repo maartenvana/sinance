@@ -12,22 +12,12 @@
         @Model.Name
     </td>
     <td class="categoryColumn">
-        <a id="transactionCategory@(Model.Id)" tabindex="0" class="transactionCategoryBox" onclick="SetSelectedTransaction(@Model.Id, [@string.Join(",", Model.Categories.Select(item => item.CategoryId))])">
-            @foreach (var transactionCategory in Model.Categories)
+        <a id="transactionCategory@(Model.Id)" tabindex="0" class="transactionCategoryBox" onclick="SetSelectedTransaction(@Model.Id, [@Model.CategoryId])">
+            @if (Model.Category != null)
             {
                 int width = 50;
 
-                if (Model.Categories.Count() > 1)
-                {
-                    width = (int)Math.Round(((transactionCategory.Amount ?? 1) / Model.Amount * 50));
-                    if (width < 0)
-                    {
-                        // Invert if this was a negative width
-                        width *= -1;
-                    }
-                }
-
-                string style = string.Format("width:{0}px;background-color:{1};", width, transactionCategory.ColorCode);
+                string style = string.Format("width:{0}px;background-color:{1};", width, Model.Category.ColorCode);
                 <div class="transactionCategoryFillBox" style="@style"></div>
             }
         </a>

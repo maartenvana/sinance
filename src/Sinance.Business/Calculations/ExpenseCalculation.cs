@@ -82,7 +82,7 @@ public class ExpenseCalculation : IExpenseCalculation
         };
     }
 
-    public async Task<Dictionary<string, Dictionary<int, decimal>>> ExpensePerCategoryIdPerMonthForYear(int year, IEnumerable<int> categoryIds)
+    public async Task<Dictionary<string, Dictionary<int, decimal>>> ExpensePerCategoryIdPerMonthForYear(int year, int?[] categoryIds)
     {
         var dateRangeStart = new DateTime(year, 1, 1);
         var dateRangeEnd = new DateTime(year, 12, 31);
@@ -93,7 +93,7 @@ public class ExpenseCalculation : IExpenseCalculation
             item.Date >= dateRangeStart &&
             item.Date <= dateRangeEnd &&
             item.Amount < 0 &&
-            categoryIds.Any(reportCategory => reportCategory == item.CategoryId))
+            categoryIds.Contains(item.CategoryId))
             .Include(x => x.Category)
             .ToListAsync();
 

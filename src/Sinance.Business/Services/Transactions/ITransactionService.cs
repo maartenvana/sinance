@@ -12,7 +12,7 @@ public interface ITransactionService
 
     Task DeleteTransactionForCurrentUser(int transactionId);
 
-    Task<List<TransactionModel>> GetBiggestExpensesForYearForCurrentUser(int year, int count, int skip, params int[] excludeCategoryIds);
+    Task<List<TransactionModel>> GetBiggestExpensesForYearForCurrentUser(int year, int count, int skip, params int?[] excludeCategoryIds);
 
     Task<TransactionModel> GetTransactionByIdForCurrentUser(int transactionId);
 

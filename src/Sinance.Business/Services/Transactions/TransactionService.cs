@@ -81,14 +81,14 @@ public class TransactionService : ITransactionService
         await context.SaveChangesAsync();
     }
 
-    public async Task<List<TransactionModel>> GetBiggestExpensesForYearForCurrentUser(int year, int count, int skip, params int[] excludeCategoryIds)
+    public async Task<List<TransactionModel>> GetBiggestExpensesForYearForCurrentUser(int year, int count, int skip, params int?[] excludeCategoryIds)
     {
         using var context = _dbContextFactory.CreateDbContext();
 
-        excludeCategoryIds ??= new int[] { };
+        excludeCategoryIds ??= System.Array.Empty<int?>();
 
         var transactions = await context.Transactions
-            .Where(x => !excludeCategoryIds.Any(y => y == x.CategoryId) && x.Date.Year == year)
+            .Where(x => !excludeCategoryIds.Contains(x.CategoryId) && x.Date.Year == year)
             .OrderBy(x => x.Amount)
             .Skip(skip)
             .Take(count)

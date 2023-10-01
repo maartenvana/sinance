@@ -23,10 +23,10 @@ public class AccountOverviewViewModel
     /// <summary>
     /// Available categories to choose from for quick editing a category of a transaction
     /// </summary>
-    public IEnumerable<CategoryModel> AvailableCategories { get; set; }
+    public List<CategoryModel> AvailableCategories { get; set; }
 
     /// <summary>
     /// Transaction for this bank account
     /// </summary>
-    public IEnumerable<TransactionModel> Transactions { get; set; }
+    public List<TransactionModel> Transactions { get; set; }
 }

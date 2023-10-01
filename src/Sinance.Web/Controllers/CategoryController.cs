@@ -39,7 +39,7 @@ public class CategoryController : Controller
             CategoryModel = new CategoryModel()
         };
 
-        return View("UpsertCategory", model);
+        return View(viewName: "UpsertCategory", model: model);
     }
 
     /// <summary>
@@ -61,7 +61,7 @@ public class CategoryController : Controller
                 AvailableParentCategories = availableParentCategories
             };
 
-            return View("UpsertCategory", model);
+            return View(viewName: "UpsertCategory", model: model);
         }
         catch (NotFoundException)
         {
@@ -78,7 +78,7 @@ public class CategoryController : Controller
     {
         var categories = await _categoryService.GetAllCategoriesForCurrentUser();
 
-        return View("Index", categories);
+        return View(viewName: "Index", model: categories);
     }
 
     /// <summary>

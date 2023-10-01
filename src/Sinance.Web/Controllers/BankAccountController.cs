@@ -32,7 +32,7 @@ public class BankAccountController : Controller
     {
         var bankAccount = new BankAccountModel();
 
-        return View("UpsertAccount", bankAccount);
+        return View(viewName: "UpsertAccount", model: bankAccount);
     }
 
     /// <summary>
@@ -45,7 +45,7 @@ public class BankAccountController : Controller
         try
         {
             var bankAccount = await _bankAccountService.GetBankAccountByIdForCurrentUser(accountId);
-            return View("UpsertAccount", bankAccount);
+            return View(viewName: "UpsertAccount", model: bankAccount);
         }
         catch (NotFoundException)
         {

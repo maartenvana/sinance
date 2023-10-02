@@ -54,7 +54,7 @@ public class ReportController : Controller
             Name = item.Name,
         }).ToList();
 
-        return View("UpsertCustomReport", new UpsertCustomReportModel
+        return View(viewName: "UpsertCustomReport", model: new UpsertCustomReportModel
         {
             AvailableCategories = availableCategories,
             CustomReport = new CustomReportModel()
@@ -70,7 +70,7 @@ public class ReportController : Controller
     {
         var report = await _customReportService.GetCustomReportByIdForCurrentUser(reportId);
 
-        return View("CustomReport", report);
+        return View(viewName: "CustomReport", model: report);
     }
 
     /// <summary>
@@ -93,7 +93,7 @@ public class ReportController : Controller
                 Checked = report.Categories.Any(reportCategory => reportCategory.CategoryId == category.Id)
             }).ToList();
 
-            return View("UpsertCustomReport", new UpsertCustomReportModel
+            return View(viewName: "UpsertCustomReport", model: new UpsertCustomReportModel
             {
                 AvailableCategories = availableCategories,
                 CustomReport = report
@@ -102,7 +102,7 @@ public class ReportController : Controller
         catch (NotFoundException)
         {
             TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CustomReportNotFound);
-            return View("Home", "Index");
+            return RedirectToAction(actionName: "Index", controllerName: "Home");
         }
     }
 
@@ -116,7 +116,7 @@ public class ReportController : Controller
 
         var model = await _expenseCalculation.BiMonthlyExpensePerCategoryReport(startMonth);
 
-        return View("ExpenseOverview", model);
+        return View(viewName: "ExpenseOverview", model: model);
     }
 
     /// <summary>
@@ -129,7 +129,7 @@ public class ReportController : Controller
 
         var model = await _incomeCalculation.BiMonthlyIncomePerCategoryReport(startMonth);
 
-        return View("IncomeOverview", model);
+        return View(viewName: "IncomeOverview", model: model);
     }
 
     /// <summary>
@@ -158,7 +158,7 @@ public class ReportController : Controller
             catch (NotFoundException)
             {
                 TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CustomReportNotFound);
-                return View("Home", "Index");
+                return RedirectToAction(controllerName: "Report", actionName: "EditCustomReport");
             }
         }
         else
@@ -178,6 +178,6 @@ public class ReportController : Controller
     {
         var report = await _yearlyOverviewCalculation.CalculateForYear(year.GetValueOrDefault(DateTime.Now.Year));
 
-        return View("YearReport", report);
+        return View(viewName: "YearReport", model: report);
     }
 }

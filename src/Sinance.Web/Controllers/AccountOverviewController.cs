@@ -130,7 +130,7 @@ public class AccountOverviewController : Controller
                 AvailableCategories = availableCategories
             };
 
-            return View("index", model);
+            return View(viewName: "index", model: model);
         }
         catch (NotFoundException)
         {

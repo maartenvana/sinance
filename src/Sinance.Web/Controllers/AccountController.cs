@@ -31,16 +31,6 @@ public class AccountController : Controller
         _httpContextAccessor = httpContextAccessor;
     }
 
-    /// <summary>
-    /// Failure of the external login
-    /// </summary>
-    /// <returns>View for external login failure</returns>
-    [AllowAnonymous]
-    public ActionResult ExternalLoginFailure()
-    {
-        return View();
-    }
-
     [HttpGet]
     [AllowAnonymous]
     public IActionResult Login()

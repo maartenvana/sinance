@@ -50,7 +50,7 @@ public class CategoryMappingController : Controller
         catch (NotFoundException)
         {
             TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryNotFound);
-            return View("Index");
+            return View("UpsertCategoryMapping");
         }
     }
 
@@ -69,7 +69,7 @@ public class CategoryMappingController : Controller
         catch (NotFoundException)
         {
             TempDataHelper.SetTemporaryMessage(TempData, MessageState.Error, Resources.CategoryMappingNotFound);
-            return View("Index");
+            return View("UpsertCategoryMapping");
         }
     }
 

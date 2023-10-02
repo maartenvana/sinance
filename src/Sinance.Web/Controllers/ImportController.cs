@@ -97,7 +97,7 @@ public class ImportController : Controller
             Name = bankFileImporter.FriendlyName
         }).ToList();
 
-        return View("Index", new ImportModel
+        return View(viewName: "Index", model: new ImportModel
         {
             AvailableImportBanks = importBanks,
             AvailableAccounts = bankAccounts
